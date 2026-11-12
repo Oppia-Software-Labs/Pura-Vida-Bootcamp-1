@@ -41,13 +41,14 @@ Sigue estos pasos para completar tu entrega:
 1. Haz un **fork** del repositorio oficial del bootcamp.
 2. Crea una **carpeta con tu nombre completo** en la raíz de tu fork.
 3. Dentro de esa carpeta, desarrolla y agrega tu aplicación.
-4. Crea tu Branch, antes de comenzar a desarrollar, crea una nueva rama siguiendo esta convención de nombres:
+4. Crea tu Branch, crea una nueva rama siguiendo esta convención de nombres:
 
 `feature/tu-nombre`
 
 **Ejemplo:**
 
 `feature/kevin-latino`
+
 5. Crea un **Pull Request (PR)** hacia el repositorio original.
 6. En la descripción de tu PR, incluye tu **nombre completo** y adjunta una **captura de pantalla que demuestre que completaste el formulario de Embajadores Oficiales de BAF**.
 
