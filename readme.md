@@ -11,7 +11,6 @@ El objetivo es que pongas en práctica lo aprendido durante la clase 1: cómo co
 **MCP oficial:** https://raven.stellar.org/
 
 **Video de cómo conectar Stellar Raven:**  
-[Agregar video aquí]
 
 ## ¿Qué tienes que hacer?
 
@@ -55,6 +54,5 @@ Sigue estos pasos para completar tu entrega:
 6. En la descripción de tu PR, incluye tu **nombre completo** y adjunta una **captura de pantalla que demuestre que completaste el formulario de Embajadores Oficiales de BAF**.
 
 **Video de guía para realizar la entrega:**  
-[Agregar video aquí]
 
 
