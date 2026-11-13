@@ -3,6 +3,8 @@ import freighterApi from "https://esm.sh/@stellar/freighter-api@4.1.0";
 
 const { isConnected, requestAccess, getNetwork } = freighterApi;
 
+const TESTNET = "TESTNET";
+
 const connectBtn = document.getElementById('connectWalletBtn');
 const statusDiv = document.getElementById('walletStatus');
 const addressDiv = document.getElementById('walletAddress');
@@ -21,7 +23,15 @@ connectBtn.addEventListener('click', async () => {
             return;
         }
 
-        // 2. Solicitamos la conexión (la API v4 devuelve { address, error })
+        // 2. Verificamos la red ANTES de abrir el popup de permisos
+        const preCheck = await getNetwork();
+        if (!preCheck.error && preCheck.network !== TESTNET) {
+            statusDiv.textContent = `Estado: Freighter está en "${preCheck.network}". Cambia a Test Net en Freighter y vuelve a intentar.`;
+            connectBtn.disabled = false;
+            return;
+        }
+
+        // 3. Solicitamos la conexión (la API v4 devuelve { address, error })
         statusDiv.textContent = "Estado: Solicitando permisos...";
         const { address, error } = await requestAccess();
 
@@ -32,10 +42,10 @@ connectBtn.addEventListener('click', async () => {
             return;
         }
 
-        // 3. Mostramos el éxito en pantalla y verificamos que la red sea Testnet
+        // 4. Mostramos el éxito en pantalla y confirmamos que la red sea Testnet
         if (address) {
             const { network, error: networkError } = await getNetwork();
-            const isTestnet = !networkError && network === "TESTNET";
+            const isTestnet = !networkError && network === TESTNET;
 
             addressDiv.textContent = `Llave pública: ${address}`;
             connectBtn.textContent = "Wallet Conectada";
