@@ -1,5 +1,7 @@
 # Entregable 1 · Pura Vida Bootcamp
 
+## Fecha de entrega: miércoles 18 de noviembre, 2026
+
 ## Construye tu primera aplicación en Stellar usando Stellar Raven 
 
 En este entregable vas a construir un producto básico en Stellar utilizando el MCP oficial de Stellar, **Stellar Raven**.
