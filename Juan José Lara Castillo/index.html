@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StellarCalc · Juan José Lara Castillo</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+  <!-- Stellar Official Web & Extension SDKs -->
+  <script src="https://unpkg.com/@albedo-link/intent@0.13.0/lib/albedo.intent.js"></script>
+  <script src="https://unpkg.com/@stellar/freighter-api/build/index.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="brand-wrapper">
+        <div class="logo-stellar">✦</div>
+        <div>
+          <h1 class="brand-title">StellarCalc</h1>
+          <p class="brand-subtitle">Calculadora Financiera & Utilidades Stellar Network · Bootcamp Pura Vida</p>
+        </div>
+      </div>
+      <div class="header-badges">
+        <span class="badge badge-network" id="networkBadge">Testnet</span>
+        <span class="badge badge-raven" title="Construido con asistencia del MCP Stellar Raven">🤖 Stellar Raven MCP</span>
+      </div>
+    </header>
+
+    <!-- Wallet Connection Section (Requisito Mínimo del Entregable) -->
+    <section class="wallet-card" id="walletSection">
+      <div class="wallet-card-header">
+        <div class="wallet-title">
+          <span>💳</span> Conexión de Wallet Stellar
+        </div>
+        <div class="wallet-actions">
+          <button class="btn btn-primary" id="btnOpenWalletModal">
+            <span id="walletBtnIcon">🔗</span>
+            <span id="walletBtnText">Conectar Wallet</span>
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btnQuickDemo">
+            🎲 Modo Rápido Testnet
+          </button>
+          <button class="btn btn-secondary btn-sm" id="btnFundFriendbot" style="display:none;" title="Pedir fondos de prueba al Friendbot">
+            💧 Recargar con Friendbot
+          </button>
+        </div>
+      </div>
+
+      <div class="wallet-info-grid">
+        <div class="wallet-stat">
+          <div class="wallet-stat-label">Estado de Conexión</div>
+          <div class="wallet-stat-value" id="walletStatusText">○ Desconectado</div>
+        </div>
+        <div class="wallet-stat">
+          <div class="wallet-stat-label">Clave Pública (Stellar Address)</div>
+          <div class="wallet-stat-value" id="walletAddress">--</div>
+        </div>
+        <div class="wallet-stat">
+          <div class="wallet-stat-label">Balance Disponible (XLM)</div>
+          <div class="wallet-stat-value highlight" id="walletBalance">0.0000000 XLM</div>
+        </div>
+        <div class="wallet-stat">
+          <div class="wallet-stat-label">Reserva Base Bloqueada</div>
+          <div class="wallet-stat-value" id="walletReserve">-- XLM</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs" role="tablist">
+      <button class="tab-btn active" data-tab="tab-standard">
+        🔢 Calculadora Estándar
+      </button>
+      <button class="tab-btn" data-tab="tab-stellar-reserve">
+        🛡️ Reserva Base Stellar
+      </button>
+      <button class="tab-btn" data-tab="tab-converter">
+        ⚡ Conversor Stroops & XLM
+      </button>
+      <button class="tab-btn" data-tab="tab-fee-estimator">
+        ⛽ Estimador de Red & Fees
+      </button>
+    </nav>
+
+    <!-- Tab 1: Standard Calculator -->
+    <main id="tab-standard" class="tab-content active">
+      <div class="calc-wrapper">
+        <div class="calculator-card">
+          <div class="calc-display">
+            <div class="calc-expression" id="calcExpression"></div>
+            <div class="calc-current" id="calcCurrent">0</div>
+          </div>
+          <div class="calc-grid">
+            <button class="calc-key action" data-action="clear">AC</button>
+            <button class="calc-key action" data-action="delete">⌫</button>
+            <button class="calc-key op" data-action="percent">%</button>
+            <button class="calc-key op" data-op="/">÷</button>
+
+            <button class="calc-key" data-num="7">7</button>
+            <button class="calc-key" data-num="8">8</button>
+            <button class="calc-key" data-num="9">9</button>
+            <button class="calc-key op" data-op="*">×</button>
+
+            <button class="calc-key" data-num="4">4</button>
+            <button class="calc-key" data-num="5">5</button>
+            <button class="calc-key" data-num="6">6</button>
+            <button class="calc-key op" data-op="-">−</button>
+
+            <button class="calc-key" data-num="1">1</button>
+            <button class="calc-key" data-num="2">2</button>
+            <button class="calc-key" data-num="3">3</button>
+            <button class="calc-key op" data-op="+">+</button>
+
+            <button class="calc-key" data-num="0">0</button>
+            <button class="calc-key" data-action="decimal">.</button>
+            <button class="calc-key equal" data-action="calculate">=</button>
+          </div>
+          <div style="margin-top: 14px; display: flex; gap: 8px;">
+            <button class="btn btn-secondary btn-sm" id="btnUseResultInStellar" style="flex:1;">
+              ➡️ Enviar resultado al Conversor Stellar
+            </button>
+          </div>
+        </div>
+
+        <!-- History Panel -->
+        <aside class="side-panel">
+          <div class="panel-header">
+            <span class="panel-title">📋 Historial de Cálculos</span>
+            <button class="btn btn-secondary btn-sm" id="btnClearHistory">Borrar</button>
+          </div>
+          <div class="history-list" id="historyList">
+            <p style="color: var(--text-muted); font-size: 0.85rem; text-align: center; margin-top: 30px;">
+              No hay operaciones recientes
+            </p>
+          </div>
+        </aside>
+      </div>
+    </main>
+
+    <!-- Tab 2: Stellar Base Reserve Calculator -->
+    <section id="tab-stellar-reserve" class="tab-content">
+      <div class="stellar-tool-card">
+        <div class="tool-header">
+          <h3>Calculadora de Reserva Mínima de Cuenta (Stellar Base Reserve)</h3>
+          <p>
+            En la red Stellar, cada cuenta requiere mantener un balance mínimo de reserva en XLM para prevenir spam.
+            Cada subentry (líneas de crédito/trustlines, firmantes adicionales, ofertas abiertas de trading o datos de cuenta) incrementa la reserva.
+          </p>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="inputTrustlines">Líneas de confianza (Trustlines / Tokens)</label>
+            <input type="number" id="inputTrustlines" class="form-input" min="0" value="0">
+          </div>
+          <div class="form-group">
+            <label for="inputSigners">Firmantes adicionales (Multisig signers)</label>
+            <input type="number" id="inputSigners" class="form-input" min="0" value="0">
+          </div>
+          <div class="form-group">
+            <label for="inputOffers">Ofertas abiertas en el DEX (Open Offers)</label>
+            <input type="number" id="inputOffers" class="form-input" min="0" value="0">
+          </div>
+          <div class="form-group">
+            <label for="inputDataEntries">Entradas de datos asociadas (Data Entries)</label>
+            <input type="number" id="inputDataEntries" class="form-input" min="0" value="0">
+          </div>
+        </div>
+
+        <button class="btn btn-primary" id="btnCalcReserve">Calcular Reserva Bloqueada</button>
+
+        <div class="result-card">
+          <div class="result-title">Reserva Mínima Requerida:</div>
+          <div class="result-val-lg" id="reserveResult">1.0000000 XLM</div>
+          <div class="formula-info">
+            <strong>Fórmula oficial Stellar:</strong> <code>Reserva = (2 + Subentries) × BaseReserve (0.5 XLM)</code>
+            <br>
+            <span id="subentriesBreakdown">2 entradas base de cuenta + 0 subentries adicionales = 1.0 XLM retenidos.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 3: Stroops <-> XLM Converter -->
+    <section id="tab-converter" class="tab-content">
+      <div class="stellar-tool-card">
+        <div class="tool-header">
+          <h3>Conversor Bidireccional Stroops ⇄ XLM</h3>
+          <p>
+            El <strong>Stroop</strong> es la unidad indivisible más pequeña en Stellar. 
+            1 Lumen (XLM) equivale exactamente a <strong>10,000,000 Stroops</strong> (7 decimales de precisión).
+          </p>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="inputXlm">Cantidad en Lumens (XLM)</label>
+            <input type="number" id="inputXlm" class="form-input" placeholder="Ej: 10.5" step="any">
+          </div>
+          <div class="form-group">
+            <label for="inputStroops">Cantidad en Stroops</label>
+            <input type="number" id="inputStroops" class="form-input" placeholder="Ej: 105000000" step="1">
+          </div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-title">Equivalencia exacta:</div>
+          <div class="result-val-lg" id="converterResult">1 XLM = 10,000,000 Stroops</div>
+          <div class="formula-info">
+            Las comisiones de transacción (Transaction Fee) y operaciones en Soroban y Horizon se liquidan internamente en stroops.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Tab 4: Fee & Network Estimator -->
+    <section id="tab-fee-estimator" class="tab-content">
+      <div class="stellar-tool-card">
+        <div class="tool-header">
+          <h3>Estimador de Comisiones de Red Stellar (Fee Estimator)</h3>
+          <p>
+            Calcula el costo en XLM y Stroops de una transacción según el número de operaciones y la congestión de la red.
+          </p>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="inputNumOps">Número de Operaciones por Transacción</label>
+            <input type="number" id="inputNumOps" class="form-input" min="1" value="1">
+          </div>
+          <div class="form-group">
+            <label for="selectFeeRate">Tasa de Comisión (Fee Rate)</label>
+            <select id="selectFeeRate" class="form-input">
+              <option value="100">Base Fee Estándar (100 stroops / op)</option>
+              <option value="250">Congestión Baja (250 stroops / op)</option>
+              <option value="1000">Congestión Media / Prioritaria (1,000 stroops / op)</option>
+              <option value="5000">Alta Prioridad / Surge (5,000 stroops / op)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="result-card">
+          <div class="result-title">Comisión Estimada de la Transacción:</div>
+          <div class="result-val-lg" id="feeTotalStroops">100 Stroops</div>
+          <div style="font-size: 1.1rem; color: var(--text-secondary); margin-top: 4px;" id="feeTotalXlm">
+            = 0.0000100 XLM
+          </div>
+          <div class="formula-info">
+            <strong>Fórmula:</strong> <code>Fee Total = Operaciones × Base Fee</code>. Con 1 XLM puedes pagar más de <strong>100,000 transacciones</strong> estándar.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Modal de Selección de Wallet Stellar -->
+    <div class="modal-overlay" id="walletModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h3>Selecciona tu Wallet de Stellar</h3>
+          <button class="modal-close" id="btnCloseWalletModal">×</button>
+        </div>
+        <div class="modal-body">
+          <div class="wallet-option-item" id="optionFreighter">
+            <div class="wallet-opt-icon">🛸</div>
+            <div class="wallet-opt-details">
+              <h4>Freighter Wallet</h4>
+              <p>Conectar con tu extensión instalada en el navegador.</p>
+            </div>
+            <span class="badge badge-network" id="freighterBadgeStatus">Extensión</span>
+          </div>
+
+          <div class="wallet-option-item" id="optionAlbedo">
+            <div class="wallet-opt-icon">🌟</div>
+            <div class="wallet-opt-details">
+              <h4>Albedo (Web Instantáneo)</h4>
+              <p>Funciona de inmediato sin depender de permisos de extensiones.</p>
+            </div>
+            <span class="badge badge-network">Web</span>
+          </div>
+
+          <div class="wallet-option-item" id="optionVarial">
+            <div class="wallet-opt-icon">🔷</div>
+            <div class="wallet-opt-details">
+              <h4>Varial Wallet</h4>
+              <p>Conectar mediante la extensión Varial instalada.</p>
+            </div>
+            <span class="badge">Extensión</span>
+          </div>
+
+          <div class="wallet-custom-input-box">
+            <label for="inputCustomPublicKey">O ingresa cualquier Clave Pública Stellar (G...):</label>
+            <div style="display:flex; gap:8px; margin-top:6px;">
+              <input type="text" id="inputCustomPublicKey" class="form-input" placeholder="G... (56 caracteres)" style="flex:1; font-size:0.85rem;">
+              <button class="btn btn-secondary btn-sm" id="btnConnectCustomKey">Consultar</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>
+        Entregable 1 · <strong>Pura Vida Bootcamp</strong> · Desarrollado por <strong>Juan José Lara Castillo</strong>
+      </p>
+      <p style="margin-top: 6px; font-size: 0.78rem;">
+        Integrado con <a href="https://raven.stellar.org/" target="_blank">Stellar Raven MCP</a> & Red Stellar Testnet Horizon
+      </p>
+    </footer>
+  </div>
+
+  <script src="js/calculator.js"></script>
+  <script src="js/stellarCalc.js"></script>
+  <script src="js/wallet.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
