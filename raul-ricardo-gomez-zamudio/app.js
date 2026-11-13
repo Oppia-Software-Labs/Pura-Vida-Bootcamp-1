@@ -1,4 +1,7 @@
-import { isConnected, requestAccess } from "https://esm.sh/@stellar/freighter-api@4.1.0";
+// esm.sh sirve este paquete (UMD) solo con export default, no con exports nombrados
+import freighterApi from "https://esm.sh/@stellar/freighter-api@4.1.0";
+
+const { isConnected, requestAccess, getNetwork } = freighterApi;
 
 const connectBtn = document.getElementById('connectWalletBtn');
 const statusDiv = document.getElementById('walletStatus');
@@ -29,12 +32,17 @@ connectBtn.addEventListener('click', async () => {
             return;
         }
 
-        // 3. Mostramos el éxito en pantalla
+        // 3. Mostramos el éxito en pantalla y verificamos que la red sea Testnet
         if (address) {
-            statusDiv.textContent = "Estado: ¡Conectado con éxito!";
+            const { network, error: networkError } = await getNetwork();
+            const isTestnet = !networkError && network === "TESTNET";
+
             addressDiv.textContent = `Llave pública: ${address}`;
             connectBtn.textContent = "Wallet Conectada";
             connectBtn.style.backgroundColor = "#10b981"; // Verde
+            statusDiv.textContent = isTestnet
+                ? "Estado: ¡Conectado con éxito a Testnet!"
+                : `Estado: Conectado, pero Freighter está en "${network || "red desconocida"}". Cambia a Testnet en Freighter.`;
         } else {
             statusDiv.textContent = "Estado: Freighter no devolvió una llave pública.";
             connectBtn.disabled = false;
