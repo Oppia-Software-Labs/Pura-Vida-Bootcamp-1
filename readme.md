@@ -24,17 +24,6 @@ No necesitas crear algo complejo. Lo importante es que experimentes con Raven, l
 
 Conexión de wallet: La aplicación debe incluir una sección o apartado que permita al usuario conectar su wallet de Stellar.
 
-## ⭐ Puntos extra: Programa de Embajadores Oficiales de Stellar
-
-¡Puedes obtener puntos extra por registrarte como Embajador Oficial de Stellar!
-
-Completa el siguiente formulario para formar parte del programa de embajadores y tener la posibilidad de acceder a becas y otros beneficios.
-
-**Formulario de registro:**  
-https://forms.clickup.com/90131604307/f/2ky468uk-22693/GDSBIVKQ86I7ERFBNT
-
-**Importante:** Para recibir los puntos extra, debes adjuntar en tu Pull Request una captura de pantalla que demuestre que completaste el formulario, junto con tu nombre completo.
-
 ## ¿Cómo se entrega?
 
 Sigue estos pasos para completar tu entrega:
@@ -51,7 +40,7 @@ Sigue estos pasos para completar tu entrega:
 `feature/kevin-latino`
 
 5. Crea un **Pull Request (PR)** hacia el repositorio original.
-6. En la descripción de tu PR, incluye tu **nombre completo** y adjunta una **captura de pantalla que demuestre que completaste el formulario de Embajadores Oficiales de BAF**.
+6. En la descripción de tu PR, incluye tu **nombre completo**.
 
 **Video de guía para realizar la entrega:**  
 
