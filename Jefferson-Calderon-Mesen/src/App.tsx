@@ -16,6 +16,16 @@ function abreviar(direccion: string) {
   return `${direccion.slice(0, 4)}…${direccion.slice(-4)}`;
 }
 
+// Muestra el saldo al estilo de Costa Rica: "9 995,00"
+function formatearSaldo(saldo: string) {
+  return Number(saldo).toLocaleString("es-CR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+const MONTOS = ["1", "5", "10"];
+
 function App() {
   const [address, setAddress] = useState<string | null>(null);
   const [cargando, setCargando] = useState(false);
@@ -25,12 +35,13 @@ function App() {
   const [saldo, setSaldo] = useState<string | null | undefined>(undefined);
   const [fondeando, setFondeando] = useState(false);
 
-    // Monto que se está enviando ("1", "5", "10") o null si no se está enviando nada
-    const [enviando, setEnviando] = useState<string | null>(null);
-    // Hash de la última propina enviada con éxito
-    const [txHash, setTxHash] = useState<string | null>(null);
-    // "Candado" contra el doble clic
-    const enviandoRef = useRef(false);
+  // Monto que se está enviando ("1", "5", "10") o null si no se está enviando nada
+  const [enviando, setEnviando] = useState<string | null>(null);
+  // Hash y monto de la última propina enviada con éxito
+  const [txHash, setTxHash] = useState<string | null>(null);
+  const [ultimoMonto, setUltimoMonto] = useState<string | null>(null);
+  // "Candado" contra el doble clic
+  const enviandoRef = useRef(false);
 
   // Pide el saldo a Horizon y lo guarda en pantalla
   async function cargarSaldo(direccion: string) {
@@ -95,6 +106,7 @@ function App() {
       const xdr = await buildTipTransaction(address, monto); // 1. armar
       const firmada = await signTip(xdr, address);           // 2. firmar (se abre Freighter)
       const hash = await submitSignedTransaction(firmada);   // 3. enviar a la red
+      setUltimoMonto(monto); // para que esa rueda dé su vuelta de celebración
       setTxHash(hash);
       await cargarSaldo(address);                            // 4. saldo nuevo
     } catch (e) {
@@ -105,71 +117,111 @@ function App() {
     }
   }
 
+  // Las ruedas solo se pueden tocar con la wallet conectada, con saldo y sin otro envío en curso
+  const puedePropinar = address !== null && typeof saldo === "string" && enviando === null;
+
   return (
-    <main>
-      <h1>Pura Vida Tips 🌴</h1>
-      <p>Dejale una propina en XLM a tu creador favorito (red de prueba Testnet).</p>
+    <main className="panel">
+      <header>
+        {/*   = espacio que no se corta: la palmera nunca queda sola en otra línea */}
+        <h1 className="titulo">Pura Vida Tips{" "}🌴</h1>
+        <p className="intro">Dejale una propina en XLM a tu creador favorito.</p>
+      </header>
 
       {address ? (
-        <div>
-          <p>
-            Conectado como <strong title={address}>{abreviar(address)}</strong>
-          </p>
+        <section className="cuenta" aria-label="Tu cuenta">
+          <div>
+            <p>
+              Conectado como{" "}
+              <span className="cuenta-direccion" title={address}>
+                {abreviar(address)}
+              </span>
+            </p>
+            {saldo === undefined && <p>Cargando saldo...</p>}
+            {typeof saldo === "string" && (
+              <p className="cuenta-saldo">{formatearSaldo(saldo)} XLM</p>
+            )}
+          </div>
 
-          {saldo === undefined && <p>Cargando saldo...</p>}
+          <div className="cuenta-acciones">
+            {typeof saldo === "string" && (
+              <button className="boton-suave" onClick={() => cargarSaldo(address)}>
+                Actualizar
+              </button>
+            )}
+            <button className="boton-suave" onClick={handleDesconectar}>
+              Desconectar
+            </button>
+          </div>
 
           {saldo === null && (
-            <div>
+            <div className="fondear">
               <p>Tu cuenta todavía no existe en Testnet. Fondeala gratis con Friendbot:</p>
-              <button onClick={handleFriendbot} disabled={fondeando}>
+              <button className="boton-principal" onClick={handleFriendbot} disabled={fondeando}>
                 {fondeando ? "Fondeando..." : "Fondear con Friendbot"}
               </button>
             </div>
           )}
-
-          {typeof saldo === "string" && (
-            <>
-              <p>
-                Saldo: <strong>{Number(saldo).toFixed(2)} XLM</strong>{" "}
-                <button onClick={() => cargarSaldo(address)}>Actualizar</button>
-              </p>
-
-              <section>
-                <h2>Enviar propina</h2>
-                <p>
-                  Para: <strong title={CREATOR_ADDRESS}>{abreviar(CREATOR_ADDRESS)}</strong>
-                </p>
-                {["1", "5", "10"].map((monto) => (
-                  <button
-                    key={monto}
-                    onClick={() => handlePropina(monto)}
-                    disabled={enviando !== null}
-                  >
-                    {enviando === monto ? "Firmando y enviando..." : `${monto} XLM`}
-                  </button>
-                ))}
-              </section>
-
-              {txHash && (
-                <div>
-                  <p>¡Gracias, pura vida! 🌴</p>
-                  <a href={explorerTxUrl(txHash)} target="_blank" rel="noreferrer">
-                    Ver transacción en el explorador
-                  </a>
-                </div>
-              )}
-            </>
-          )}
-
-          <button onClick={handleDesconectar}>Desconectar</button>
-        </div>
+        </section>
       ) : (
-        <button onClick={handleConectar} disabled={cargando}>
+        <button className="boton-principal" onClick={handleConectar} disabled={cargando}>
           {cargando ? "Conectando..." : "Conectar wallet"}
         </button>
       )}
 
-      {error && <p style={{ color: "crimson" }}>{error}</p>}
+      <section className="propinas" aria-label="Enviar propina">
+        <h2 className="propinas-titulo">Elige tu propina</h2>
+
+        <div className={`ruedas${enviando !== null ? " ocupadas" : ""}`}>
+          {MONTOS.map((monto) => {
+            const girando = enviando === monto;
+            const lista = !girando && txHash !== null && ultimoMonto === monto;
+            return (
+              <button
+                key={monto}
+                className={`rueda${girando ? " girando" : ""}${lista ? " lista" : ""}`}
+                onClick={() => handlePropina(monto)}
+                disabled={!puedePropinar}
+              >
+                <span className="rueda-dibujo" aria-hidden="true">
+                  <span className="rueda-numero">{monto}</span>
+                </span>
+                <span className="rueda-monto">{girando ? "Enviando..." : `${monto} XLM`}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {address ? (
+          <p className="propinas-destino">
+            Va para el creador{" "}
+            <span className="cuenta-direccion" title={CREATOR_ADDRESS}>
+              {abreviar(CREATOR_ADDRESS)}
+            </span>
+            . Vas a confirmar el monto en tu wallet antes de enviarlo.
+          </p>
+        ) : (
+          <p className="propinas-pista">Conecta tu wallet para elegir una propina.</p>
+        )}
+      </section>
+
+      {/* role="status" y role="alert": los lectores de pantalla anuncian estos mensajes al aparecer */}
+      {txHash && (
+        <div className="gracias" role="status">
+          <p className="gracias-titulo">¡Gracias, pura vida! 🌴</p>
+          <p>Tu propina de {ultimoMonto} XLM ya llegó al creador.</p>
+          <a href={explorerTxUrl(txHash)} target="_blank" rel="noreferrer">
+            Ver tu propina en el explorador
+          </a>
+        </div>
+      )}
+      {error && (
+        <p className="aviso-error" role="alert">
+          {error}
+        </p>
+      )}
+
+      <footer className="pie">Funciona en la red de prueba de Stellar (Testnet). Los XLM no son dinero real.</footer>
     </main>
   );
 }
