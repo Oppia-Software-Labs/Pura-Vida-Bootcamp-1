@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { connectWallet, disconnectWallet } from "./wallet";
+import { getBalance, fundWithFriendbot } from "./stellar";
 import "./App.css";
 
 // Convierte "GABCD...muy larga...WXYZ" en "GABC…WXYZ"
@@ -8,12 +9,27 @@ function abreviar(direccion: string) {
 }
 
 function App() {
-  // La dirección de la wallet conectada (null = no hay ninguna conectada)
   const [address, setAddress] = useState<string | null>(null);
-  // true mientras esperamos que el usuario elija su wallet
   const [cargando, setCargando] = useState(false);
-  // Mensaje de error para mostrar en pantalla
   const [error, setError] = useState<string | null>(null);
+
+  // undefined = todavía no sabemos | null = cuenta no fondeada | "123.45" = saldo
+  const [saldo, setSaldo] = useState<string | null | undefined>(undefined);
+  const [fondeando, setFondeando] = useState(false);
+
+  // Pide el saldo a Horizon y lo guarda en pantalla
+  async function cargarSaldo(direccion: string) {
+    try {
+      setSaldo(await getBalance(direccion));
+    } catch {
+      setError("No se pudo leer el saldo. Revisa tu conexión a internet.");
+    }
+  }
+
+  // Cada vez que cambia la dirección (al conectar), cargamos el saldo
+  useEffect(() => {
+    if (address) cargarSaldo(address);
+  }, [address]);
 
   async function handleConectar() {
     setCargando(true);
@@ -22,7 +38,6 @@ function App() {
       const direccion = await connectWallet();
       setAddress(direccion);
     } catch {
-      // Pasa si el usuario cierra la ventana o rechaza la conexión
       setError("No se pudo conectar la wallet. ¿Cerraste la ventana o Freighter está bloqueado?");
     } finally {
       setCargando(false);
@@ -32,6 +47,22 @@ function App() {
   async function handleDesconectar() {
     await disconnectWallet();
     setAddress(null);
+    setSaldo(undefined);
+    setError(null);
+  }
+
+  async function handleFriendbot() {
+    if (!address) return;
+    setFondeando(true);
+    setError(null);
+    try {
+      await fundWithFriendbot(address);
+      await cargarSaldo(address); // Volvemos a leer el saldo ya fondeado
+    } catch {
+      setError("Friendbot falló. Espera un momento y prueba otra vez.");
+    } finally {
+      setFondeando(false);
+    }
   }
 
   return (
@@ -44,6 +75,25 @@ function App() {
           <p>
             Conectado como <strong title={address}>{abreviar(address)}</strong>
           </p>
+
+          {saldo === undefined && <p>Cargando saldo...</p>}
+
+          {saldo === null && (
+            <div>
+              <p>Tu cuenta todavía no existe en Testnet. Fondeala gratis con Friendbot:</p>
+              <button onClick={handleFriendbot} disabled={fondeando}>
+                {fondeando ? "Fondeando..." : "Fondear con Friendbot"}
+              </button>
+            </div>
+          )}
+
+          {typeof saldo === "string" && (
+            <p>
+              Saldo: <strong>{Number(saldo).toFixed(2)} XLM</strong>{" "}
+              <button onClick={() => cargarSaldo(address)}>Actualizar</button>
+            </p>
+          )}
+
           <button onClick={handleDesconectar}>Desconectar</button>
         </div>
       ) : (
