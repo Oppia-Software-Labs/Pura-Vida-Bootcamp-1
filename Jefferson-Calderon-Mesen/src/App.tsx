@@ -1,6 +1,14 @@
-import { useEffect, useState } from "react";
-import { connectWallet, disconnectWallet } from "./wallet";
-import { getBalance, fundWithFriendbot } from "./stellar";
+import { useEffect, useRef, useState } from "react";
+import { connectWallet, disconnectWallet, signTip } from "./wallet";
+import {
+  getBalance,
+  fundWithFriendbot,
+  buildTipTransaction,
+  submitSignedTransaction,
+  explorerTxUrl,
+  CREATOR_ADDRESS,
+} from "./stellar";
+import { mensajeDeError } from "./errores";
 import "./App.css";
 
 // Convierte "GABCD...muy larga...WXYZ" en "GABC…WXYZ"
@@ -16,6 +24,13 @@ function App() {
   // undefined = todavía no sabemos | null = cuenta no fondeada | "123.45" = saldo
   const [saldo, setSaldo] = useState<string | null | undefined>(undefined);
   const [fondeando, setFondeando] = useState(false);
+
+    // Monto que se está enviando ("1", "5", "10") o null si no se está enviando nada
+    const [enviando, setEnviando] = useState<string | null>(null);
+    // Hash de la última propina enviada con éxito
+    const [txHash, setTxHash] = useState<string | null>(null);
+    // "Candado" contra el doble clic
+    const enviandoRef = useRef(false);
 
   // Pide el saldo a Horizon y lo guarda en pantalla
   async function cargarSaldo(direccion: string) {
@@ -49,6 +64,7 @@ function App() {
     setAddress(null);
     setSaldo(undefined);
     setError(null);
+    setTxHash(null);
   }
 
   async function handleFriendbot() {
@@ -62,6 +78,30 @@ function App() {
       setError("Friendbot falló. Espera un momento y prueba otra vez.");
     } finally {
       setFondeando(false);
+    }
+  }
+  async function handlePropina(monto: string) {
+    if (!address || enviandoRef.current) return; // ya hay un envío en curso
+    if (address === CREATOR_ADDRESS) {
+      setError("Estás conectado con la cuenta del creador. Cambia de cuenta en Freighter.");
+      return;
+    }
+
+    enviandoRef.current = true;
+    setEnviando(monto);
+    setError(null);
+    setTxHash(null);
+    try {
+      const xdr = await buildTipTransaction(address, monto); // 1. armar
+      const firmada = await signTip(xdr, address);           // 2. firmar (se abre Freighter)
+      const hash = await submitSignedTransaction(firmada);   // 3. enviar a la red
+      setTxHash(hash);
+      await cargarSaldo(address);                            // 4. saldo nuevo
+    } catch (e) {
+      setError(mensajeDeError(e));
+    } finally {
+      enviandoRef.current = false;
+      setEnviando(null);
     }
   }
 
@@ -88,10 +128,37 @@ function App() {
           )}
 
           {typeof saldo === "string" && (
-            <p>
-              Saldo: <strong>{Number(saldo).toFixed(2)} XLM</strong>{" "}
-              <button onClick={() => cargarSaldo(address)}>Actualizar</button>
-            </p>
+            <>
+              <p>
+                Saldo: <strong>{Number(saldo).toFixed(2)} XLM</strong>{" "}
+                <button onClick={() => cargarSaldo(address)}>Actualizar</button>
+              </p>
+
+              <section>
+                <h2>Enviar propina</h2>
+                <p>
+                  Para: <strong title={CREATOR_ADDRESS}>{abreviar(CREATOR_ADDRESS)}</strong>
+                </p>
+                {["1", "5", "10"].map((monto) => (
+                  <button
+                    key={monto}
+                    onClick={() => handlePropina(monto)}
+                    disabled={enviando !== null}
+                  >
+                    {enviando === monto ? "Firmando y enviando..." : `${monto} XLM`}
+                  </button>
+                ))}
+              </section>
+
+              {txHash && (
+                <div>
+                  <p>¡Gracias, pura vida! 🌴</p>
+                  <a href={explorerTxUrl(txHash)} target="_blank" rel="noreferrer">
+                    Ver transacción en el explorador
+                  </a>
+                </div>
+              )}
+            </>
           )}
 
           <button onClick={handleDesconectar}>Desconectar</button>
