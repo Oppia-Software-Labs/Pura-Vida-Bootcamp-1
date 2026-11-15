@@ -42,8 +42,5 @@ Comparar lo que decía la documentación con lo que tenía instalado me ayudó a
 - **Errores más fáciles de leer:** el SDK 17 trae `TransactionFailedError.getResultCodes()`, que uso para mostrar mensajes en español.
 
 
-Prueba 1
-Prueba 2
-Prueba 3
-Prueba 4
+
 
