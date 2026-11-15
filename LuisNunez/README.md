@@ -19,6 +19,7 @@ npm run dev
 Para validar la aplicación:
 
 ```bash
+npm run test
 npm run lint
 npm run build
 ```
@@ -30,6 +31,10 @@ npm run build
 3. Si la cuenta todavía no existe en Testnet, selecciona **Activar cuenta de
    prueba** para solicitar fondos de prueba.
 4. Actualiza el saldo o abre la cuenta en Stellar Expert.
+
+Si Freighter no está instalado o no responde, la app muestra un mensaje en la
+parte superior con el siguiente paso. Desbloquea la extensión y vuelve a
+intentarlo.
 
 La app usa `@stellar/varial-sdk`, el SDK vigente de Freighter, para pedir acceso
 a la dirección pública y detectar la red. Lee el saldo desde la URL de Horizon
