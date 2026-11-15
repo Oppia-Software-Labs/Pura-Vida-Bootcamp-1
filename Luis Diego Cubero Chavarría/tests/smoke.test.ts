@@ -12,7 +12,8 @@ describe('lab page', () => {
     expect(main?.textContent).toContain('No real funds or purchases are needed.');
     expect(main?.textContent).toContain('Never share private keys or recovery phrases.');
     expect(main?.textContent).toContain('Access is requested only when you click.');
-    expect(main?.textContent).toContain('This page does not verify Testnet.');
+    expect(main?.textContent).toContain('The wallet network is checked after approval.');
+    expect(main?.textContent).toContain('Disconnect is not available yet.');
     expect(main?.querySelector('button')?.textContent).toBe('Connect Varial');
   });
 });

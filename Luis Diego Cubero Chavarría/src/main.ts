@@ -4,6 +4,8 @@ import './style.css';
 const connectButton = document.querySelector<HTMLButtonElement>('#connect-wallet')!;
 const walletStatus = document.querySelector<HTMLElement>('#wallet-status')!;
 const walletAddress = document.querySelector<HTMLElement>('#wallet-address')!;
+const walletNetwork = document.querySelector<HTMLElement>('#wallet-network')!;
+const testnetPassphrase = 'Test SDF Network ; September 2015';
 let busy = false;
 let connected = false;
 
@@ -16,6 +18,8 @@ connectButton.addEventListener('click', async () => {
   walletStatus.textContent = 'Waiting for Varial approval…';
   walletAddress.textContent = '';
   walletAddress.hidden = true;
+  walletNetwork.textContent = '';
+  walletNetwork.hidden = true;
 
   try {
     const extension = await varial.isConnected();
@@ -39,10 +43,26 @@ connectButton.addEventListener('click', async () => {
       return;
     }
 
+    walletStatus.textContent = 'Reading wallet network…';
+    try {
+      const details = await varial.getNetwork();
+      if (details.error || !details.network?.trim() || !details.networkPassphrase?.trim()) {
+        walletStatus.textContent = 'Unable to read the wallet network. Please retry.';
+        return;
+      }
+      walletNetwork.textContent = details.network;
+      walletNetwork.hidden = false;
+      walletStatus.textContent = details.networkPassphrase === testnetPassphrase
+        ? 'Connected. Testnet confirmed — ready for practice.'
+        : 'Connected to a non-Testnet network. This lab is for Testnet practice; change networks in Varial.';
+    } catch {
+      walletStatus.textContent = 'Unable to read the wallet network. Please retry.';
+      return;
+    }
+
     walletAddress.textContent = address;
     walletAddress.hidden = false;
     connected = true;
-    walletStatus.textContent = 'Connected. Network has not been checked.';
   } catch {
     walletStatus.textContent = 'Unable to connect to Varial. Please retry.';
   } finally {
