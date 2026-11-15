@@ -32,6 +32,8 @@ npm run preview
 
 Las pruebas usan el runner de Node y dobles del SDK y de Horizon: no requieren extensiones, claves ni cuentas reales. Cubren permisos, dirección, red, saldos exactos, cuenta sin activar, errores y desconexión con operaciones pendientes.
 
+El detalle de las comprobaciones realizadas y sus límites está en [VERIFICACION.md](VERIFICACION.md).
+
 ### Prueba manual con una wallet real
 
 - Sin extensión, **Conectar wallet** muestra instrucciones de instalación.
@@ -76,6 +78,6 @@ Referencias:
 
 ## Entrega del bootcamp
 
-La app está en `mclitos/` y la rama de trabajo es `feature/mclitos`, por elección del autor. La consigna pide nombre completo tanto en la carpeta como en la descripción del PR: confirmar ese dato antes de entregar.
+La app está en `mclitos/` y la rama de trabajo es `feature/mclitos`, por elección del autor. La consigna pide nombre completo tanto en la carpeta como en la descripción del PR. El autor decidió mantener `mclitos`, su usuario de GitHub con el que se registró en el bootcamp, conociendo esa diferencia.
 
 La [plataforma del campamento](https://climb.oppialabs.com/e/pura-vida/camp/1?tab=tareas) también pide al menos **cinco commits propios**, un PR hacia `main` del repositorio original y pegar su enlace en la plataforma. Crear la app no completa esos pasos. No se publican cambios automáticamente.
