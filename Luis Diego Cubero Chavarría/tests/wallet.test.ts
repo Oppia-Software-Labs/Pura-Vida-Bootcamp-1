@@ -1,10 +1,12 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, afterEach, describe, expect, it, vi } from 'vitest';
 import html from '../index.html?raw';
 
 const sdk = vi.hoisted(() => ({
   isConnected: vi.fn(),
   requestAccess: vi.fn(),
   getNetwork: vi.fn(),
+  getAddress: vi.fn(),
+  disconnect: vi.fn(),
 }));
 vi.mock('@stellar/varial-sdk', () => ({ default: sdk }));
 
@@ -12,6 +14,7 @@ const address = 'G' + 'A'.repeat(55); // Synthetic fixture, not a real account.
 const testnetPassphrase = 'Test SDF Network ; September 2015';
 const network = () => document.querySelector<HTMLElement>('#wallet-network')!;
 const button = () => document.querySelector<HTMLButtonElement>('#connect-wallet')!;
+const disconnect = () => document.querySelector<HTMLButtonElement>('#disconnect-wallet')!;
 const status = () => document.querySelector('#wallet-status')!;
 const output = () => document.querySelector<HTMLElement>('#wallet-address')!;
 
@@ -35,11 +38,15 @@ function expectFailure(message: string) {
   expect(sessionStorage.length).toBe(0);
 }
 
+afterEach(() => { window.onfocus = null; });
+
 beforeEach(async () => {
   vi.resetModules();
   vi.resetAllMocks();
   localStorage.clear();
   sessionStorage.clear();
+  sdk.getAddress.mockResolvedValue({ address });
+  sdk.disconnect.mockResolvedValue({});
   sdk.isConnected.mockResolvedValue({ isConnected: true });
   sdk.requestAccess.mockResolvedValue({ address });
   sdk.getNetwork.mockResolvedValue({ network: 'TESTNET', networkPassphrase: testnetPassphrase });
@@ -53,6 +60,8 @@ describe('Varial connection', () => {
     expect(typeof actual.default.isConnected).toBe('function');
     expect(typeof actual.default.requestAccess).toBe('function');
     expect(typeof actual.default.getNetwork).toBe('function');
+    expect(typeof actual.default.getAddress).toBe('function');
+    expect(typeof actual.default.disconnect).toBe('function');
   });
 
   it('does not check or request access before an explicit click', () => {
@@ -63,6 +72,8 @@ describe('Varial connection', () => {
     expect(output().textContent).toBe('');
     expect(network().hidden).toBe(true);
     expect(network().textContent).toBe('');
+    window.dispatchEvent(new Event('focus'));
+    expect(sdk.getAddress).not.toHaveBeenCalled();
     expect(sdk.getNetwork).not.toHaveBeenCalled();
     expect(sdk.isConnected).not.toHaveBeenCalled();
     expect(sdk.requestAccess).not.toHaveBeenCalled();
@@ -184,11 +195,121 @@ describe('Varial connection', () => {
     expect(status().textContent).toBe('Waiting for Varial approval…');
     button().click();
     button().dispatchEvent(new MouseEvent('click'));
+    window.dispatchEvent(new Event('focus'));
     await vi.waitFor(() => expect(sdk.requestAccess).toHaveBeenCalledTimes(1));
     expect(sdk.isConnected).toHaveBeenCalledTimes(1);
+    expect(sdk.getAddress).not.toHaveBeenCalled();
     expect(sdk.getNetwork).not.toHaveBeenCalled();
     approve({ address });
     await vi.waitFor(() => expect(status().textContent).toBe('Connected. Testnet confirmed — ready for practice.'));
     expect(sdk.getNetwork).toHaveBeenCalledTimes(1);
+  });
+});
+
+function expectCleared(message: string) {
+  expect(status().textContent).toBe(message);
+  expect(output().textContent).toBe('');
+  expect(output().hidden).toBe(true);
+  expect(network().textContent).toBe('');
+  expect(network().hidden).toBe(true);
+  expect(button().disabled).toBe(false);
+  expect(disconnect().hidden).toBe(true);
+  expect(sdk.requestAccess).toHaveBeenCalledTimes(1);
+  expect(localStorage.length).toBe(0);
+  expect(sessionStorage.length).toBe(0);
+}
+
+describe('disconnect and return to page', () => {
+  it('disconnects once, clears data, focuses connect and permits explicit reconnect', async () => {
+    await clickAndSettle();
+    expect(disconnect().hidden).toBe(false);
+    disconnect().click();
+    await vi.waitFor(() => expect(disconnect().hidden).toBe(true));
+    expectCleared('Disconnected for the active account and network.');
+    expect(document.activeElement).toBe(button());
+    expect(sdk.disconnect).toHaveBeenCalledTimes(1);
+    window.dispatchEvent(new Event('focus'));
+    expect(sdk.getAddress).not.toHaveBeenCalled();
+    await clickAndSettle();
+    expect(sdk.requestAccess).toHaveBeenCalledTimes(2);
+  });
+
+  it.each(['returned error', 'rejection'])('allows retry after disconnect %s without claiming success', async (kind) => {
+    await clickAndSettle();
+    if (kind === 'rejection') sdk.disconnect.mockRejectedValueOnce(new Error('Failed'));
+    else sdk.disconnect.mockResolvedValueOnce({ error: { message: 'Failed' } });
+    disconnect().click();
+    await vi.waitFor(() => expect(disconnect().disabled).toBe(false));
+    expect(status().textContent).toBe('Disconnection could not be confirmed. Retry disconnect.');
+    expect(output().hidden).toBe(true);
+    expect(output().textContent).toBe('');
+    expect(network().hidden).toBe(true);
+    expect(network().textContent).toBe('');
+    expect(button().disabled).toBe(true);
+    expect(disconnect().hidden).toBe(false);
+    expect(sdk.disconnect).toHaveBeenCalledTimes(1);
+    expect(sdk.requestAccess).toHaveBeenCalledTimes(1);
+    expect(localStorage.length).toBe(0);
+    expect(sessionStorage.length).toBe(0);
+    disconnect().click();
+    await vi.waitFor(() => expect(disconnect().hidden).toBe(true));
+    expect(sdk.disconnect).toHaveBeenCalledTimes(2);
+  });
+
+  it('serializes pending disconnect and ignores focus and duplicate clicks', async () => {
+    await clickAndSettle();
+    let finish!: (value: object) => void;
+    sdk.disconnect.mockReturnValue(new Promise(resolve => { finish = resolve; }));
+    disconnect().click();
+    expect(disconnect().disabled).toBe(true);
+    expect(status().textContent).toBe('Disconnecting…');
+    disconnect().dispatchEvent(new MouseEvent('click'));
+    window.dispatchEvent(new Event('focus'));
+    expect(sdk.disconnect).toHaveBeenCalledTimes(1);
+    expect(sdk.getAddress).not.toHaveBeenCalled();
+    expect(sdk.getNetwork).toHaveBeenCalledTimes(1);
+    finish({});
+    await vi.waitFor(() => expect(disconnect().hidden).toBe(true));
+    expectCleared('Disconnected for the active account and network.');
+  });
+
+  it('revalidates once on focus without requesting access or racing disconnect', async () => {
+    await clickAndSettle();
+    let finish!: (value: { address: string }) => void;
+    sdk.getAddress.mockReturnValue(new Promise(resolve => { finish = resolve; }));
+    window.dispatchEvent(new Event('focus'));
+    expect(status().textContent).toBe('Checking wallet connection…');
+    expect(output().hidden).toBe(true);
+    expect(network().hidden).toBe(true);
+    expect(disconnect().disabled).toBe(true);
+    window.dispatchEvent(new Event('focus'));
+    disconnect().dispatchEvent(new MouseEvent('click'));
+    expect(sdk.getAddress).toHaveBeenCalledTimes(1);
+    expect(sdk.disconnect).not.toHaveBeenCalled();
+    finish({ address });
+    await vi.waitFor(() => expect(status().textContent).toBe('Connected. Testnet confirmed — ready for practice.'));
+    expect(output().textContent).toBe(address);
+    expect(output().hidden).toBe(false);
+    expect(network().hidden).toBe(false);
+    expect(network().textContent).toBe('TESTNET');
+    expect(disconnect().disabled).toBe(false);
+    expect(sdk.getNetwork).toHaveBeenCalledTimes(2);
+    expect(sdk.requestAccess).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(['account', 'network', 'empty address', 'address error', 'network error', 'network rejection'])('invalidates stale data after %s on focus without a popup', async (kind) => {
+    await clickAndSettle();
+    if (kind === 'account') sdk.getAddress.mockResolvedValue({ address: 'G' + 'B'.repeat(55) });
+    if (kind === 'empty address') sdk.getAddress.mockResolvedValue({ address: '' });
+    if (kind === 'address error') sdk.getAddress.mockResolvedValue({ address, error: { message: 'Denied' } });
+    if (kind === 'network') sdk.getNetwork.mockResolvedValue({ network: 'MAINNET', networkPassphrase: 'Other' });
+    if (kind === 'network error') sdk.getNetwork.mockResolvedValue({ network: '', networkPassphrase: '' });
+    if (kind === 'network rejection') sdk.getNetwork.mockRejectedValue(new Error('Unavailable'));
+    window.dispatchEvent(new Event('focus'));
+    await vi.waitFor(() => expect(button().disabled).toBe(false));
+    expectCleared('Wallet connection changed or is unavailable. Please reconnect.');
+    expect(sdk.getAddress).toHaveBeenCalledTimes(1);
+    expect(sdk.disconnect).not.toHaveBeenCalled();
+    expect(sdk.getNetwork).toHaveBeenCalledTimes(['account', 'empty address', 'address error'].includes(kind) ? 1 : 2);
   });
 });

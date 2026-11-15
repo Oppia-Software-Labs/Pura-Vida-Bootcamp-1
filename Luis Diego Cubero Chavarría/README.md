@@ -28,5 +28,6 @@ npm run preview
 - Solo se admite la extensión Varial mediante su SDK. Instalarla o habilitarla en el navegador antes de conectar.
 - No se guardan ni registran direcciones, permisos o secretos en la app.
 - Tras aprobar el acceso, se lee la red de la wallet. Testnet se confirma por su passphrase, no solo por el nombre; otras redes muestran una advertencia. La app no cambia la red automáticamente.
-- Si falla la lectura de red, no se muestran datos parciales y se permite reintentar. La desconexión todavía no está disponible.
+- Si falla la lectura de red, no se muestran datos parciales y se permite reintentar. «Disconnect» solicita la desconexión para la cuenta y red activas; no revoca todos los permisos históricos. Si no puede confirmarse, se ocultan los datos y se permite reintentar la desconexión.
+- Al volver el foco a la página, se comprueban dirección y red sin pedir acceso de nuevo. Si cambian o no pueden leerse, se limpian los datos y se pide reconectar. No es una actualización continua ni hay sondeo periódico.
 - No hay firmas, pagos ni transacciones. La prueba real de conexión con la extensión sigue pendiente.
