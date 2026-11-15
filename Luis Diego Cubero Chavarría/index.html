@@ -19,8 +19,11 @@
       </section>
       <section aria-labelledby="wallet-heading">
         <h2 id="wallet-heading">Wallet connection</h2>
-        <p>This is the starter page. Wallet integration is next and is not active yet.</p>
-        <p>No wallet access is requested by this page.</p>
+        <p>Connect the Varial browser extension to share your public address. Access is requested only when you click.</p>
+        <button id="connect-wallet" type="button">Connect Varial</button>
+        <p id="wallet-status" role="status" aria-live="polite">Not connected. Connect to share your public address.</p>
+        <p id="wallet-address" aria-label="Public wallet address" hidden></p>
+        <p>Network detection and disconnect are not available yet. This page does not verify Testnet.</p>
       </section>
     </main>
     <script type="module" src="/src/main.ts"></script>

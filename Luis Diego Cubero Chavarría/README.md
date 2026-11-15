@@ -1,6 +1,6 @@
 # Stellar Wallet Lab
 
-Scaffold local con Vite y TypeScript para practicar con Stellar. Incluye una página inicial y una prueba smoke en jsdom. La integración con wallet es el siguiente paso: todavía no conecta ni solicita permisos.
+Laboratorio local con Vite y TypeScript para practicar con Stellar. Permite conectar la extensión Varial con aprobación del usuario y mostrar la dirección pública devuelta. Solo solicita acceso al pulsar «Connect Varial»; si falta la extensión o falla el permiso, muestra un mensaje y permite reintentar.
 
 ## Desarrollo
 
@@ -19,11 +19,13 @@ npm run build
 npm run preview
 ```
 
-`test` ejecuta la prueba smoke; `build` comprueba tipos y genera `dist`. `preview` sirve ese build solo en `127.0.0.1`.
+`test` ejecuta smoke y pruebas DOM de conexión con SDK simulado; estas no sustituyen la aprobación humana con la extensión real.  `build` comprueba tipos y genera `dist`. `preview` sirve ese build solo en `127.0.0.1`.
 
 ## Seguridad y alcance
 
 - Práctica en Testnet: no se necesitan compras ni fondos reales.
 - Nunca compartir claves privadas ni frases de recuperación.
-- No hay conexión de wallet, firmas, pagos ni transacciones en esta versión.
-- El SDK Varial está declarado como dependencia para la próxima integración, pero aún no se utiliza.
+- Solo se admite la extensión Varial mediante su SDK. Instalarla o habilitarla en el navegador antes de conectar.
+- No se guardan ni registran direcciones, permisos o secretos en la app.
+- Todavía no se lee la red ni se ofrece desconexión: la etiqueta de práctica no demuestra que la wallet esté en Testnet.
+- No hay firmas, pagos ni transacciones. La prueba real de conexión con la extensión sigue pendiente.

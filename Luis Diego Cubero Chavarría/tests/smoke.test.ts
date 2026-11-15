@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import html from '../index.html?raw';
 
-describe('starter page', () => {
-  it('introduces the lab and explains its safe, inactive scope', () => {
+describe('lab page', () => {
+  it('introduces the lab and explains its safe connection scope', () => {
     document.documentElement.innerHTML = html;
 
     const main = document.querySelector('main');
@@ -11,7 +11,8 @@ describe('starter page', () => {
     expect(main?.textContent).toContain('Testnet practice only');
     expect(main?.textContent).toContain('No real funds or purchases are needed.');
     expect(main?.textContent).toContain('Never share private keys or recovery phrases.');
-    expect(main?.textContent).toContain('Wallet integration is next and is not active yet.');
-    expect(main?.textContent).toContain('No wallet access is requested by this page.');
+    expect(main?.textContent).toContain('Access is requested only when you click.');
+    expect(main?.textContent).toContain('This page does not verify Testnet.');
+    expect(main?.querySelector('button')?.textContent).toBe('Connect Varial');
   });
 });

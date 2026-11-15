@@ -55,6 +55,26 @@ p:last-child {
   margin-bottom: 0;
 }
 
+button {
+  font: inherit;
+  padding: 0.6rem 1rem;
+  border: 1px solid #226454;
+  border-radius: 0.3rem;
+  background: #226454;
+  color: #fff;
+  cursor: pointer;
+}
+
+button:disabled {
+  opacity: 0.7;
+  cursor: default;
+}
+
+#wallet-address {
+  overflow-wrap: anywhere;
+  font-family: monospace;
+}
+
 :focus-visible {
   outline: 3px solid #1558a6;
   outline-offset: 4px;
