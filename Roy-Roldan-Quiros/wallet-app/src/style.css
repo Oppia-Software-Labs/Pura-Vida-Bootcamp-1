@@ -55,4 +55,5 @@ button:hover {
   background: #171a23;
   font-size: 0.9rem;
   word-break: break-all;
+  white-space: pre-line;
 }
