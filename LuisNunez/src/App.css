@@ -133,6 +133,29 @@
   background: #f5f6f1;
 }
 
+.top-error-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin: 12px 0 0;
+  padding: 11px 14px;
+  border-radius: 6px;
+  background: #fff2ef;
+  color: #9c392b;
+  font-size: 10px;
+  line-height: 1.55;
+}
+
+.top-error-banner a {
+  flex: 0 0 auto;
+  color: #7d2c22;
+  font-size: 10px;
+  font-weight: 750;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 .hero {
   min-height: 435px;
   display: grid;
@@ -690,6 +713,12 @@
 
   .topbar-nav {
     display: none;
+  }
+
+  .top-error-banner {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 6px;
   }
 
   .hero {

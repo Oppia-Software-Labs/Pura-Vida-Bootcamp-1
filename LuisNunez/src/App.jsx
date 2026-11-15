@@ -5,7 +5,10 @@ import {
   isConnected,
   requestAccess,
 } from '@stellar/varial-sdk'
-import { connectFreighter } from './stellarWallet'
+import {
+  connectFreighter,
+  WalletNotInstalledError,
+} from './stellarWallet'
 import './App.css'
 
 const FRIEND_BOT_URL = 'https://friendbot.stellar.org'
@@ -42,6 +45,7 @@ function App() {
   const [accountStatus, setAccountStatus] = useState('idle')
   const [isBusy, setIsBusy] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [walletMissing, setWalletMissing] = useState(false)
   const [notice, setNotice] = useState('')
 
   async function refreshBalance(address, networkUrl) {
@@ -61,6 +65,7 @@ function App() {
   async function handleConnect() {
     setIsBusy(true)
     setErrorMessage('')
+    setWalletMissing(false)
     setNotice('')
 
     try {
@@ -77,6 +82,7 @@ function App() {
     } catch (error) {
       setAccountStatus('error')
       setErrorMessage(getErrorMessage(error))
+      setWalletMissing(error instanceof WalletNotInstalledError)
     } finally {
       setIsBusy(false)
     }
@@ -87,6 +93,7 @@ function App() {
 
     setIsBusy(true)
     setErrorMessage('')
+    setWalletMissing(false)
     setNotice('')
 
     try {
@@ -104,6 +111,7 @@ function App() {
 
     setIsBusy(true)
     setErrorMessage('')
+    setWalletMissing(false)
     setNotice('')
 
     try {
@@ -129,6 +137,7 @@ function App() {
   async function handleDisconnect() {
     setIsBusy(true)
     setErrorMessage('')
+    setWalletMissing(false)
     setNotice('')
 
     try {
@@ -213,6 +222,21 @@ function App() {
           </button>
         )}
       </header>
+
+      {errorMessage && (
+        <div className="top-error-banner" role="alert">
+          <span>{errorMessage}</span>
+          {walletMissing && (
+            <a
+              href="https://chromewebstore.google.com/detail/freighter/bcacfldlkkdogcmkkibnjlakofdplcbk"
+              rel="noreferrer"
+              target="_blank"
+            >
+              Instalar Freighter <span aria-hidden="true">↗</span>
+            </a>
+          )}
+        </div>
+      )}
 
       <main>
         <section className="hero" id="inicio">
@@ -380,11 +404,6 @@ function App() {
               </div>
             )}
 
-            {errorMessage && (
-              <p className="feedback feedback-error" role="alert">
-                {errorMessage}
-              </p>
-            )}
             {notice && (
               <p className="feedback feedback-success" role="status">
                 {notice}
