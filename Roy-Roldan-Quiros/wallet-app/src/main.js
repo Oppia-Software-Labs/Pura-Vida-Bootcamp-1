@@ -11,9 +11,9 @@ StellarWalletsKit.init({
 // 2. Dibujar la interfaz
 document.querySelector('#app').innerHTML = `
   <h1>Mi primera app en Stellar</h1>
-  <p>Red: Testnet</p>
-  <button id="connect">Conectar wallet</button>
-  <p id="status">Sin conectar</p>
+  <span class="network">Red: Testnet</span>
+  <div><button id="connect">Conectar wallet</button></div>
+  <div class="card" id="status">Sin conectar</div>
 `
 
 // 3. Qué pasa al hacer clic en el botón
@@ -26,4 +26,5 @@ document.querySelector('#connect').addEventListener('click', async () => {
     status.textContent = 'No se pudo conectar'
     console.error(error)
   }
+  
 })
