@@ -40,3 +40,6 @@ Comparar lo que decía la documentación con lo que tenía instalado me ayudó a
 - **Freighter ahora se llama Varial:** en el modal del kit aparece con ese nombre.
 - **Lobstr no sirve para Testnet:** no permite elegir la red, así que la app ya no se rompe si la wallet no informa en qué red está.
 - **Errores más fáciles de leer:** el SDK 17 trae `TransactionFailedError.getResultCodes()`, que uso para mostrar mensajes en español.
+
+
+Prueba 1
