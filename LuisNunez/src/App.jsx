@@ -5,6 +5,7 @@ import {
   isConnected,
   requestAccess,
 } from '@stellar/varial-sdk'
+import { connectFreighter } from './stellarWallet'
 import './App.css'
 
 const FRIEND_BOT_URL = 'https://friendbot.stellar.org'
@@ -63,34 +64,11 @@ function App() {
     setNotice('')
 
     try {
-      const connection = await isConnected()
-      if (connection.error) {
-        throw new Error(connection.error.message)
-      }
-      if (!connection.isConnected) {
-        throw new Error(
-          'No encontramos Freighter. Instala la extensión y vuelve a intentarlo.',
-        )
-      }
-
-      const access = await requestAccess()
-      if (access.error) {
-        throw new Error(access.error.message)
-      }
-      if (!access.address) {
-        throw new Error('La wallet no devolvió una dirección pública.')
-      }
-
-      const networkDetails = await getNetworkDetails()
-      if (networkDetails.error) {
-        throw new Error(networkDetails.error.message)
-      }
-
-      const connectedWallet = {
-        address: access.address,
-        network: networkDetails.network,
-        networkUrl: networkDetails.networkUrl,
-      }
+      const connectedWallet = await connectFreighter({
+        isConnected,
+        requestAccess,
+        getNetworkDetails,
+      })
       setWallet(connectedWallet)
       await refreshBalance(
         connectedWallet.address,
