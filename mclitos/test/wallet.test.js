@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createWalletClient, TESTNET_PASSPHRASE } from '../src/wallet.js';
+import { createDashboard } from '../src/dashboard.js';
 
 const address = 'G' + 'A'.repeat(55);
 const otherAddress = 'G' + 'B'.repeat(55);
@@ -89,3 +90,47 @@ test('refrescar rechaza cambio de cuenta o red y no consulta el saldo', async ()
   assert.equal(calls, 0);
 });
 
+test('desconectar borra dirección y saldos e ignora respuestas pendientes', async () => {
+  let finish;
+  const client = { connect: () => new Promise(resolve => { finish = resolve; }), loadBalances: async () => [] };
+  const dashboard = createDashboard(client, () => {});
+  const pending = dashboard.connect();
+  dashboard.disconnect();
+  finish(address);
+  await pending;
+  assert.deepEqual(dashboard.getState(), { phase: 'idle', address: '', balances: [], error: '' });
+});
+
+test('muestra dirección y saldo; al fallar refresco elimina saldos anteriores', async () => {
+  let fail = false;
+  const states = [];
+  const dashboard = createDashboard({
+    connect: async () => address,
+    loadBalances: async () => { if (fail) throw new Error('Sin conexión'); return [{ code: 'XLM', issuer: null, amount: '1.0000000' }]; },
+  }, state => states.push(state));
+  await dashboard.connect();
+  assert.equal(dashboard.getState().phase, 'ready');
+  assert.equal(dashboard.getState().address, address);
+  assert.equal(dashboard.getState().balances[0].amount, '1.0000000');
+  fail = true;
+  await dashboard.refresh();
+  assert.equal(dashboard.getState().phase, 'error');
+  assert.deepEqual(dashboard.getState().balances, []);
+  assert.equal(dashboard.getState().error, 'Sin conexión');
+  assert.ok(states.some(state => state.phase === 'loading'));
+});
+
+test('no restaura saldos si se desconecta durante la consulta', async () => {
+  let finish;
+  const dashboard = createDashboard({
+    connect: async () => address,
+    loadBalances: () => new Promise(resolve => { finish = resolve; }),
+  }, () => {});
+  const pending = dashboard.connect();
+  await Promise.resolve();
+  dashboard.disconnect();
+  finish([{ code: 'XLM', issuer: null, amount: '9.0000000' }]);
+  await pending;
+  assert.equal(dashboard.getState().phase, 'idle');
+  assert.deepEqual(dashboard.getState().balances, []);
+});

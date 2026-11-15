@@ -37,3 +37,9 @@ npm test
 ```
 
 Las pruebas usan dobles del SDK y de Horizon; no requieren claves, extensión ni fondos.
+
+## Estado de conexión
+
+`src/dashboard.js` expone `createDashboard(client, render)`. Sus operaciones son `connect()`, `refresh()`, `disconnect()` y `getState()`.
+
+Publica estados de conexión, carga, éxito y error. Desconectar elimina dirección y saldos e invalida respuestas pendientes. Las pruebas también comprueban que un error al actualizar no conserve saldos anteriores.
