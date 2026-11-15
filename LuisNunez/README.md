@@ -1,16 +1,43 @@
-# React + Vite
+# Pura Vida Wallet
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación sencilla para explorar una wallet de Stellar. Conecta Freighter,
+consulta el saldo XLM de la cuenta en Horizon y, si usas Testnet, solicita XLM
+de prueba con Friendbot.
 
-Currently, two official plugins are available:
+## Requisitos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- Node.js y npm
+- La extensión [Freighter](https://www.freighter.app/) instalada en el navegador
 
-## React Compiler
+## Iniciar el proyecto
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+```bash
+npm install
+npm run dev
+```
 
-## Expanding the ESLint configuration
+Para validar la aplicación:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```bash
+npm run lint
+npm run build
+```
+
+## Cómo probarlo
+
+1. Abre Freighter y selecciona Testnet.
+2. Conecta la wallet desde la aplicación y autoriza el acceso.
+3. Si la cuenta todavía no existe en Testnet, selecciona **Activar cuenta de
+   prueba** para solicitar fondos de prueba.
+4. Actualiza el saldo o abre la cuenta en Stellar Expert.
+
+La app usa `@stellar/varial-sdk`, el SDK vigente de Freighter, para pedir acceso
+a la dirección pública y detectar la red. Lee el saldo desde la URL de Horizon
+proporcionada por la wallet. No solicita ni almacena claves privadas.
+
+## Stellar Raven
+
+Para documentar el uso de Stellar Raven durante el desarrollo, puedes pedirle
+que revise la integración del SDK y explique cómo se obtiene el saldo de XLM
+desde Horizon. Verifica sus sugerencias con la documentación oficial antes de
+aplicarlas.
