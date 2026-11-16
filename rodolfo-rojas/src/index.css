@@ -1,0 +1,71 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Geist";
+  src: url("./assets/fonts/Geist-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("./assets/fonts/GeistMono-Variable.woff2") format("woff2");
+  font-weight: 100 900;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Pixel";
+  src: url("./assets/fonts/GeistPixel-Square.woff2") format("woff2");
+  font-display: swap;
+}
+
+@theme {
+  --font-sans: "Geist", system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, monospace;
+  --font-pixel: "Geist Pixel", "Geist Mono", ui-monospace, monospace;
+  --color-azul: #1f3bff;
+  --color-navy: #0a1a4a;
+  --color-papel: #eef2fa;
+  --color-niebla: #dce3ff;
+  --color-borde: #c6d0ea;
+  --color-tinta: #46557f;
+  --color-rojo: #c8102e;
+  --color-oro: #ffc93c;
+  --color-verde: #0f7a4a;
+}
+
+@utility shadow-hard {
+  box-shadow: 5px 5px 0 var(--color-navy);
+}
+
+@utility shadow-hard-sm {
+  box-shadow: 3px 3px 0 var(--color-navy);
+}
+
+@utility eyebrow {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 88px;
+}
+
+body {
+  @apply bg-papel font-sans text-navy antialiased;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-azul);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
