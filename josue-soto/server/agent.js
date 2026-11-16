@@ -120,7 +120,10 @@ export function buildTools({ network, address, proposals }) {
               mids.set(key, bid && ask ? (bid + ask) / 2 : bid ?? ask ?? null);
             }
             const mid = mids.get(key);
-            if (mid && Math.abs(o.price - mid) / mid > MAX_PRICE_DEVIATION) {
+            if (!Number.isFinite(mid) || mid <= 0) {
+              // Without a reference price the fat-finger guard can't run, so refuse instead of passing any price.
+              problems.push(`order ${i}: no reference price for ${o.base}/${o.counter} (order book is empty); cannot validate the limit price`);
+            } else if (Math.abs(o.price - mid) / mid > MAX_PRICE_DEVIATION) {
               problems.push(`order ${i}: price ${o.price} is more than ${MAX_PRICE_DEVIATION * 100}% from mid ${mid.toFixed(7)}`);
             }
           }

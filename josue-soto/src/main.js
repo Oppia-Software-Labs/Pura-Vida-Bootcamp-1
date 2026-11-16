@@ -98,7 +98,7 @@ async function loadMarket() {
     $("asks").innerHTML = rows(ob.top_asks);
     const p = d.liquidity_pool;
     $("pool").innerHTML = p
-      ? `<h3>AMM pool</h3><p>Price <strong>${p.amm_price}</strong> (${p.amm_vs_book_mid_pct ?? "–"}% vs book) · fee ${p.fee_bp / 100}% · reserves ${Object.entries(p.reserves).map(([k, v]) => `${v.toLocaleString()} ${k}`).join(" / ")}</p>`
+      ? `<h3>AMM pool</h3><p>Price <strong>${p.amm_price}</strong> (${p.amm_vs_book_mid_pct ?? "–"}% vs book) · fee ${p.fee_bp / 100}% · reserves ${Object.entries(p.reserves).map(([k, v]) => `${v.toLocaleString()} ${esc(k.split(":")[0])}`).join(" / ")}</p>`
       : `<h3>AMM pool</h3><p class="muted">No liquidity pool for this pair.</p>`;
     $("updated").textContent = `${d.pair} · ${d.price_unit} · ${new Date().toLocaleTimeString()}`;
   } catch (e) {

@@ -92,7 +92,8 @@ export async function getLiquidityPool(network, base, counter) {
   return {
     id: pool.id,
     fee_bp: pool.fee_bp,
-    reserves: { [short(base)]: rb, [short(counter)]: rc },
+    // Full CODE:ISSUER keys so two assets sharing a code (USD:A / USD:B) don't collide.
+    reserves: { [assetLabel(base)]: rb, [assetLabel(counter)]: rc },
     amm_price: rb > 0 ? round(rc / rb) : null,
     total_shares: num(pool.total_shares),
     trustlines: Number(pool.total_trustlines),
@@ -208,8 +209,19 @@ export async function analyzePair(network, baseStr, counterStr, tradeSize = 100)
 export async function getAccount(network, address) {
   const s = server(network);
   const account = await s.loadAccount(address);
-  const offers = await s.offers().forAccount(address).limit(50).call();
+  // Follow every page so the assistant sees all open offers (an account can hold up to ~1000 subentries).
+  const PAGE = 200, MAX_OFFERS = 1000;
+  const records = [];
+  let page = await s.offers().forAccount(address).limit(PAGE).call();
+  records.push(...page.records);
+  while (page.records.length === PAGE && records.length < MAX_OFFERS) {
+    page = await page.next();
+    records.push(...page.records);
+  }
+  const offers = { records: records.slice(0, MAX_OFFERS) };
   return {
+    // true when we stopped at MAX_OFFERS while Horizon still had more pages
+    offers_truncated: records.length >= MAX_OFFERS && page.records.length === PAGE,
     address,
     balances: account.balances.map((b) => ({
       asset: b.asset_type === "native" ? "XLM" : b.asset_type === "liquidity_pool_shares" ? `pool:${b.liquidity_pool_id}` : `${b.asset_code}:${b.asset_issuer}`,
