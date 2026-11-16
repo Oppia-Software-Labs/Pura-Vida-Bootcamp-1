@@ -12,7 +12,7 @@ npm ci
 npm run dev
 ```
 
-Abre la URL local que muestra Vite. En Varial selecciona **Testnet**. Pulsa **Conectar Varial** y autoriza el acceso. Si la cuenta no existe todavía en Testnet, la app lo indica y no inventa un saldo. La consulta de saldo usa el endpoint público `https://horizon-testnet.stellar.org/accounts/{address}`. El saldo se formatea como cadena decimal para conservar sus siete decimales.
+Abre la URL local que muestra Vite. En Varial selecciona **Testnet**. Pulsa **Conectar Varial** y autoriza el acceso. Si la cuenta no existe todavía en Testnet, la app lo indica y no inventa un saldo. La consulta de saldo usa el endpoint público `https://horizon-testnet.stellar.org/accounts/{address}`. El saldo se formatea como cadena decimal para conservar hasta siete decimales sin pérdida de precisión.
 
 ## Comprobar
 
