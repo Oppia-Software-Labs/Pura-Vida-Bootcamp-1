@@ -130,7 +130,7 @@ function renderProposal(p) {
     if (!state.address) return (status.textContent = "Connect your wallet first.");
     if (p.network !== state.network) return (status.textContent = `This proposal was made for ${p.network}; switch networks first.`);
     ev.target.disabled = true;
-    status.textContent = "Waiting for wallet signature…";
+    status.textContent = p.pendingTx ? "Checking the earlier submission…" : "Waiting for wallet signature…";
     try {
       const { hash } = await executeProposal(p, state.config[p.network], state.address);
       status.innerHTML = `✅ Submitted · <a href="${explorer(hash, p.network)}" target="_blank" rel="noopener">${hash.slice(0, 12)}…</a>`;
@@ -138,6 +138,8 @@ function renderProposal(p) {
       loadMarket();
     } catch (e) {
       status.textContent = `❌ ${e.message}`;
+      // An unknown outcome leaves p.pendingTx set: the next click checks/resubmits that same tx.
+      ev.target.textContent = p.pendingTx ? "Check status / resubmit" : "Review & sign in wallet";
       ev.target.disabled = false;
     }
   };
