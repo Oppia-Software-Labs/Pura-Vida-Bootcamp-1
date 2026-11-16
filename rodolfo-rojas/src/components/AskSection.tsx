@@ -1,36 +1,35 @@
 import { useState, type FormEvent } from 'react'
 import { findRelevantKnowledge, type KnowledgeEntry } from '../content/knowledge'
-import { PERSONAS, type PersonaId } from '../content/personas'
-import type { AiSettingsState } from '../hooks/useAiSettings'
-import { askAi } from '../lib/ai'
+import { personaById, type PersonaId } from '../content/personas'
+import type { ClaudeKey } from '../hooks/useClaudeKey'
+import { askClaude } from '../lib/ai'
 import { buildAskSystemPrompt } from '../lib/prompts'
-import { AiSettingsPanel } from './AiSettingsPanel'
-import { Section } from './Section'
+import { SpeechBubble } from './SpeechBubble'
+import { Button, ExternalLink, Notice, Panel } from './ui'
 
 const SUGGESTIONS = [
   '¿Qué es un anchor y cómo cambio colones a algo en Stellar?',
   '¿Por qué necesito tener al menos 1 XLM?',
-  '¿Qué diferencia hay entre Stellar y Bitcoin con eso de minar?',
+  '¿Stellar se mina como Bitcoin?',
   '¿Qué es una liquidity pool?',
 ]
 
-type Answer = {
+type Exchange = {
   question: string
-  text: string
+  answer: string
   sources: KnowledgeEntry[]
 }
 
 type AskSectionProps = {
-  ai: AiSettingsState
+  claude: ClaudeKey
   persona: PersonaId
 }
 
-export function AskSection({ ai, persona }: AskSectionProps) {
+export function AskSection({ claude, persona }: AskSectionProps) {
   const [question, setQuestion] = useState('')
-  const [answer, setAnswer] = useState<Answer | null>(null)
+  const [thread, setThread] = useState<Exchange[]>([])
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const speaker = PERSONAS.find((p) => p.id === persona)!
 
   const ask = async (text: string) => {
     if (!text.trim()) return
@@ -38,8 +37,9 @@ export function AskSection({ ai, persona }: AskSectionProps) {
     setError(null)
     try {
       const sources = findRelevantKnowledge(text)
-      const reply = await askAi(ai.settings, buildAskSystemPrompt(persona, sources), text)
-      setAnswer({ question: text, text: reply, sources })
+      const answer = await askClaude(claude.apiKey, buildAskSystemPrompt(persona, sources), text)
+      setThread((previous) => [...previous, { question: text, answer, sources }])
+      setQuestion('')
     } catch (e) {
       setError((e as Error).message)
     } finally {
@@ -53,73 +53,114 @@ export function AskSection({ ai, persona }: AskSectionProps) {
   }
 
   return (
-    <Section id="preguntar" emoji="💬" title="Preguntale a la abuelita">
-      <p className="mb-4">
-        ¿Te quedó una duda que no está en los cuentos? Preguntá lo que sea de Stellar. Te responde{' '}
-        <strong>
-          {speaker.emoji} {speaker.name.toLowerCase()}
-        </strong>{' '}
-        (lo cambiás arriba, en los cuentos), con datos de la documentación oficial.
-      </p>
-      <AiSettingsPanel ai={ai} />
-      <form onSubmit={onSubmit} className="mt-4 flex flex-col gap-3 sm:flex-row">
+    <section
+      id="preguntas"
+      aria-labelledby="preguntas-titulo"
+      className="mx-auto max-w-3xl border-t-2 border-navy px-4 py-24 sm:px-6"
+    >
+      <div className="flex flex-col items-center gap-3 text-center">
+        <p className="eyebrow text-verde">Tutorial completo</p>
+        <h2 id="preguntas-titulo" className="font-pixel text-4xl leading-tight sm:text-5xl">
+          ¿Tenés más preguntas?
+        </h2>
+        <p className="max-w-xl text-tinta">
+          Preguntale a {personaById(persona).name.toLowerCase()} lo que sea de Stellar. Responde con datos de la
+          documentación oficial. Si cambiás de rol, la conversación empieza de cero.
+        </p>
+      </div>
+
+      <ClaudeKeyField claude={claude} />
+
+      {thread.length > 0 && (
+        <ol className="mt-10 flex max-w-3xl flex-col gap-8" aria-live="polite">
+          {thread.map((exchange, index) => (
+            <li key={index} className="flex flex-col gap-4">
+              <p className="self-end border-2 border-navy bg-azul px-4 py-3 text-white">{exchange.question}</p>
+              <SpeechBubble persona={persona}>
+                <span className="whitespace-pre-line">{exchange.answer}</span>
+                {exchange.sources.length > 0 && <Sources sources={exchange.sources} />}
+              </SpeechBubble>
+            </li>
+          ))}
+        </ol>
+      )}
+
+      <form onSubmit={onSubmit} className="mt-8 flex max-w-3xl flex-col gap-3 sm:flex-row">
+        <label htmlFor="pregunta" className="sr-only">
+          Tu pregunta
+        </label>
         <input
+          id="pregunta"
           value={question}
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="Ej: ¿qué es SEP-24?"
-          className="flex-1 rounded-xl border border-cafe/20 bg-white px-4 py-3"
+          className="min-h-11 flex-1 border-2 border-navy bg-white px-4"
         />
-        <button
-          type="submit"
-          disabled={busy}
-          className="rounded-full bg-terracota px-6 py-3 font-bold text-crema hover:opacity-90 disabled:opacity-50"
-        >
+        <Button type="submit" disabled={busy || !claude.apiKey || !question.trim()}>
           {busy ? 'Pensando…' : 'Preguntar'}
-        </button>
+        </Button>
       </form>
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="mt-4 flex max-w-3xl flex-wrap gap-2">
         {SUGGESTIONS.map((suggestion) => (
           <button
             key={suggestion}
-            onClick={() => {
-              setQuestion(suggestion)
-              ask(suggestion)
-            }}
-            disabled={busy}
-            className="rounded-full bg-mostaza/20 px-3 py-1 text-sm hover:bg-mostaza/40"
+            onClick={() => ask(suggestion)}
+            disabled={busy || !claude.apiKey}
+            className="min-h-11 border border-borde bg-white px-3 py-2 text-left text-sm hover:border-azul disabled:opacity-50"
           >
             {suggestion}
           </button>
         ))}
       </div>
-      {error && <p className="mt-4 rounded-xl bg-terracota/10 p-3 text-terracota">{error}</p>}
-      {answer && <AnswerCard answer={answer} speakerEmoji={speaker.emoji} />}
-    </Section>
+      {error && (
+        <div className="mt-6 max-w-3xl">
+          <Notice tone="error">{error}</Notice>
+        </div>
+      )}
+    </section>
   )
 }
 
-function AnswerCard({ answer, speakerEmoji }: { answer: Answer; speakerEmoji: string }) {
+function ClaudeKeyField({ claude }: { claude: ClaudeKey }) {
   return (
-    <article className="mt-6 rounded-3xl bg-crema p-5 ring-1 ring-cafe/10">
-      <p className="text-sm italic opacity-70">“{answer.question}”</p>
-      <p className="mt-3 whitespace-pre-line text-lg leading-relaxed">
-        <span aria-hidden>{speakerEmoji} </span>
-        {answer.text}
+    <Panel className="mt-8 max-w-3xl p-5">
+      <label htmlFor="claude-key" className="eyebrow text-navy">
+        Tu llave de Claude
+      </label>
+      <div className="mt-3 flex flex-wrap items-center gap-3">
+        <input
+          id="claude-key"
+          type="password"
+          value={claude.apiKey}
+          onChange={(e) => claude.setApiKey(e.target.value)}
+          placeholder="sk-ant-…"
+          autoComplete="off"
+          spellCheck={false}
+          className="min-h-11 min-w-0 flex-1 basis-64 border-2 border-navy bg-papel px-3 font-mono text-sm"
+        />
+        {claude.apiKey && (
+          <Button variant="ghost" onClick={claude.forget}>
+            Olvidar
+          </Button>
+        )}
+      </div>
+      <p className="mt-3 text-xs text-tinta">
+        Conseguí una en <ExternalLink href="https://console.anthropic.com/settings/keys">console.anthropic.com</ExternalLink>.
+        Se guarda solo en este navegador y va directo a Anthropic.
       </p>
-      {answer.sources.length > 0 && (
-        <div className="mt-4 text-sm">
-          <p className="font-bold opacity-75">📖 Basado en la documentación oficial:</p>
-          <ul className="mt-1 list-inside list-disc">
-            {answer.sources.map((source) => (
-              <li key={source.id}>
-                <a className="underline" href={source.url} target="_blank" rel="noreferrer">
-                  {source.title}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-    </article>
+    </Panel>
+  )
+}
+
+function Sources({ sources }: { sources: KnowledgeEntry[] }) {
+  return (
+    <span className="mt-4 block border-t border-borde pt-3 text-sm">
+      <span className="eyebrow block text-tinta">Fuentes oficiales</span>
+      {sources.map((source) => (
+        <span key={source.id} className="mt-1 block">
+          <ExternalLink href={source.url}>{source.title}</ExternalLink>
+        </span>
+      ))}
+    </span>
   )
 }

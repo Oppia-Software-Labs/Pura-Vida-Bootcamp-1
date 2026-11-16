@@ -8,14 +8,15 @@ Wallets, trustlines, burn, smart contracts… Para alguien que viene entrando a 
 
 ## Qué hace
 
-| Sección | Qué podés hacer |
+Es una sola página que se recorre con scroll, como un tutorial, con el estilo pixel de Oppia Climb.
+
+| Paso | Qué pasa |
 |---|---|
-| 👛 **Conectá tu wallet** | Conectás Varial (antes Freighter), xBull, LOBSTR o Albedo con Stellar Wallets Kit. Ves tu dirección y tu saldo, y si tu cuenta está vacía, el “abuelo Friendbot” te regala 10.000 XLM de testnet. |
-| 📚 **Los cuentos** | 8 conceptos: Testnet, Wallet y llaves, Transacción, Fee, Asset/Token, Trustline, Mint y Burn, Smart contract. Cada uno trae un dibujo ASCII, una comparación tica y un link a la documentación oficial. |
-| 🎭 **¿Quién te lo explica?** | 👵 La abuelita (cero cripto), 🎤 el rapero (corto y con rima) o 🛠️ la product engineer (con el código real de `@stellar/stellar-sdk`). |
-| 🧪 **Probalo en testnet** | Mandale 1 XLM a Doña Rosa y mirá cuánto pagaste de “pasaje” (fee). Abrí la Pulpería Chepe: creá una trustline, recibí 100 vales `CHEPE` (mint) y quemá 10 (burn). |
-| 🧠 **Ahora explicámelo vos** | El corazón de la técnica de Feynman: escribís el concepto con tus palabras y la IA te dice ✅ / 🟡 / ❌, qué te faltó, y qué te preguntaría tu abuela. |
-| 💬 **Preguntale a la abuelita** | Preguntás lo que sea de Stellar (anchors, SEP-24, liquidity pools…) y te responde el personaje que escogiste, basado en la documentación oficial. |
+| **Select your role** | Escogés quién te explica: la abuelita (cero cripto), el rapero (en verso) o la desarrolladora (con el código real de `@stellar/stellar-sdk`). Cada uno tiene su avatar en pixel art. |
+| **Conectá tu wallet** | Conectás Varial (antes Freighter), xBull, LOBSTR o Albedo con Stellar Wallets Kit. Si tu cuenta está vacía, Friendbot te regala 10.000 XLM de testnet. Desde aquí aparece la barra de navegación, donde podés cambiar de rol en cualquier momento sin perder tu lugar. |
+| **8 conceptos** | Testnet, Wallet y llaves, Transacción, Fee, Asset/Token, Trustline, Mint y Burn y Smart contract. Cada uno tiene una escena en pixel art distinta para cada rol, la explicación en la voz del rol y un link a la documentación oficial. |
+| **Práctica por niveles** | Nivel 1: tu primera transacción (a Doña Rosa, a DJ Pacho o a qa-bot, según el rol). Nivel 2, que se desbloquea al terminar el 1: creás tu propio token (`CHEPE`, `TOQUE` o `DEVCRED`) con trustline, mint y burn, paso a paso. |
+| **¿Tenés más preguntas?** | Con tu llave de Claude le preguntás lo que sea de Stellar al rol que escogiste. Responde con datos de la documentación oficial y la conversación se borra si cambiás de rol. |
 
 ## Cómo correrla
 
@@ -30,7 +31,7 @@ npm run dev
 Abrí http://localhost:5173.
 
 - **Wallet:** instalá [Freighter/Varial](https://www.freighter.app/) o xBull y ponela en **Testnet**.
-- **IA (opcional, para el chat y el “explicámelo vos”):** pegá en la app una API key gratis de [Groq](https://console.groq.com/keys) o una de [Claude](https://console.anthropic.com/settings/keys). La llave se guarda solo en tu navegador y va directo al proveedor; no hay backend ni `.env`.
+- **Preguntas (opcional):** pegá en la app tu API key de [Claude](https://console.anthropic.com/settings/keys). La llave se guarda solo en tu navegador y va directo a Anthropic; no hay backend ni `.env`.
 
 ## Cómo usé Stellar Raven
 
@@ -44,18 +45,19 @@ Abrí http://localhost:5173.
 
 ## Stack
 
-Vite + React 19 + TypeScript + Tailwind v4 · `@stellar/stellar-sdk` · `@creit-tech/stellar-wallets-kit` · `@anthropic-ai/sdk` / Groq API
+Vite + React 19 + TypeScript + Tailwind v4 · Geist / Geist Mono / Geist Pixel · `@stellar/stellar-sdk` · `@creit-tech/stellar-wallets-kit` · `@anthropic-ai/sdk`
 
 ```
 src/
-├── components/   Hero, WalletSection, StoriesSection, TryIt, ExplainBack, AskSection…
-├── content/      concepts.ts (los cuentos), personas.ts, knowledge.ts (doc oficial vía Raven)
-├── hooks/        useWallet, useDonaRosa, usePulperia, useAiSettings
+├── components/   RoleSection, WalletSection, NavBar, ConceptsSection, PracticeSection, AskSection, PixelArt…
+├── content/      concepts.ts, practice.ts, personas.ts, knowledge.ts (doc oficial vía Raven),
+│                 pixel.ts + sprites.ts + scenes.ts (motor y escenas de pixel art por rol)
+├── hooks/        useWallet, useFirstPayment, useTokenLab, useActiveSection, useClaudeKey
 └── lib/          stellar.ts, transactions.ts, ai.ts, prompts.ts
 ```
 
 ## Notas de seguridad
 
 - Todo corre en **testnet**: es plata de juguete.
-- La llave secreta de la Pulpería Chepe se crea en el navegador y vive solo en memoria; si recargás la página, se pierde. Nunca hagás esto en mainnet.
+- La llave secreta del emisor del token del nivel 2 se crea en el navegador y vive solo en memoria; si recargás la página, se pierde. Nunca hagás esto en mainnet.
 - Tu wallet nunca comparte tu llave secreta: solo firma.

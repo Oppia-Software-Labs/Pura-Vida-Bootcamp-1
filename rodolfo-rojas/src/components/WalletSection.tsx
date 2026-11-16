@@ -1,83 +1,54 @@
 import { useState } from 'react'
+import { personaById, type PersonaId } from '../content/personas'
 import type { Wallet } from '../hooks/useWallet'
-import { accountExplorerUrl, fundWithFriendbot, shortAddress } from '../lib/stellar'
-import { Section } from './Section'
+import { balanceLabel, fundWithFriendbot, shortAddress } from '../lib/stellar'
+import { SpeechBubble } from './SpeechBubble'
+import { Button, ExternalLink, Eyebrow, Notice } from './ui'
 
-export function WalletSection({ wallet }: { wallet: Wallet }) {
+export function WalletSection({ wallet, persona }: { wallet: Wallet; persona: PersonaId }) {
   return (
-    <Section id="wallet" emoji="👛" title="Conectá tu wallet">
-      <p className="text-lg">
-        <strong>La abuelita dice:</strong> “Una wallet es como tu monedero con candado. Todos pueden ver
-        el monedero (tu dirección), pero solo vos tenés la llave para abrirlo. Si perdés la llave, nadie
-        te puede hacer otra.”
+    <section id="wallet" className="mx-auto flex max-w-3xl flex-col items-center gap-7 px-4 pt-16 pb-24 text-center sm:px-6">
+      <Eyebrow>Paso 0 · Antes de empezar</Eyebrow>
+      <h2 className="font-pixel text-4xl leading-tight sm:text-5xl">Conectá tu wallet</h2>
+      <SpeechBubble persona={persona}>{personaById(persona).greeting}</SpeechBubble>
+      {wallet.address ? <ConnectedCard wallet={wallet} /> : <ConnectPrompt wallet={wallet} />}
+      <p className="text-[15px] text-tinta">
+        Todo pasa en <strong className="text-navy">testnet</strong>: plata de juguete, cero riesgo. Funciona con
+        Freighter, xBull, LOBSTR y Albedo.
       </p>
-      <p className="mt-2 text-sm opacity-75">
-        Usamos <strong>testnet</strong>: es como jugar de tiendita con billetes de Monopoly. Nada de lo
-        que hagás acá cuesta plata de verdad.
-      </p>
-      <div className="mt-6">
-        {wallet.address ? <ConnectedWallet wallet={wallet} /> : <ConnectButton wallet={wallet} />}
-      </div>
-      {wallet.error && <p className="mt-4 rounded-xl bg-terracota/10 p-3 text-terracota">{wallet.error}</p>}
-    </Section>
+      {wallet.error && <Notice tone="error">{wallet.error}</Notice>}
+    </section>
   )
 }
 
-function ConnectButton({ wallet }: { wallet: Wallet }) {
+function ConnectPrompt({ wallet }: { wallet: Wallet }) {
   return (
-    <div>
-      <button
-        onClick={wallet.connect}
-        className="rounded-full bg-terracota px-6 py-3 text-lg font-bold text-crema hover:opacity-90"
-      >
-        Conectar wallet
-      </button>
-      <p className="mt-3 text-sm opacity-75">
-        ¿No tenés wallet? Instalá{' '}
-        <a className="underline" href="https://www.freighter.app/" target="_blank" rel="noreferrer">
-          Freighter
-        </a>{' '}
-        (ahora se llama Varial) o xBull, y creá una cuenta en testnet.
+    <div className="flex flex-col items-center gap-4">
+      <Button onClick={wallet.connect}>Conectar wallet</Button>
+      <p className="text-sm text-tinta">
+        ¿No tenés una? Instalá <ExternalLink href="https://www.freighter.app/">Freighter</ExternalLink> o{' '}
+        <ExternalLink href="https://xbull.app/">xBull</ExternalLink> y ponela en Testnet.
       </p>
     </div>
   )
 }
 
-function ConnectedWallet({ wallet }: { wallet: Wallet }) {
-  const address = wallet.address!
+function ConnectedCard({ wallet }: { wallet: Wallet }) {
   return (
-    <div className="space-y-4">
-      {!wallet.onTestnet && (
-        <p className="rounded-xl bg-mostaza/30 p-3">
-          ⚠️ Tu wallet no está en <strong>Testnet</strong>. Cambiala en la configuración de la wallet para
-          jugar sin riesgo.
-        </p>
-      )}
-      <div className="flex flex-wrap items-center gap-3">
-        <span className="rounded-full bg-cafeto px-4 py-2 font-mono text-crema" title={address}>
-          {shortAddress(address)}
+    <div className="flex w-full flex-col gap-4 border-2 border-navy bg-white p-6 text-left shadow-hard">
+      <div className="flex flex-wrap items-center gap-x-6 gap-y-4">
+        <span aria-hidden className="flex size-10 shrink-0 items-center justify-center bg-verde font-pixel text-xl text-white">
+          ✓
         </span>
-        <a className="underline" href={accountExplorerUrl(address)} target="_blank" rel="noreferrer">
-          Ver en el explorador
-        </a>
-        <button onClick={wallet.disconnect} className="ml-auto text-sm underline opacity-75">
-          Desconectar
-        </button>
+        <div className="min-w-48 flex-1">
+          <p className="eyebrow text-verde">Wallet conectada · Testnet</p>
+          <p className="mt-1 font-mono text-lg" title={wallet.address!}>
+            {shortAddress(wallet.address!)}
+          </p>
+        </div>
+        <p className="font-pixel text-3xl">{balanceLabel(wallet.account)}</p>
       </div>
-      <Balance wallet={wallet} />
-    </div>
-  )
-}
-
-function Balance({ wallet }: { wallet: Wallet }) {
-  if (!wallet.account) return <p className="opacity-75">Contando las monedas…</p>
-  if (wallet.account.status === 'unfunded') return <FriendbotOffer wallet={wallet} />
-  return (
-    <div className="flex flex-wrap items-baseline gap-3">
-      <p className="font-display text-4xl font-bold">{formatXlm(wallet.account.xlm)} XLM</p>
-      <button onClick={wallet.refresh} className="text-sm underline opacity-75">
-        Actualizar
-      </button>
+      {wallet.account?.status === 'unfunded' && <FriendbotOffer wallet={wallet} />}
     </div>
   )
 }
@@ -100,23 +71,19 @@ function FriendbotOffer({ wallet }: { wallet: Wallet }) {
   }
 
   return (
-    <div className="rounded-2xl bg-mostaza/20 p-4">
-      <p>
-        Tu monedero todavía está vacío, y en Stellar un monedero vacío ni siquiera existe. 👴{' '}
-        <strong>El abuelo Friendbot</strong> te regala 10.000 XLM de juguete para empezar.
+    <div className="flex flex-wrap items-center gap-4 border-t border-borde pt-4">
+      <p className="min-w-60 flex-1 text-[15px]">
+        Tu monedero está vacío, y en Stellar un monedero vacío ni siquiera existe. <strong>Friendbot</strong> te regala
+        10.000 XLM de testnet.
       </p>
-      <button
-        onClick={askFriendbot}
-        disabled={asking}
-        className="mt-3 rounded-full bg-cafeto px-5 py-2 font-bold text-crema hover:opacity-90 disabled:opacity-50"
-      >
-        {asking ? 'Pidiéndole al abuelo…' : 'Pedirle XLM al abuelo Friendbot'}
-      </button>
-      {error && <p className="mt-2 text-terracota">{error}</p>}
+      <Button onClick={askFriendbot} disabled={asking}>
+        {asking ? 'Pidiendo…' : 'Pedir XLM'}
+      </Button>
+      {error && (
+        <div className="basis-full">
+          <Notice tone="error">{error}</Notice>
+        </div>
+      )}
     </div>
   )
-}
-
-function formatXlm(amount: string): string {
-  return Number(amount).toLocaleString('es-CR', { maximumFractionDigits: 2 })
 }

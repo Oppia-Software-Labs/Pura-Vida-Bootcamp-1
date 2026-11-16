@@ -1,26 +1,24 @@
 import { Asset, Keypair, Operation } from '@stellar/stellar-sdk'
-import { useCallback, useState } from 'react'
+import { useState } from 'react'
 import { fundWithFriendbot, horizon } from '../lib/stellar'
 import { friendlyTxError, submitWithKeypair, submitWithWallet, type TxReceipt } from '../lib/transactions'
 import type { Wallet } from './useWallet'
 
-export type PulperiaStage = 'cerrada' | 'abierta' | 'confias' | 'tenesVales'
+export type TokenLabStage = 'closed' | 'open' | 'trusted' | 'minted' | 'burned'
 
-const ASSET_CODE = 'CHEPE'
 const MINT_AMOUNT = '100'
 const BURN_AMOUNT = '10'
 
-export function usePulperia(wallet: Wallet) {
+export function useTokenLab(wallet: Wallet) {
   const [issuer, setIssuer] = useState<Keypair | null>(null)
-  const [stage, setStage] = useState<PulperiaStage>('cerrada')
-  const [vales, setVales] = useState('0')
+  const [asset, setAsset] = useState<Asset | null>(null)
+  const [stage, setStage] = useState<TokenLabStage>('closed')
+  const [balance, setBalance] = useState('0')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [lastReceipt, setLastReceipt] = useState<TxReceipt | null>(null)
 
-  const asset = issuer ? new Asset(ASSET_CODE, issuer.publicKey()) : null
-
-  const run = useCallback(async (action: () => Promise<void>) => {
+  const run = async (action: () => Promise<void>) => {
     setBusy(true)
     setError(null)
     try {
@@ -30,65 +28,66 @@ export function usePulperia(wallet: Wallet) {
     } finally {
       setBusy(false)
     }
-  }, [])
+  }
 
-  const refreshVales = useCallback(async (chepe: Asset) => {
+  const refreshBalance = async (target: Asset) => {
     if (!wallet.address) return
-    setVales(await loadAssetBalance(wallet.address, chepe))
+    setBalance(await loadAssetBalance(wallet.address, target))
     await wallet.refresh()
-  }, [wallet])
+  }
 
-  const abrirPulperia = () =>
+  const open = (assetCode: string) =>
     run(async () => {
       const keypair = Keypair.random()
       await fundWithFriendbot(keypair.publicKey())
       setIssuer(keypair)
-      setStage('abierta')
+      setAsset(new Asset(assetCode, keypair.publicKey()))
+      setStage('open')
     })
 
-  const confiar = () =>
+  const trust = () =>
     run(async () => {
       if (!asset || !wallet.address) return
       setLastReceipt(await submitWithWallet(wallet.address, Operation.changeTrust({ asset }), wallet.signTransaction))
-      setStage('confias')
-      await refreshVales(asset)
+      setStage('trusted')
+      await refreshBalance(asset)
     })
 
-  const imprimirVales = () =>
+  const mint = () =>
     run(async () => {
       if (!asset || !issuer || !wallet.address) return
-      const mint = Operation.payment({ destination: wallet.address, asset, amount: MINT_AMOUNT })
-      setLastReceipt(await submitWithKeypair(issuer, mint))
-      setStage('tenesVales')
-      await refreshVales(asset)
+      const payment = Operation.payment({ destination: wallet.address, asset, amount: MINT_AMOUNT })
+      setLastReceipt(await submitWithKeypair(issuer, payment))
+      setStage('minted')
+      await refreshBalance(asset)
     })
 
-  const quemarVales = () =>
+  const burn = () =>
     run(async () => {
       if (!asset || !issuer || !wallet.address) return
-      const burn = Operation.payment({ destination: issuer.publicKey(), asset, amount: BURN_AMOUNT })
-      setLastReceipt(await submitWithWallet(wallet.address, burn, wallet.signTransaction))
-      await refreshVales(asset)
+      const payment = Operation.payment({ destination: issuer.publicKey(), asset, amount: BURN_AMOUNT })
+      setLastReceipt(await submitWithWallet(wallet.address, payment, wallet.signTransaction))
+      setStage('burned')
+      await refreshBalance(asset)
     })
 
   return {
-    issuerAddress: issuer?.publicKey() ?? null,
     stage,
-    vales,
+    assetCode: asset?.getCode() ?? null,
+    balance,
     busy,
     error,
     lastReceipt,
-    mintAmount: MINT_AMOUNT,
     burnAmount: BURN_AMOUNT,
-    canBurn: Number(vales) >= Number(BURN_AMOUNT),
-    abrirPulperia,
-    confiar,
-    imprimirVales,
-    quemarVales,
+    canBurn: Number(balance) >= Number(BURN_AMOUNT),
+    open,
+    trust,
+    mint,
+    burn,
   }
 }
 
-export type Pulperia = ReturnType<typeof usePulperia>
+export type TokenLab = ReturnType<typeof useTokenLab>
 
 async function loadAssetBalance(address: string, asset: Asset): Promise<string> {
   const account = await horizon.loadAccount(address)

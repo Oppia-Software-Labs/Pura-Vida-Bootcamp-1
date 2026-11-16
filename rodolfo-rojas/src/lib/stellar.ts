@@ -30,6 +30,15 @@ export function accountExplorerUrl(address: string): string {
   return `${EXPLORER_URL}/account/${address}`
 }
 
+export function formatXlm(amount: string): string {
+  return Number(amount).toLocaleString('es-CR', { maximumFractionDigits: 2 })
+}
+
+export function balanceLabel(account: AccountSnapshot | null): string {
+  if (account?.status !== 'funded') return '0 XLM'
+  return `${formatXlm(account.xlm)} XLM`
+}
+
 export function shortAddress(address: string): string {
   return `${address.slice(0, 4)}…${address.slice(-4)}`
 }

@@ -5,8 +5,8 @@ import type { Wallet } from './useWallet'
 
 const AMOUNT = '1'
 
-export function useDonaRosa(wallet: Wallet) {
-  const [rosaAddress] = useState(() => Keypair.random().publicKey())
+export function useFirstPayment(wallet: Wallet) {
+  const [recipientAddress] = useState(() => Keypair.random().publicKey())
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [receipt, setReceipt] = useState<TxReceipt | null>(null)
@@ -16,7 +16,7 @@ export function useDonaRosa(wallet: Wallet) {
     setBusy(true)
     setError(null)
     try {
-      setReceipt(await sendXlm(wallet.address, rosaAddress, AMOUNT, wallet.signTransaction))
+      setReceipt(await sendXlm(wallet.address, recipientAddress, AMOUNT, wallet.signTransaction))
       await wallet.refresh()
     } catch (e) {
       setError(friendlyTxError(e))
@@ -25,7 +25,7 @@ export function useDonaRosa(wallet: Wallet) {
     }
   }
 
-  return { rosaAddress, amount: AMOUNT, busy, error, receipt, send }
+  return { recipientAddress, amount: AMOUNT, busy, error, receipt, send }
 }
 
-export type DonaRosa = ReturnType<typeof useDonaRosa>
+export type FirstPayment = ReturnType<typeof useFirstPayment>
