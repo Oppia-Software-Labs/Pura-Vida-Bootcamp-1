@@ -2,18 +2,18 @@ import { describe, expect, it } from 'vitest';
 import html from '../index.html?raw';
 
 describe('lab page', () => {
-  it('introduces the lab and explains its safe connection scope', () => {
+  it('introduces the real connection lab and its safe scope in Spanish', () => {
     document.documentElement.innerHTML = html;
-
     const main = document.querySelector('main');
     expect(main).not.toBeNull();
-    expect(main?.querySelector('h1')?.textContent).toBe('Stellar Wallet Lab');
-    expect(main?.textContent).toContain('Testnet practice only');
-    expect(main?.textContent).toContain('No real funds or purchases are needed.');
-    expect(main?.textContent).toContain('Never share private keys or recovery phrases.');
-    expect(main?.textContent).toContain('Access is requested only when you click.');
-    expect(main?.textContent).toContain('The wallet network is checked after approval and rechecked when you return to this page.');
-    expect(main?.textContent).toContain('Disconnect applies to the active account and network, not all historical permissions.');
-    expect(main?.querySelector('button')?.textContent).toBe('Connect Varial');
+    expect(main?.querySelector('h1')?.textContent).toBe('Tu wallet. El contexto claro.');
+    expect(main?.textContent).toContain('Práctica solo en Testnet.');
+    expect(main?.textContent).toContain('Sin fondos reales, pagos ni firmas.');
+    expect(main?.textContent).toContain('Nunca compartas claves privadas ni frases de recuperación.');
+    expect(main?.textContent).toContain('El acceso se solicita únicamente al pulsar conectar.');
+    expect(main?.textContent).toContain('La red se comprueba tras aprobar y al volver a esta página.');
+    expect(main?.textContent).toContain('Desconectar se aplica a la cuenta y red activas, no a todos los permisos históricos.');
+    expect(main?.querySelector('button')?.textContent).toBe('Conectar Varial');
+    expect(document.querySelector('select')).toBeNull();
   });
 });

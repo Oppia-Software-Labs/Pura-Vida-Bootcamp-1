@@ -54,7 +54,114 @@ beforeEach(async () => {
   await import('../src/main');
 });
 
+describe('presentation preferences', () => {
+  it('keeps uncertain disconnect presentation truthful in both locales without reopening access', async () => {
+    button().click();
+    await vi.waitFor(() => expect(output().hidden).toBe(false));
+    sdk.disconnect.mockResolvedValueOnce({ error: { message: 'Failed' } });
+    disconnect().click();
+    await vi.waitFor(() => expect(disconnect().disabled).toBe(false));
+    expect(button().textContent).toBe('Estado sin confirmar');
+    expect(button().disabled).toBe(true);
+    expect(disconnect().hidden).toBe(false);
+    expect(output().hidden).toBe(true);
+    expect(network().hidden).toBe(true);
+    expect([...document.querySelectorAll('.placeholder')].map(e => e.textContent))
+      .toEqual(['Datos actuales no disponibles', 'Datos actuales no disponibles']);
+    document.querySelector<HTMLButtonElement>('#locale')!.click();
+    expect(button().textContent).toBe('Connection unconfirmed');
+    expect([...document.querySelectorAll('.placeholder')].map(e => e.textContent))
+      .toEqual(['Current details unavailable', 'Current details unavailable']);
+    button().dispatchEvent(new MouseEvent('click'));
+    expect(sdk.requestAccess).toHaveBeenCalledTimes(1);
+    let finish!: (value: object) => void;
+    sdk.disconnect.mockReturnValueOnce(new Promise(resolve => { finish = resolve; }));
+    disconnect().click();
+    expect(button().textContent).toBe('Connection unconfirmed');
+    expect(button().disabled).toBe(true);
+    expect(disconnect().disabled).toBe(true);
+    window.dispatchEvent(new Event('focus'));
+    expect(button().textContent).toBe('Connection unconfirmed');
+    expect(sdk.getAddress).not.toHaveBeenCalled();
+    finish({});
+    await vi.waitFor(() => expect(disconnect().hidden).toBe(true));
+    expect(button().textContent).toBe('Connect Varial');
+    expect(sdk.requestAccess).toHaveBeenCalledTimes(1);
+    expect(sdk.disconnect).toHaveBeenCalledTimes(2);
+  });
+  it('preserves pending consent, connected details, disconnect and focus states across switches', async () => {
+    const locale = () => document.querySelector<HTMLButtonElement>('#locale')!.click();
+    const theme = () => document.querySelector<HTMLButtonElement>('#theme')!.click();
+    let approve!: (value: { address: string }) => void;
+    sdk.requestAccess.mockReturnValue(new Promise(resolve => { approve = resolve; }));
+    button().click();
+    await vi.waitFor(() => expect(sdk.requestAccess).toHaveBeenCalledTimes(1));
+    locale(); theme();
+    expect(status().textContent).toBe('Waiting for Varial approval…');
+    expect(button().textContent).toBe('Connecting…');
+    expect(button().disabled).toBe(true);
+    button().dispatchEvent(new MouseEvent('click'));
+    expect(sdk.requestAccess).toHaveBeenCalledTimes(1);
+    approve({ address });
+    await vi.waitFor(() => expect(output().hidden).toBe(false));
+    locale(); theme();
+    expect(status().textContent).toBe('Conectada. Testnet confirmada: lista para practicar.');
+    expect(button().textContent).toBe('Conectada');
+    expect(output().textContent).toBe(address);
+    expect(sdk.getNetwork).toHaveBeenCalledTimes(1);
+    window.dispatchEvent(new Event('focus'));
+    locale();
+    expect(status().textContent).toBe('Checking wallet connection…');
+    await vi.waitFor(() => expect(disconnect().disabled).toBe(false));
+    expect(status().textContent).toBe('Connected. Testnet confirmed — ready for practice.');
+    expect(sdk.requestAccess).toHaveBeenCalledTimes(1);
+    sdk.disconnect.mockResolvedValueOnce({ error: { message: 'Failed' } });
+    disconnect().click();
+    locale();
+    expect(status().textContent).toBe('Desconectando…');
+    expect(disconnect().textContent).toBe('Desconectando…');
+    await vi.waitFor(() => expect(disconnect().disabled).toBe(false));
+    expect(status().textContent).toBe('No se pudo confirmar la desconexión. Reintenta desconectar.');
+    locale(); theme();
+    expect(status().textContent).toBe('Disconnection could not be confirmed. Retry disconnect.');
+    expect(output().hidden).toBe(true);
+    expect(network().hidden).toBe(true);
+    expect(button().disabled).toBe(true);
+    expect(sdk.disconnect).toHaveBeenCalledTimes(1);
+    expect(sdk.requestAccess).toHaveBeenCalledTimes(1);
+    expect(localStorage.length).toBe(0);
+    expect(sessionStorage.length).toBe(0);
+  });
+  it('defaults to dark Spanish without wallet calls and switches labels in memory', () => {
+    expect(document.documentElement.lang).toBe('es');
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(button().textContent).toBe('Conectar Varial');
+    document.querySelector<HTMLButtonElement>('#theme')!.click();
+    expect(document.documentElement.dataset.theme).toBe('light');
+    expect(document.querySelector('#theme')?.textContent).toContain('Cambiar a oscuro');
+    document.querySelector<HTMLButtonElement>('#locale')!.click();
+    expect(document.documentElement.lang).toBe('en');
+    expect(button().textContent).toBe('Connect Varial');
+    expect(output().getAttribute('aria-label')).toBe('Public wallet address');
+    expect(sdk.isConnected).not.toHaveBeenCalled();
+    expect(sdk.requestAccess).not.toHaveBeenCalled();
+  });
+
+  it('translates the current error without requesting again', async () => {
+    sdk.requestAccess.mockResolvedValue({ error: { message: 'Denied' } });
+    button().click();
+    await vi.waitFor(() => expect(button().disabled).toBe(false));
+    expect(status().textContent).toBe('Conexión no aprobada. Vuelve a intentarlo en Varial.');
+    document.querySelector<HTMLButtonElement>('#locale')!.click();
+    expect(status().textContent).toBe('Connection was not approved. Try again in Varial.');
+    expect(sdk.requestAccess).toHaveBeenCalledTimes(1);
+    expect(sdk.getNetwork).not.toHaveBeenCalled();
+  });
+});
+
 describe('Varial connection', () => {
+  // Existing behavior assertions explicitly exercise English after the Spanish default.
+  beforeEach(() => document.querySelector<HTMLButtonElement>('#locale')!.click());
   it('uses callable methods from the actual installed default export', async () => {
     const actual = await vi.importActual<typeof import('@stellar/varial-sdk')>('@stellar/varial-sdk');
     expect(typeof actual.default.isConnected).toBe('function');
@@ -220,6 +327,7 @@ function expectCleared(message: string) {
 }
 
 describe('disconnect and return to page', () => {
+  beforeEach(() => document.querySelector<HTMLButtonElement>('#locale')!.click());
   it('disconnects once, clears data, focuses connect and permits explicit reconnect', async () => {
     await clickAndSettle();
     expect(disconnect().hidden).toBe(false);

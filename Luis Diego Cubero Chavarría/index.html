@@ -1,35 +1,53 @@
 <!doctype html>
-<html lang="en">
+<html lang="es" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="A starter lab for practicing with a Stellar wallet on Testnet." />
-    <title>Stellar Wallet Lab</title>
+    <meta name="description" content="Laboratorio de conexión de wallet Stellar en Testnet." />
+    <title>Laboratorio de wallet · Stellar</title>
   </head>
   <body>
+    <header class="masthead">
+      <div class="brand">wallet<span> / </span>lab</div>
+      <div class="controls">
+        <button id="theme" type="button">
+          <svg id="sun" aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M2 12h2m16 0h2M5 5l2 2m10 10 2 2M5 19l2-2M17 7l2-2"/></svg>
+          <svg id="moon" aria-hidden="true" viewBox="0 0 24 24" hidden><path d="M20 15A9 9 0 0 1 9 4a9 9 0 1 0 11 11Z"/></svg>
+          <span id="theme-label">Tema: oscuro · Cambiar a claro</span>
+        </button>
+        <button id="locale" type="button">
+          <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3 12h18"/></svg>
+          <span id="locale-label">Idioma: español · Cambiar a inglés</span>
+        </button>
+      </div>
+    </header>
     <main>
-      <header>
-        <p class="eyebrow">Stellar · Learning lab</p>
-        <h1>Stellar Wallet Lab</h1>
-        <p>A small space to learn how a Stellar wallet connects to a web app.</p>
-      </header>
-      <section class="notice" aria-labelledby="practice-heading">
-        <h2 id="practice-heading">Testnet practice only</h2>
-        <p>Use Testnet for practice. No real funds or purchases are needed. Never share private keys or recovery phrases.</p>
-      </section>
-      <section aria-labelledby="wallet-heading">
-        <h2 id="wallet-heading">Wallet connection</h2>
-        <p>Connect the Varial browser extension to share your public address. Access is requested only when you click.</p>
-        <div class="wallet-actions">
-          <button id="connect-wallet" type="button">Connect Varial</button>
-          <button id="disconnect-wallet" type="button" hidden>Disconnect</button>
-        </div>
-        <p id="wallet-status" role="status" aria-live="polite">Not connected. Connect to share your public address.</p>
-        <p id="wallet-address" aria-label="Public wallet address" hidden></p>
-        <p id="wallet-network" aria-label="Wallet network" hidden></p>
-        <p>The wallet network is checked after approval and rechecked when you return to this page. Disconnect applies to the active account and network, not all historical permissions.</p>
-      </section>
+      <div class="intro">
+        <div><p class="eyebrow" data-t="eyebrow">STELLAR / CONEXIÓN</p><h1 data-t="heading">Tu wallet. El contexto claro.</h1></div>
+        <p class="muted" data-t="intro">Conecta, identifica la cuenta y comprueba la red. Un espacio pequeño para entender esa relación.</p>
+      </div>
+      <div class="workspace">
+        <section class="connection" aria-labelledby="wallet-heading">
+          <h2 id="wallet-heading"><svg aria-hidden="true" viewBox="0 0 24 24"><path d="m9 15 6-6M8 16l-1 1a4 4 0 0 1-6-6l4-4a4 4 0 0 1 6 0m2 1 1-1a4 4 0 0 1 6 6l-4 4a4 4 0 0 1-6 0"/></svg><span data-t="wallet">Conexión</span></h2>
+          <dl>
+            <div><dt data-t="account">Cuenta</dt><dd><span class="placeholder" data-t="none">Datos actuales no disponibles</span><span id="wallet-address" aria-label="Dirección pública de la wallet" hidden></span></dd></div>
+            <div><dt data-t="network">Red</dt><dd><span class="placeholder" data-t="unknown">Datos actuales no disponibles</span><span id="wallet-network" aria-label="Red de la wallet" hidden></span></dd></div>
+          </dl>
+          <p id="wallet-status" role="status" aria-live="polite">Sin conexión. Conecta para compartir tu dirección pública.</p>
+          <div class="wallet-actions">
+            <button id="connect-wallet" class="primary" type="button" data-t="connect">Conectar Varial</button>
+            <button id="disconnect-wallet" type="button" data-t="disconnect" hidden>Desconectar</button>
+          </div>
+        </section>
+        <aside class="scope" aria-labelledby="scope-heading">
+          <h2 id="scope-heading" data-t="scopeTitle">Solo conexión.</h2>
+          <p data-t="scope">Compartir una cuenta no es firmar una transacción. El laboratorio solo muestra la cuenta y su red. El acceso se solicita únicamente al pulsar conectar.</p>
+          <p class="note" data-t="safety">Práctica solo en Testnet. Sin fondos reales, pagos ni firmas. Nunca compartas claves privadas ni frases de recuperación.</p>
+          <p class="note" data-t="recheck">La red se comprueba tras aprobar y al volver a esta página. Desconectar se aplica a la cuenta y red activas, no a todos los permisos históricos.</p>
+        </aside>
+      </div>
     </main>
+    <footer><p data-t="privacy">Sin almacenamiento de preferencias ni registros de cuentas.</p></footer>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

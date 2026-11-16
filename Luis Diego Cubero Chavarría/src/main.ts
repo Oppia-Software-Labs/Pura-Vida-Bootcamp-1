@@ -1,8 +1,10 @@
 import varial from '@stellar/varial-sdk';
 import './style.css';
+import { initializeUI, label, status } from './ui';
+import type { MessageKey } from './messages';
 
+initializeUI();
 const connectButton = document.querySelector<HTMLButtonElement>('#connect-wallet')!;
-const walletStatus = document.querySelector<HTMLElement>('#wallet-status')!;
 const walletAddress = document.querySelector<HTMLElement>('#wallet-address')!;
 const walletNetwork = document.querySelector<HTMLElement>('#wallet-network')!;
 const testnetPassphrase = 'Test SDF Network ; September 2015';
@@ -12,7 +14,7 @@ let connected = false;
 let currentAddress = '';
 let currentNetwork = '';
 let currentPassphrase = '';
-let connectionStatus = '';
+let connectionStatus: MessageKey = 'idle';
 
 function clearDetails() {
   walletAddress.textContent = '';
@@ -20,77 +22,65 @@ function clearDetails() {
   walletNetwork.textContent = '';
   walletNetwork.hidden = true;
 }
-
 function updateControls() {
   connectButton.disabled = busy || connected;
-  connectButton.textContent = connected ? 'Connected' : 'Connect Varial';
+  label(connectButton, connectionStatus === 'uncertain' ? 'unconfirmed' : connected ? 'connected' : 'connect');
   disconnectButton.hidden = !connected;
   disconnectButton.disabled = busy;
-  disconnectButton.textContent = 'Disconnect';
+  label(disconnectButton, 'disconnect');
 }
-
 function resetConnection() {
   connected = false;
   currentAddress = '';
   currentNetwork = '';
   currentPassphrase = '';
-  connectionStatus = '';
+  connectionStatus = 'idle';
   clearDetails();
 }
-
 connectButton.addEventListener('click', async () => {
   if (busy || connected) return;
-
   busy = true;
   connectButton.disabled = true;
-  connectButton.textContent = 'Connecting…';
-  walletStatus.textContent = 'Waiting for Varial approval…';
-  walletAddress.textContent = '';
-  walletAddress.hidden = true;
-  walletNetwork.textContent = '';
-  walletNetwork.hidden = true;
-
+  label(connectButton, 'connecting');
+  status('waiting');
+  clearDetails();
   try {
     const extension = await varial.isConnected();
     if (extension.error) {
-      walletStatus.textContent = 'Unable to connect to Varial. Please retry.';
+      status('failed');
       return;
     }
     if (!extension.isConnected) {
-      walletStatus.textContent = 'Varial extension not found. Install or enable it, then retry.';
+      status('missing');
       return;
     }
-
     const result = await varial.requestAccess();
     if (result.error) {
-      walletStatus.textContent = 'Connection was not approved. Try again in Varial.';
+      status('denied');
       return;
     }
     const address = result.address.trim();
     if (!address) {
-      walletStatus.textContent = 'Varial returned no public address. Please retry.';
+      status('empty');
       return;
     }
-
     let approvedPassphrase = '';
-    walletStatus.textContent = 'Reading wallet network…';
+    status('reading');
     try {
       const details = await varial.getNetwork();
       if (details.error || !details.network?.trim() || !details.networkPassphrase?.trim()) {
-        walletStatus.textContent = 'Unable to read the wallet network. Please retry.';
+        status('networkError');
         return;
       }
       approvedPassphrase = details.networkPassphrase;
       walletNetwork.textContent = details.network;
       walletNetwork.hidden = false;
-      walletStatus.textContent = details.networkPassphrase === testnetPassphrase
-        ? 'Connected. Testnet confirmed — ready for practice.'
-        : 'Connected to a non-Testnet network. This lab is for Testnet practice; change networks in Varial.';
+      connectionStatus = details.networkPassphrase === testnetPassphrase ? 'testnet' : 'other';
+      status(connectionStatus);
     } catch {
-      walletStatus.textContent = 'Unable to read the wallet network. Please retry.';
+      status('networkError');
       return;
     }
-
     walletAddress.textContent = address;
     walletAddress.hidden = false;
     connected = true;
@@ -98,30 +88,28 @@ connectButton.addEventListener('click', async () => {
     currentNetwork = walletNetwork.textContent!;
     // Keep the exact passphrase for return-to-page comparison.
     currentPassphrase = approvedPassphrase;
-    connectionStatus = walletStatus.textContent!;
   } catch {
-    walletStatus.textContent = 'Unable to connect to Varial. Please retry.';
+    status('failed');
   } finally {
     busy = false;
     updateControls();
   }
 });
-
 disconnectButton.addEventListener('click', async () => {
   if (busy || !connected) return;
   busy = true;
   updateControls();
-  disconnectButton.textContent = 'Disconnecting…';
-  walletStatus.textContent = 'Disconnecting…';
+  label(disconnectButton, 'disconnecting');
+  status('disconnecting');
   clearDetails();
   try {
     const result = await varial.disconnect();
     if (result.error) throw new Error('Disconnect not confirmed');
     resetConnection();
-    walletStatus.textContent = 'Disconnected for the active account and network.';
+    status('disconnected');
   } catch {
-    connectionStatus = 'Disconnection could not be confirmed. Retry disconnect.';
-    walletStatus.textContent = connectionStatus;
+    connectionStatus = 'uncertain';
+    status(connectionStatus);
     // Do not restore potentially stale data after an uncertain outcome.
     currentAddress = '';
     currentNetwork = '';
@@ -133,14 +121,13 @@ disconnectButton.addEventListener('click', async () => {
     else disconnectButton.focus();
   }
 });
-
 // This single-page app owns one focus handler; no polling or permission prompt.
 window.onfocus = async () => {
   if (busy || !connected) return;
   busy = true;
   updateControls();
   clearDetails();
-  walletStatus.textContent = 'Checking wallet connection…';
+  status('checking');
   try {
     const account = await varial.getAddress();
     if (account.error || !account.address?.trim() || account.address !== currentAddress) {
@@ -155,10 +142,10 @@ window.onfocus = async () => {
     walletAddress.hidden = false;
     walletNetwork.textContent = currentNetwork;
     walletNetwork.hidden = false;
-    walletStatus.textContent = connectionStatus;
+    status(connectionStatus);
   } catch {
     resetConnection();
-    walletStatus.textContent = 'Wallet connection changed or is unavailable. Please reconnect.';
+    status('changed');
   } finally {
     busy = false;
     updateControls();

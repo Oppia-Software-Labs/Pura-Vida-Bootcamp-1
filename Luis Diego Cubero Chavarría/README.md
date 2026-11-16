@@ -19,7 +19,7 @@ npm run build
 npm run preview
 ```
 
-`test` ejecuta smoke y pruebas DOM de conexión con SDK simulado; estas no sustituyen la aprobación humana con la extensión real.  `build` comprueba tipos y genera `dist`. `preview` sirve ese build solo en `127.0.0.1`.
+`test` ejecuta smoke y pruebas DOM de conexión, red y desconexión con SDK simulado; estas no sustituyen la aprobación humana con la extensión real.  `build` comprueba tipos y genera `dist`. `preview` sirve ese build solo en `127.0.0.1`.
 
 ## Seguridad y alcance
 
@@ -31,3 +31,24 @@ npm run preview
 - Si falla la lectura de red, no se muestran datos parciales y se permite reintentar. «Disconnect» solicita la desconexión para la cuenta y red activas; no revoca todos los permisos históricos. Si no puede confirmarse, se ocultan los datos y se permite reintentar la desconexión.
 - Al volver el foco a la página, se comprueban dirección y red sin pedir acceso de nuevo. Si cambian o no pueden leerse, se limpian los datos y se pide reconectar. No es una actualización continua ni hay sondeo periódico.
 - No hay firmas, pagos ni transacciones. La prueba real de conexión con la extensión sigue pendiente.
+
+## Tema e idioma
+
+La interfaz inicia siempre en español y modo oscuro, sin depender del navegador o del sistema. Los controles de la cabecera permiten alternar español/inglés y oscuro/claro. Las preferencias solo viven en memoria: al recargar vuelven los valores iniciales. Cambiarlas no solicita acceso a la wallet ni reinicia una operación pendiente. Los nombres de red y direcciones se muestran tal como los devuelve Varial.
+
+## Comprobación manual
+
+Procedimiento pendiente de confirmar con la extensión real; no es un resultado de pruebas:
+
+1. Confirmar el inicio oscuro y en español. Alternar ambos controles y revisar etiquetas, estados y mensajes; repetir durante una solicitud pendiente y tras un error sin generar otra solicitud. Recargar y confirmar los valores iniciales. Abrir la app con Varial habilitada y seleccionar Testnet en la wallet. Recorrer los controles con Tab: el foco debe verse. Conectar y aprobar solo el acceso a la dirección pública, sin firmar operaciones.
+2. Comparar dirección y red con la cuenta activa en Varial. Rechazar un permiso en otro intento y comprobar que no se afirme una conexión. Sin extensión, comprobar el mensaje y la posibilidad de reintentar.
+3. Cambiar cuenta o red en la wallet y volver a la página: debe pedir reconectar. Una red distinta de Testnet debe conservar su nombre real y mostrar una advertencia, no cambiarse automáticamente.
+4. Desconectar: comprobar que los datos desaparezcan y el foco regrese a conectar. Verificar el permiso de la cuenta/red activa en Varial; no interpretar esto como revocación universal.
+5. Revisar a 320, 390, 768 y 1280 px y con texto ampliado al 200%: márgenes equilibrados, secciones alineadas, separación entre botones, texto legible, foco visible y ausencia de recortes, solapamientos o saltos al aparecer «Disconnecting…». Incluir nombres de red largos y revisar el contraste. Usar únicamente datos sintéticos si se guardan capturas.
+
+## Apoyo de Raven
+
+Se consultó Raven para orientar la elección del SDK, apoyándose en documentación oficial de Varial y en la habilidad existente de desarrollo de dApps. No forma parte del runtime ni autoriza operaciones de wallet.
+
+- [Raven](https://raven.stellar.org/)
+- [Documentación oficial de Varial](https://docs.varialwallet.com/)
