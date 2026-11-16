@@ -1,0 +1,15 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fraunces", Georgia, serif;
+  --font-sans: "Nunito", system-ui, sans-serif;
+  --color-crema: #fbf5ea;
+  --color-cafe: #3b2a20;
+  --color-terracota: #c8553d;
+  --color-cafeto: #2f6b4f;
+  --color-mostaza: #e9b44c;
+}
+
+body {
+  @apply bg-crema text-cafe font-sans antialiased;
+}
