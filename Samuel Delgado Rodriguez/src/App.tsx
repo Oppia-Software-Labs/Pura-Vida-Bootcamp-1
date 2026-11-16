@@ -4,7 +4,6 @@ import { connectWallet, restoreWallet, WalletError } from './stellar/wallet';
 
 type AccountState = { status: 'idle' | 'loading' | 'error'; message?: string } | AccountResult;
 const SESSION_KEY = 'stellar-viewer-connected';
-const short = (value: string) => `${value.slice(0, 6)}…${value.slice(-6)}`;
 
 export default function App() {
   const [address, setAddress] = useState<string | null>(null);
@@ -90,7 +89,7 @@ export default function App() {
               {account.status === 'unfunded' && <><div className="balance"><strong>—</strong> XLM</div><p>Esta cuenta aún no existe en Testnet. Actívala con fondos de prueba desde Freighter o Stellar Lab.</p></>}
               {account.status === 'error' && <p className="error" role="alert">{account.message}</p>}
             </div>
-            <div className="address"><small>DIRECCIÓN PÚBLICA</small><div><code title={address}>{short(address)}</code><button onClick={copyAddress} aria-label={copied ? 'Dirección copiada' : 'Copiar dirección'}>{copied ? '✓' : '▢'}</button></div></div>
+            <div className="address"><small>DIRECCIÓN PÚBLICA</small><div><code>{address}</code><button onClick={copyAddress} aria-label={copied ? 'Dirección copiada' : 'Copiar dirección'}>{copied ? '✓' : '▢'}</button></div></div>
             <div className="actions"><button onClick={() => setRefreshKey((key) => key + 1)} disabled={account.status === 'loading'}>↻ &nbsp; Actualizar saldo</button><button onClick={disconnect}>Desconectar</button></div>
           </div> : <div className="card-content empty">
             <div className="orb" aria-hidden="true">✳</div><h3>Todo comienza aquí.</h3><p>Conecta tu wallet Freighter para ver los datos de tu cuenta Stellar.</p>
