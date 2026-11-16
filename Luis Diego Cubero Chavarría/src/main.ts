@@ -2,6 +2,7 @@ import varial from '@stellar/varial-sdk';
 import './style.css';
 import { initializeUI, label, status } from './ui';
 import type { MessageKey } from './messages';
+import { walletOperation } from './operations';
 
 initializeUI();
 const connectButton = document.querySelector<HTMLButtonElement>('#connect-wallet')!;
@@ -45,7 +46,7 @@ connectButton.addEventListener('click', async () => {
   status('waiting');
   clearDetails();
   try {
-    const extension = await varial.isConnected();
+    const extension = await walletOperation('extension_check', () => varial.isConnected());
     if (extension.error) {
       status('failed');
       return;
@@ -54,7 +55,7 @@ connectButton.addEventListener('click', async () => {
       status('missing');
       return;
     }
-    const result = await varial.requestAccess();
+    const result = await walletOperation('access', () => varial.requestAccess());
     if (result.error) {
       status('denied');
       return;
@@ -67,7 +68,7 @@ connectButton.addEventListener('click', async () => {
     let approvedPassphrase = '';
     status('reading');
     try {
-      const details = await varial.getNetwork();
+      const details = await walletOperation('network_read', () => varial.getNetwork());
       if (details.error || !details.network?.trim() || !details.networkPassphrase?.trim()) {
         status('networkError');
         return;
@@ -103,7 +104,7 @@ disconnectButton.addEventListener('click', async () => {
   status('disconnecting');
   clearDetails();
   try {
-    const result = await varial.disconnect();
+    const result = await walletOperation('disconnect', () => varial.disconnect());
     if (result.error) throw new Error('Disconnect not confirmed');
     resetConnection();
     status('disconnected');
@@ -129,11 +130,11 @@ window.onfocus = async () => {
   clearDetails();
   status('checking');
   try {
-    const account = await varial.getAddress();
+    const account = await walletOperation('account_read', () => varial.getAddress());
     if (account.error || !account.address?.trim() || account.address !== currentAddress) {
       throw new Error('Account unavailable or changed');
     }
-    const details = await varial.getNetwork();
+    const details = await walletOperation('network_read', () => varial.getNetwork());
     if (details.error || !details.network?.trim() || !details.networkPassphrase?.trim()
       || details.network !== currentNetwork || details.networkPassphrase !== currentPassphrase) {
       throw new Error('Network unavailable or changed');

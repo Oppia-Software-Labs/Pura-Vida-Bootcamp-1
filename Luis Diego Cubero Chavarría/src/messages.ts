@@ -1,6 +1,8 @@
 export const messages = {
   idle: ['Sin conexión. Conecta para compartir tu dirección pública.', 'Not connected. Connect to share your public address.'],
   waiting: ['Esperando aprobación en Varial…', 'Waiting for Varial approval…'],
+  slowApproval: ['Varial tarda en responder. La solicitud sigue activa: revisa el aviso de la wallet. Si se atasca, cierra el aviso y recarga esta página antes de reintentar.', 'Varial is taking longer to respond. The request is still active: check the wallet prompt. If stuck, close the prompt and reload this page before retrying.'],
+  slowRead: ['La operación de lectura o desconexión tarda en responder. La solicitud sigue activa; revisa la wallet. Si se atasca, cierra cualquier aviso y recarga esta página antes de reintentar. Esto no confirma cancelación ni desconexión.', 'The wallet read or disconnect operation is taking longer to respond. The request is still active; check the wallet. If stuck, close any prompt and reload this page before retrying. This does not confirm cancellation or disconnection.'],
   connecting: ['Conectando…', 'Connecting…'],
   connect: ['Conectar Varial', 'Connect Varial'],
   connected: ['Conectada', 'Connected'],

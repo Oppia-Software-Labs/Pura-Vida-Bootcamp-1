@@ -32,6 +32,12 @@ npm run preview
 - Al volver el foco a la página, se comprueban dirección y red sin pedir acceso de nuevo. Si cambian o no pueden leerse, se limpian los datos y se pide reconectar. No es una actualización continua ni hay sondeo periódico.
 - No hay firmas, pagos ni transacciones. La prueba real de conexión con la extensión sigue pendiente.
 
+## Esperas y diagnóstico local
+
+Cada llamada al SDK mantiene su espera original. A los 10 segundos se muestra orientación en el idioma actual, sin desbloquear controles de wallet ni repetir solicitudes. Revisa el aviso de Varial; si queda atascado, cierra el aviso y recarga la página antes de reintentar. La app no cierra avisos ni recarga automáticamente. El aviso no cancela operaciones ni garantiza desconexión o revocación; una respuesta tardía sigue el flujo normal. El temporizador se limpia al resolverse o rechazarse la llamada. Tema e idioma siguen disponibles.
+
+Solo en desarrollo (`import.meta.env.DEV`), la app usa `console.debug` con dos literales: categoría (`extension_check`, `access`, `network_read`, `account_read`, `disconnect`) y resultado (`ok`, `sdk_error`, `invalid_result`, `unavailable`, `slow`). No incluye valores del SDK, errores originales, cuentas, redes, identificadores ni metadatos. `sdk_error` no prueba rechazo del usuario. No hay persistencia, telemetría ni recolección remota de estos eventos; la app no emite diagnósticos en producción. Esta garantía se limita al código de la app: el SDK instalado contiene capturas que pueden usar `console.error` con errores originales. No se modifica ni se intercepta su consola.
+
 ## Tema e idioma
 
 La interfaz inicia siempre en español y modo oscuro, sin depender del navegador o del sistema. Los controles de la cabecera permiten alternar español/inglés y oscuro/claro. Las preferencias solo viven en memoria: al recargar vuelven los valores iniciales. Cambiarlas no solicita acceso a la wallet ni reinicia una operación pendiente. Los nombres de red y direcciones se muestran tal como los devuelve Varial.
