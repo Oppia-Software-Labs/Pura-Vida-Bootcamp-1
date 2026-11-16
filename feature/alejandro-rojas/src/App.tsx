@@ -35,9 +35,13 @@ function App() {
           <AccountPanel
             publicKey={wallet.publicKey}
             funds={wallet.funds}
+            entries={wallet.entries}
             error={wallet.error}
             needsFunding={wallet.needsFunding}
+            saving={wallet.saving}
+            hasMessage={wallet.hasMessage}
             onFund={wallet.fund}
+            onSaveMessage={wallet.saveMessage}
             onLogout={wallet.logout}
           />
         </main>

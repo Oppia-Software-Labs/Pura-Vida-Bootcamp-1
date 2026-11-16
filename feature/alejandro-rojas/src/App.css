@@ -149,6 +149,11 @@ body {
   color: #5f4dee;
 }
 
+.btn-solid-reg:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 .btn-outline-reg {
   background-color: transparent;
   color: #5f4dee;
