@@ -1,0 +1,17 @@
+{
+  "name": "relata",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:wallet-kit": "esbuild src/wallet-kit-entry.js --bundle --format=esm --platform=browser --minify --outfile=vendor/stellar-wallets-kit/index.js",
+    "start": "node server.js",
+    "test": "node --test tests/horizon.test.js tests/relata-ui.test.js"
+  },
+  "dependencies": {
+    "@creit.tech/stellar-wallets-kit": "2.8.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.28.2"
+  }
+}
