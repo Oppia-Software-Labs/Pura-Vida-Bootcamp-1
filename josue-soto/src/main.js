@@ -4,7 +4,7 @@ import { describeOrder, executeProposal, fundWithFriendbot } from "./trade.js";
 const $ = (id) => document.getElementById(id);
 const state = { network: "testnet", address: null, history: [], config: null, busy: false };
 
-const explorer = (hash) => `https://stellar.expert/explorer/${state.network === "mainnet" ? "public" : "testnet"}/tx/${hash}`;
+const explorer = (hash, network) => `https://stellar.expert/explorer/${network === "mainnet" ? "public" : "testnet"}/tx/${hash}`;
 const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 
 /** Tiny, safe markdown: escape first, then headings, bold, code, bullets. */
@@ -79,13 +79,16 @@ $("fundBtn").addEventListener("click", async () => {
 
 // ---------- market panel ----------
 let marketTimer;
+let marketGen = 0; // bumped per request; late responses from older requests are dropped
 async function loadMarket() {
   clearTimeout(marketTimer);
+  const gen = ++marketGen;
   const base = $("base").value.trim() || "XLM";
   const counter = $("counter").value.trim() || "USDC";
   try {
     const r = await fetch(`/api/market?network=${state.network}&base=${encodeURIComponent(base)}&counter=${encodeURIComponent(counter)}`);
     const d = await r.json();
+    if (gen !== marketGen) return;
     if (!r.ok) throw new Error(d.error);
     const ob = d.order_book;
     const stat = (k, v) => `<div><span>${k}</span><strong>${v ?? "–"}</strong></div>`;
@@ -102,10 +105,11 @@ async function loadMarket() {
       : `<h3>AMM pool</h3><p class="muted">No liquidity pool for this pair.</p>`;
     $("updated").textContent = `${d.pair} · ${d.price_unit} · ${new Date().toLocaleTimeString()}`;
   } catch (e) {
+    if (gen !== marketGen) return;
     $("stats").innerHTML = `<p class="muted">${esc(e.message)}</p>`;
     $("bids").innerHTML = $("asks").innerHTML = $("pool").innerHTML = "";
   }
-  marketTimer = setTimeout(loadMarket, 15000);
+  if (gen === marketGen) marketTimer = setTimeout(loadMarket, 15000);
 }
 $("pairForm").addEventListener("submit", (e) => { e.preventDefault(); loadMarket(); });
 
@@ -129,7 +133,7 @@ function renderProposal(p) {
     status.textContent = "Waiting for wallet signature…";
     try {
       const { hash } = await executeProposal(p, state.config[p.network], state.address);
-      status.innerHTML = `✅ Submitted · <a href="${explorer(hash)}" target="_blank" rel="noopener">${hash.slice(0, 12)}…</a>`;
+      status.innerHTML = `✅ Submitted · <a href="${explorer(hash, p.network)}" target="_blank" rel="noopener">${hash.slice(0, 12)}…</a>`;
       state.history.push({ role: "user", text: `[system note] I signed and submitted the "${p.strategy}" proposal (tx ${hash}).` });
       loadMarket();
     } catch (e) {

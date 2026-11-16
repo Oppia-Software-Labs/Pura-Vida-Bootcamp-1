@@ -25,7 +25,9 @@ app.get("/api/market", async (req, res) => {
     const network = req.query.network === "mainnet" ? "mainnet" : "testnet";
     res.json(await analyzePair(network, String(req.query.base ?? "XLM"), String(req.query.counter ?? "USDC"), Number(req.query.size) || 100));
   } catch (e) {
-    res.status(400).json({ error: e.message });
+    // Full details stay in the server log; clients get a fixed message.
+    console.error("market error:", e);
+    res.status(400).json({ error: "Could not load market data. Use assets like XLM, USDC or CODE:ISSUER." });
   }
 });
 
@@ -45,13 +47,15 @@ app.post("/api/chat", async (req, res) => {
     console.error(e);
     if (e instanceof Anthropic.AuthenticationError) return res.status(500).json({ error: "Invalid or missing ANTHROPIC_API_KEY on the server." });
     if (e instanceof Anthropic.RateLimitError) return res.status(429).json({ error: "Rate limited by the Claude API, try again shortly." });
-    if (e instanceof Anthropic.APIError) return res.status(502).json({ error: `Claude API error ${e.status}: ${e.message}` });
-    res.status(500).json({ error: e.message ?? "Unexpected error" });
+    if (e instanceof Anthropic.APIError) return res.status(502).json({ error: "The Claude API returned an error. Please try again." });
+    res.status(500).json({ error: "Unexpected server error." });
   }
 });
 
 const port = Number(process.env.PORT) || 8787;
-app.listen(port, () => {
-  console.log(`API listening on http://localhost:${port}`);
+// Loopback only: this API has no auth, and /api/chat spends the owner's Claude quota.
+const HOST = "127.0.0.1";
+app.listen(port, HOST, () => {
+  console.log(`API listening on http://${HOST}:${port}`);
   if (!process.env.ANTHROPIC_API_KEY) console.warn("ANTHROPIC_API_KEY is not set: /api/chat will fail unless an `ant auth login` profile exists.");
 });

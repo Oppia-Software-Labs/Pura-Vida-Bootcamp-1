@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 
 export default defineConfig({
-  server: { proxy: { "/api": "http://localhost:8787" } },
-  preview: { proxy: { "/api": "http://localhost:8787" } },
+  // 127.0.0.1 (not "localhost", which can resolve to ::1) to match the API's loopback bind.
+  server: { proxy: { "/api": "http://127.0.0.1:8787" } },
+  preview: { proxy: { "/api": "http://127.0.0.1:8787" } },
 });
