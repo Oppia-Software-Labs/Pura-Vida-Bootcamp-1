@@ -18,24 +18,35 @@ export default function AccountPanel({
   onLogout,
 }: AccountPanelProps) {
   return (
-    <>
-      <p>Dirección: {publicKey}</p>
+    <div className="account-card">
+      <p className="address">{publicKey}</p>
       {funds.total && (
-        <>
-          <p>Balance testnet: {funds.total} XLM</p>
-          <p>Congelado: {funds.reserved} XLM</p>
-          <p>Disponible: {funds.available} XLM</p>
-        </>
+        <div className="funds">
+          <p>
+            <span className="fund-label">BALANCE TESTNET</span>
+            <span className="fund-value">{funds.total} XLM</span>
+          </p>
+          <p>
+            <span className="fund-label">CONGELADO</span>
+            <span className="fund-value">{funds.reserved} XLM</span>
+          </p>
+          <p>
+            <span className="fund-label">DISPONIBLE</span>
+            <span className="fund-value">{funds.available} XLM</span>
+          </p>
+        </div>
       )}
-      {needsFunding && (
-        <button type="button" className="counter" onClick={onFund}>
-          Fondear en testnet
+      {error && <p className="form-error">{error}</p>}
+      <div className="actions">
+        {needsFunding && (
+          <button type="button" className="btn-solid-reg" onClick={onFund}>
+            Fondear en testnet
+          </button>
+        )}
+        <button type="button" className="btn-outline-reg" onClick={onLogout}>
+          Cerrar sesión
         </button>
-      )}
-      {error && <p>{error}</p>}
-      <button type="button" className="counter" onClick={onLogout}>
-        Cerrar sesión
-      </button>
-    </>
+      </div>
+    </div>
   )
 }
