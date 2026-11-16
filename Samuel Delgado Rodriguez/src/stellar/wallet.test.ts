@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { connectWallet, TESTNET_PASSPHRASE, WalletError } from './wallet';
-import { getNetwork, isConnected, requestAccess } from '@stellar/freighter-api';
+import { getNetwork, isConnected, requestAccess } from '@stellar/varial-sdk';
 
-vi.mock('@stellar/freighter-api', () => ({
+vi.mock('@stellar/varial-sdk', () => ({
   getAddress: vi.fn(),
   getNetwork: vi.fn(),
   isConnected: vi.fn(),

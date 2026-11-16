@@ -1,4 +1,4 @@
-import { getAddress, getNetwork, isConnected, requestAccess } from '@stellar/freighter-api';
+import { getAddress, getNetwork, isConnected, requestAccess } from '@stellar/varial-sdk';
 
 export const TESTNET_PASSPHRASE = 'Test SDF Network ; September 2015';
 
@@ -14,20 +14,20 @@ export class WalletError extends Error {
 export async function connectWallet(): Promise<string> {
   const connection = await isConnected();
   if (!connection.isConnected) {
-    throw new WalletError('missing-extension', 'Instala Freighter para conectar tu wallet.');
+    throw new WalletError('missing-extension', 'Instala Varial para conectar tu wallet.');
   }
 
   const access = await requestAccess();
   if (access.error || !access.address) {
-    throw new WalletError('access-denied', 'No se autorizó la conexión. Vuelve a intentarlo desde Freighter.');
+    throw new WalletError('access-denied', 'No se autorizó la conexión. Vuelve a intentarlo desde Varial.');
   }
 
   const network = await getNetwork();
   if (network.error) {
-    throw new WalletError('wallet-error', 'No se pudo comprobar la red de Freighter.');
+    throw new WalletError('wallet-error', 'No se pudo comprobar la red de Varial.');
   }
   if (network.networkPassphrase !== TESTNET_PASSPHRASE) {
-    throw new WalletError('wrong-network', 'Cambia Freighter a Testnet y vuelve a conectar.');
+    throw new WalletError('wrong-network', 'Cambia Varial a Testnet y vuelve a conectar.');
   }
 
   return access.address;

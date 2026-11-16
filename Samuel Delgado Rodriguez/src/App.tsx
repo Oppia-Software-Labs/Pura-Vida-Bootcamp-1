@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { loadAccount, type AccountResult } from './stellar/account';
+import { formatXlmBalance, loadAccount, type AccountResult } from './stellar/account';
 import { connectWallet, restoreWallet, WalletError } from './stellar/wallet';
 
 type AccountState = { status: 'idle' | 'loading' | 'error'; message?: string } | AccountResult;
@@ -45,7 +45,7 @@ export default function App() {
       sessionStorage.setItem(SESSION_KEY, 'true');
       setAddress(value);
     } catch (error) {
-      setWalletError(error instanceof WalletError ? error.message : 'No se pudo conectar Freighter. Inténtalo de nuevo.');
+      setWalletError(error instanceof WalletError ? error.message : 'No se pudo conectar Varial. Inténtalo de nuevo.');
     } finally { setConnecting(false); }
   }
 
@@ -76,7 +76,7 @@ export default function App() {
       <section className="intro">
         <div className="eyebrow">— &nbsp; UNA VISTA CLARA DE TU CUENTA</div>
         <h1>Tu Stellar,<br /><em>de un vistazo.</em></h1>
-        <p>Conecta Freighter para consultar tu dirección y saldo XLM en la red de pruebas. Sin claves privadas, sin complicaciones.</p>
+        <p>Conecta Varial, antes Freighter, para consultar tu dirección y saldo XLM en la red de pruebas. Sin claves privadas, sin complicaciones.</p>
       </section>
       <div className="right-column">
         <section className="card" aria-labelledby="card-title">
@@ -85,16 +85,16 @@ export default function App() {
             <div className="connected"><i /> Wallet conectada <span>Testnet</span></div>
             <div className="balance-box"><small>SALDO DISPONIBLE</small>
               {account.status === 'loading' && <div className="loading">Consultando saldo…</div>}
-              {account.status === 'funded' && <div className="balance"><strong>{Number(account.balance).toLocaleString('es-CR', { maximumFractionDigits: 7 })}</strong> XLM</div>}
-              {account.status === 'unfunded' && <><div className="balance"><strong>—</strong> XLM</div><p>Esta cuenta aún no existe en Testnet. Actívala con fondos de prueba desde Freighter o Stellar Lab.</p></>}
+              {account.status === 'funded' && <div className="balance"><strong>{formatXlmBalance(account.balance)}</strong> XLM</div>}
+              {account.status === 'unfunded' && <><div className="balance"><strong>—</strong> XLM</div><p>Esta cuenta aún no existe en Testnet. Actívala con fondos de prueba desde Varial o Stellar Lab.</p></>}
               {account.status === 'error' && <p className="error" role="alert">{account.message}</p>}
             </div>
             <div className="address"><small>DIRECCIÓN PÚBLICA</small><div><code>{address}</code><button onClick={copyAddress} aria-label={copied ? 'Dirección copiada' : 'Copiar dirección'}>{copied ? '✓' : '▢'}</button></div></div>
             <div className="actions"><button onClick={() => setRefreshKey((key) => key + 1)} disabled={account.status === 'loading'}>↻ &nbsp; Actualizar saldo</button><button onClick={disconnect}>Desconectar</button></div>
           </div> : <div className="card-content empty">
-            <div className="orb" aria-hidden="true">✳</div><h3>Todo comienza aquí.</h3><p>Conecta tu wallet Freighter para ver los datos de tu cuenta Stellar.</p>
-            <button className="connect-button" onClick={connect} disabled={connecting}><span>▣ &nbsp; {connecting ? 'Conectando…' : 'Conectar Freighter'}</span><span>→</span></button>
-            <div className="helper">¿No tienes Freighter? <a href="https://www.freighter.app/" target="_blank" rel="noreferrer">Descárgalo aquí ↗</a></div>
+            <div className="orb" aria-hidden="true">✳</div><h3>Todo comienza aquí.</h3><p>Conecta tu wallet Varial para ver los datos de tu cuenta Stellar.</p>
+            <button className="connect-button" onClick={connect} disabled={connecting}><span>▣ &nbsp; {connecting ? 'Conectando…' : 'Conectar Varial'}</span><span>→</span></button>
+            <div className="helper">¿No tienes Varial? <a href="https://varialwallet.com/" target="_blank" rel="noreferrer">Descárgalo aquí ↗</a></div>
           </div>}
           {walletError && <p className="error card-error" role="alert">{walletError}</p>}
         </section>

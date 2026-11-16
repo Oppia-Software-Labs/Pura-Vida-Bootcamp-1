@@ -9,10 +9,22 @@ export type AccountResult =
 
 export function nativeBalance(account: HorizonAccount): string {
   const balance = account.balances.find((item) => item.asset_type === 'native');
-  if (!balance || !/^\d+(\.\d+)?$/.test(balance.balance)) {
+  if (!balance || !/^\d+(\.\d{1,7})?$/.test(balance.balance)) {
     throw new Error('Horizon devolvió un saldo XLM inválido.');
   }
   return balance.balance;
+}
+
+export function formatXlmBalance(balance: string): string {
+  if (!/^\d+(\.\d{1,7})?$/.test(balance)) {
+    throw new Error('El saldo XLM tiene un formato inválido.');
+  }
+  const [whole, fraction] = balance.split('.');
+  const wholeFormatted = new Intl.NumberFormat('es-CR').format(BigInt(whole));
+  const visibleFraction = fraction?.replace(/0+$/, '');
+  if (!visibleFraction) return wholeFormatted;
+  const decimal = new Intl.NumberFormat('es-CR').formatToParts(1.1).find((part) => part.type === 'decimal')?.value ?? ',';
+  return `${wholeFormatted}${decimal}${visibleFraction}`;
 }
 
 export async function loadAccount(address: string, signal?: AbortSignal): Promise<AccountResult> {

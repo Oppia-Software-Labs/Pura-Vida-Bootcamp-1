@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { loadAccount, nativeBalance } from './account';
+import { formatXlmBalance, loadAccount, nativeBalance } from './account';
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -13,6 +13,22 @@ describe('nativeBalance', () => {
 
   it('rejects a missing native balance', () => {
     expect(() => nativeBalance({ balances: [] })).toThrow('saldo XLM inválido');
+  });
+
+  it('rejects a malformed balance before rendering it', () => {
+    expect(() => nativeBalance({ balances: [{ asset_type: 'native', balance: '1.12345678' }] })).toThrow('saldo XLM inválido');
+  });
+});
+
+describe('formatXlmBalance', () => {
+  it('keeps all seven decimal places without floating point rounding', () => {
+    const formatted = formatXlmBalance('9007199254740993.1234567');
+    expect(formatted).toContain('1234567');
+    expect(formatted.replace(/\D/g, '')).toBe('90071992547409931234567');
+  });
+
+  it('removes only insignificant zeroes', () => {
+    expect(formatXlmBalance('12.5000000').replace(/\D/g, '')).toBe('125');
   });
 });
 
