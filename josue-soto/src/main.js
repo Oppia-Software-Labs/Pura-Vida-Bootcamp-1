@@ -144,6 +144,22 @@ function renderProposal(p) {
 }
 
 // ---------- chat ----------
+// The server reads at most the last 20 turns (8000 chars each) and caps bodies at 200kb.
+const HISTORY_TURNS = 20, TURN_CHARS = 8000, BODY_BUDGET = 150_000;
+const byteLen = (s) => new TextEncoder().encode(s).length;
+
+/** Newest-first bounded history whose serialized request stays under BODY_BUDGET bytes. */
+function chatBody(text) {
+  let history = state.history.slice(-HISTORY_TURNS).map((m) => ({ role: m.role, text: m.text.slice(0, TURN_CHARS) }));
+  const make = () => JSON.stringify({ network: state.network, address: state.address, history, message: text });
+  let body = make();
+  while (history.length && byteLen(body) > BODY_BUDGET) {
+    history = history.slice(1); // drop the oldest turn first
+    body = make();
+  }
+  return body;
+}
+
 async function send(text) {
   if (state.busy || !text.trim()) return;
   state.busy = true;
@@ -155,13 +171,14 @@ async function send(text) {
     const r = await fetch("/api/chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ network: state.network, address: state.address, history: state.history, message: text }),
+      body: chatBody(text),
     });
     const d = await r.json();
     pending.remove();
     if (!r.ok) throw new Error(d.error);
     addMsg("assistant", md(d.reply));
     state.history.push({ role: "user", text }, { role: "assistant", text: d.reply });
+    state.history = state.history.slice(-HISTORY_TURNS); // don't grow without bound
     d.proposals.forEach(renderProposal);
   } catch (e) {
     pending.remove();
@@ -175,6 +192,7 @@ async function send(text) {
 $("chatForm").addEventListener("submit", (e) => {
   e.preventDefault();
   const t = $("input").value;
+  if (state.busy || !t.trim()) return; // keep the draft while a request is in flight
   $("input").value = "";
   send(t);
 });
