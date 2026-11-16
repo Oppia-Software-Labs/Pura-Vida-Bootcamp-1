@@ -13,7 +13,7 @@ function App() {
     <main className="mx-auto max-w-5xl px-4 pb-24">
       <Hero />
       <WalletSection wallet={wallet} />
-      <StoriesSection persona={persona} onPersonaChange={setPersona} />
+      <StoriesSection wallet={wallet} persona={persona} onPersonaChange={setPersona} />
       <Section id="preguntar" emoji="💬" title="Preguntale a la abuelita">
         Pronto: hacé cualquier pregunta y te la explican en palabras simples.
       </Section>
