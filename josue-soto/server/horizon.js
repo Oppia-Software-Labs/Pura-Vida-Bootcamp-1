@@ -231,8 +231,9 @@ export async function getAccount(network, address) {
     subentries: account.subentry_count,
     open_offers: offers.records.map((o) => ({
       id: o.id,
-      selling: o.selling.asset_type === "native" ? "XLM" : o.selling.asset_code,
-      buying: o.buying.asset_type === "native" ? "XLM" : o.buying.asset_code,
+      // CODE:ISSUER (same format as balances) so same-code assets from different issuers stay distinct.
+      selling: o.selling.asset_type === "native" ? "XLM" : `${o.selling.asset_code}:${o.selling.asset_issuer}`,
+      buying: o.buying.asset_type === "native" ? "XLM" : `${o.buying.asset_code}:${o.buying.asset_issuer}`,
       // Horizon offer fields: amount is in the SELLING asset, price is BUYING per 1 SELLING.
       amount_selling: num(o.amount),
       price_buying_per_selling: num(o.price),
