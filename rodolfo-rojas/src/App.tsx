@@ -15,7 +15,7 @@ function App() {
     <main className="mx-auto max-w-5xl px-4 pb-24">
       <Hero />
       <WalletSection wallet={wallet} />
-      <StoriesSection wallet={wallet} persona={persona} onPersonaChange={setPersona} />
+      <StoriesSection wallet={wallet} ai={ai} persona={persona} onPersonaChange={setPersona} />
       <AskSection ai={ai} persona={persona} />
     </main>
   )

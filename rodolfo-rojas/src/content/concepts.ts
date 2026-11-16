@@ -9,6 +9,7 @@ export type Concept = {
   stories: Record<PersonaId, string>
   code?: string
   docs: { label: string; url: string }
+  knowledgeIds: string[]
 }
 
 const DOCS = 'https://developers.stellar.org/docs'
@@ -38,6 +39,7 @@ export const CONCEPTS: Concept[] = [
     },
     code: `fetch('https://friendbot.stellar.org?addr=' + publicKey)`,
     docs: { label: 'Faucet (Friendbot)', url: `${DOCS}/tools/quickstart/faucet` },
+    knowledgeIds: ['networks'],
   },
   {
     id: 'wallet',
@@ -62,6 +64,7 @@ export const CONCEPTS: Concept[] = [
     },
     code: `const { address } = await StellarWalletsKit.authModal()`,
     docs: { label: 'Accounts', url: `${DOCS}/learn/fundamentals/stellar-data-structures/accounts` },
+    knowledgeIds: ['keys', 'accounts'],
   },
   {
     id: 'transaccion',
@@ -87,6 +90,7 @@ export const CONCEPTS: Concept[] = [
   .setTimeout(180)
   .build()`,
     docs: { label: 'Send and receive payments', url: `${DOCS}/build/guides/transactions/send-and-receive-payments` },
+    knowledgeIds: ['transactions'],
   },
   {
     id: 'fee',
@@ -110,6 +114,7 @@ export const CONCEPTS: Concept[] = [
     },
     code: `fee: BASE_FEE // '100' stroops por operación`,
     docs: { label: 'Fees, resource limits and metering', url: `${DOCS}/learn/fundamentals/fees-resource-limits-metering` },
+    knowledgeIds: ['fees'],
   },
   {
     id: 'token',
@@ -132,6 +137,7 @@ export const CONCEPTS: Concept[] = [
     },
     code: `const chepe = new Asset('CHEPE', issuerPublicKey)`,
     docs: { label: 'Assets', url: `${DOCS}/learn/fundamentals/stellar-data-structures/assets` },
+    knowledgeIds: ['assets', 'lumens'],
   },
   {
     id: 'trustline',
@@ -153,6 +159,7 @@ export const CONCEPTS: Concept[] = [
     },
     code: `Operation.changeTrust({ asset: chepe })`,
     docs: { label: 'Verify trustlines', url: `${DOCS}/build/guides/basics/verify-trustlines` },
+    knowledgeIds: ['trustlines'],
   },
   {
     id: 'mint-burn',
@@ -175,6 +182,7 @@ export const CONCEPTS: Concept[] = [
     code: `// burn = devolverle el asset al issuer
 Operation.payment({ destination: issuerPublicKey, asset: chepe, amount: '10' })`,
     docs: { label: 'Glossary: Burn', url: `${DOCS}/learn/glossary#burn` },
+    knowledgeIds: ['burn', 'assets'],
   },
   {
     id: 'smart-contract',
@@ -200,5 +208,6 @@ Operation.payment({ destination: issuerPublicKey, asset: chepe, amount: '10' })`
 const tx = await client.increment()
 await tx.signAndSend()`,
     docs: { label: 'Smart contracts', url: `${DOCS}/build/smart-contracts/overview` },
+    knowledgeIds: ['soroban', 'sac'],
   },
 ]

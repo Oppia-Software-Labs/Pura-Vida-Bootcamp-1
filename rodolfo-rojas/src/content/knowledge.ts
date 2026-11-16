@@ -188,6 +188,10 @@ export const KNOWLEDGE: KnowledgeEntry[] = [
   },
 ]
 
+export function getKnowledge(ids: string[]): KnowledgeEntry[] {
+  return KNOWLEDGE.filter((entry) => ids.includes(entry.id))
+}
+
 export function findRelevantKnowledge(question: string, limit = 3): KnowledgeEntry[] {
   const text = normalize(question)
   return KNOWLEDGE.map((entry) => ({ entry, score: scoreEntry(entry, text) }))

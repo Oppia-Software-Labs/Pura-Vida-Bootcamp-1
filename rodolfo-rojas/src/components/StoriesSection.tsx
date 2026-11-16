@@ -1,20 +1,23 @@
 import { useState } from 'react'
 import { CONCEPTS, type Concept } from '../content/concepts'
 import type { PersonaId } from '../content/personas'
+import type { AiSettingsState } from '../hooks/useAiSettings'
 import { useDonaRosa, type DonaRosa } from '../hooks/useDonaRosa'
 import { usePulperia, type Pulperia } from '../hooks/usePulperia'
 import type { Wallet } from '../hooks/useWallet'
 import { PersonaPicker } from './PersonaPicker'
+import { ExplainBack } from './ExplainBack'
 import { Section } from './Section'
 import { TryIt } from './TryIt'
 
 type StoriesSectionProps = {
   wallet: Wallet
+  ai: AiSettingsState
   persona: PersonaId
   onPersonaChange: (id: PersonaId) => void
 }
 
-export function StoriesSection({ wallet, persona, onPersonaChange }: StoriesSectionProps) {
+export function StoriesSection({ wallet, ai, persona, onPersonaChange }: StoriesSectionProps) {
   const rosa = useDonaRosa(wallet)
   const pulperia = usePulperia(wallet)
   const [selectedId, setSelectedId] = useState(CONCEPTS[0].id)
@@ -29,7 +32,7 @@ export function StoriesSection({ wallet, persona, onPersonaChange }: StoriesSect
           <ConceptTile key={c.id} concept={c} selected={c.id === selectedId} onSelect={setSelectedId} />
         ))}
       </div>
-      <Story concept={concept} persona={persona} wallet={wallet} rosa={rosa} pulperia={pulperia} />
+      <Story concept={concept} persona={persona} wallet={wallet} ai={ai} rosa={rosa} pulperia={pulperia} />
     </Section>
   )
 }
@@ -60,11 +63,12 @@ type StoryProps = {
   concept: Concept
   persona: PersonaId
   wallet: Wallet
+  ai: AiSettingsState
   rosa: DonaRosa
   pulperia: Pulperia
 }
 
-function Story({ concept, persona, wallet, rosa, pulperia }: StoryProps) {
+function Story({ concept, persona, wallet, ai, rosa, pulperia }: StoryProps) {
   return (
     <article className="mt-6 rounded-3xl bg-crema p-5 ring-1 ring-cafe/10 sm:p-7">
       <h3 className="font-display text-2xl font-bold">
@@ -88,6 +92,7 @@ function Story({ concept, persona, wallet, rosa, pulperia }: StoryProps) {
         📖 Documentación oficial: {concept.docs.label}
       </a>
       <TryIt conceptId={concept.id} wallet={wallet} rosa={rosa} pulperia={pulperia} />
+      <ExplainBack key={concept.id} concept={concept} persona={persona} ai={ai} />
     </article>
   )
 }

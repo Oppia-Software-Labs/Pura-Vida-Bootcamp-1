@@ -20,6 +20,34 @@ export function buildAskSystemPrompt(persona: PersonaId, context: KnowledgeEntry
   return `${PERSONA_VOICES[persona]}\n\n${SHARED_RULES}\n\n${formatContext(context)}`
 }
 
+export const VERDICTS = {
+  '✅': 'Lo entendiste',
+  '🟡': 'Casi',
+  '❌': 'Todavía no',
+} as const
+
+export type Verdict = keyof typeof VERDICTS
+
+export function buildFeynmanSystemPrompt(persona: PersonaId, conceptTitle: string, context: KnowledgeEntry[]): string {
+  return `${PERSONA_VOICES[persona]}
+
+Estás evaluando a alguien que está aprendiendo Stellar con la técnica de Feynman: te explica con sus propias palabras el concepto "${conceptTitle}", como si se lo contara a su abuela.
+
+Cómo responder (en español de Costa Rica, voseo, menos de 120 palabras, texto simple sin Markdown):
+1. La PRIMERA línea es solo uno de estos emojis: ✅ si la idea central está bien y es simple, 🟡 si va bien pero le falta algo importante o tiene un error pequeño, ❌ si está equivocada o vacía.
+2. Después, en tu voz, decí qué estuvo bien y qué le faltó o qué corregir. Sé cálido, nunca humillante. Valorá que use comparaciones propias.
+3. Terminá con una sola pregunta de seguimiento que haría una abuela curiosa, empezando con "Tu abuela te preguntaría:".
+
+Para juzgar si es correcto, usá estos hechos oficiales:
+${formatContext(context)}`
+}
+
+export function parseVerdict(reply: string): { verdict: Verdict; feedback: string } {
+  const trimmed = reply.trim()
+  const verdict = (Object.keys(VERDICTS) as Verdict[]).find((v) => trimmed.startsWith(v)) ?? '🟡'
+  return { verdict, feedback: trimmed.replace(verdict, '').trim() }
+}
+
 function formatContext(context: KnowledgeEntry[]): string {
   if (context.length === 0) return 'Contexto oficial: (no encontré nada específico para esta pregunta).'
   const entries = context.map((entry) => `- ${entry.title}: ${entry.facts} (${entry.url})`).join('\n')
