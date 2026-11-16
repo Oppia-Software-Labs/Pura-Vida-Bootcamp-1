@@ -6,6 +6,7 @@ type AccountPanelProps = {
   error: string
   needsFunding: boolean
   onFund: () => void
+  onLogout: () => void
 }
 
 export default function AccountPanel({
@@ -14,6 +15,7 @@ export default function AccountPanel({
   error,
   needsFunding,
   onFund,
+  onLogout,
 }: AccountPanelProps) {
   return (
     <>
@@ -31,6 +33,9 @@ export default function AccountPanel({
         </button>
       )}
       {error && <p>{error}</p>}
+      <button type="button" className="counter" onClick={onLogout}>
+        Cerrar sesión
+      </button>
     </>
   )
 }

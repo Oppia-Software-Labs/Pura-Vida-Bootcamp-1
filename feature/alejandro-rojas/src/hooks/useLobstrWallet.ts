@@ -66,5 +66,12 @@ export function useLobstrWallet() {
     }
   }
 
-  return { publicKey, funds, error, needsFunding, connect, fund }
+  function logout() {
+    setPublicKey('')
+    setFunds(emptyFunds)
+    setError('')
+    setNeedsFunding(false)
+  }
+
+  return { publicKey, funds, error, needsFunding, connect, fund, logout }
 }

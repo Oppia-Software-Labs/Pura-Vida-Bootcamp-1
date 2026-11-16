@@ -16,6 +16,7 @@ function App() {
           error={wallet.error}
           needsFunding={wallet.needsFunding}
           onFund={wallet.fund}
+          onLogout={wallet.logout}
         />
       ) : (
         <>
