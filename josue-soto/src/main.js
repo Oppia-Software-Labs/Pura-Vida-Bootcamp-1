@@ -202,9 +202,19 @@ $("input").addEventListener("keydown", (e) => {
 $("chips").addEventListener("click", (e) => { if (e.target.tagName === "BUTTON") send(e.target.textContent); });
 
 // ---------- boot ----------
-(async () => {
-  state.config = await (await fetch("/api/config")).json();
+async function boot() {
+  try {
+    const r = await fetch("/api/config");
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    state.config = await r.json();
+  } catch (e) {
+    // Show the failure with a retry button instead of silently aborting boot.
+    const msg = addMsg("error", `<p>Could not load app configuration (${esc(e.message)}). Is the API server running?</p><button class="ghost small">Retry</button>`);
+    msg.querySelector("button").onclick = () => { msg.remove(); boot(); };
+    return;
+  }
   state.address = await restoreWallet().catch(() => null);
   renderWallet();
   loadMarket();
-})();
+}
+boot();

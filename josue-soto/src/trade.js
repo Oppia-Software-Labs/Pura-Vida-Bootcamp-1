@@ -3,7 +3,11 @@
 import { Asset, BASE_FEE, Horizon, Operation, TransactionBuilder } from "@stellar/stellar-sdk";
 import { signXdr, walletPassphrase } from "./wallet.js";
 
+// Amounts are 7-decimal fixed point on Stellar.
 const fmt = (n) => Number(n).toFixed(7).replace(/\.?0+$/, "");
+// Prices are rationals (n/d), not 7-decimal amounts: keep full precision as a plain
+// decimal string (no exponent) and let the SDK convert it to n/d.
+const fmtPrice = (n) => Number(n).toLocaleString("en-US", { useGrouping: false, maximumSignificantDigits: 15 });
 
 export function parseAsset(str, cfg) {
   const s = String(str).trim();
@@ -17,8 +21,8 @@ export function describeOrder(o) {
   const b = o.base.split(":")[0];
   const c = (o.counter ?? "").split(":")[0];
   switch (o.action) {
-    case "buy": return `BUY ${fmt(o.amount_base)} ${b} @ ${fmt(o.price)} ${c}`;
-    case "sell": return `SELL ${fmt(o.amount_base)} ${b} @ ${fmt(o.price)} ${c}`;
+    case "buy": return `BUY ${fmt(o.amount_base)} ${b} @ ${fmtPrice(o.price)} ${c}`;
+    case "sell": return `SELL ${fmt(o.amount_base)} ${b} @ ${fmtPrice(o.price)} ${c}`;
     case "cancel": return `CANCEL offer #${o.offer_id}`;
     case "trust": return `ADD TRUSTLINE ${b}`;
     default: return JSON.stringify(o);
@@ -35,7 +39,7 @@ export async function toOperation(o, cfg, server) {
         selling: parseAsset(o.counter, cfg),
         buying: parseAsset(o.base, cfg),
         buyAmount: fmt(o.amount_base),
-        price: fmt(o.price),
+        price: fmtPrice(o.price),
         offerId: "0",
       });
     case "sell":
@@ -43,7 +47,7 @@ export async function toOperation(o, cfg, server) {
         selling: parseAsset(o.base, cfg),
         buying: parseAsset(o.counter, cfg),
         amount: fmt(o.amount_base),
-        price: fmt(o.price),
+        price: fmtPrice(o.price),
         offerId: "0",
       });
     case "cancel": {
