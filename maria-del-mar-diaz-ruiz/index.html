@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stellar Nova Portal · Maria del Mar Diaz Ruiz</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="container">
+    <!-- Navbar -->
+    <header class="navbar">
+      <div class="logo-group">
+        <div class="logo-icon">⭐</div>
+        <div class="logo-text">
+          <h1>Stellar Nova Portal</h1>
+          <p>Bootcamp Pura Vida · Entregable 1</p>
+        </div>
+      </div>
+      <div class="nav-actions">
+        <div class="network-badge">
+          <span class="pulse-dot"></span>
+          <span>Stellar Testnet</span>
+        </div>
+        <button id="btnConnectFreighter" class="btn btn-primary">
+          <span class="wallet-icon">🦊</span>
+          <span id="btnConnectText">Conectar Wallet</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Hero Banner -->
+    <section class="hero-banner">
+      <div class="hero-content">
+        <h2>Mi primera dApp en Stellar</h2>
+        <p>
+          Aplicación descentralizada construida con la asistencia de <strong>Stellar Raven MCP</strong>. Permite conectar tu wallet de Stellar (Freighter), consultar balances en vivo desde la red Testnet, solicitar fondos de prueba gratuitos vía Friendbot y explorar transacciones recientes.
+        </p>
+        <div class="hero-badges">
+          <span class="pill-badge">🚀 Desarrollado por: <strong>Maria del Mar Diaz Ruiz</strong></span>
+          <span class="pill-badge">🤖 Asistido por: <strong>Stellar Raven MCP</strong></span>
+          <span class="pill-badge">🌐 Red: <strong>Horizon Testnet</strong></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- Main Grid Dashboard -->
+    <main class="dashboard-grid">
+      <!-- Columna Izquierda: Wallet y Balance -->
+      <section class="left-column">
+        <div class="card wallet-card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <span class="icon">💳</span> Mi Wallet Stellar
+            </h3>
+            <span id="walletStatusBadge" class="pill-badge" style="background: rgba(239, 68, 68, 0.1); color: var(--danger); border-color: rgba(239, 68, 68, 0.25);">
+              No conectada
+            </span>
+          </div>
+
+          <!-- Estado desconectado -->
+          <div id="disconnectedState" class="wallet-status-box">
+            <p style="color: var(--text-muted); font-size: 0.9rem;">
+              Conecta tu extensión de <strong>Freighter Wallet</strong> o introduce una clave pública de Stellar Testnet para comenzar.
+            </p>
+            
+            <div style="display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.5rem;">
+              <button id="btnConnectMain" class="btn btn-primary" style="width: 100%;">
+                <span>🦊 Conectar con Freighter</span>
+              </button>
+
+              <div style="text-align: center; color: var(--text-dim); font-size: 0.8rem; margin: 0.25rem 0;">
+                — o ingresa una clave pública de prueba —
+              </div>
+
+              <div style="display: flex; gap: 0.5rem;">
+                <input type="text" id="manualAddressInput" class="form-control" placeholder="Ej: GABCD123... (Clave Pública Testnet)">
+                <button id="btnLoadManualAddress" class="btn btn-outline" style="white-space: nowrap;">
+                  Cargar
+                </button>
+              </div>
+
+              <button id="btnGenerateDemoAccount" class="btn btn-outline btn-sm" style="color: var(--primary); border-color: rgba(56, 189, 248, 0.3);">
+                ✨ ¿No tienes wallet? Crear cuenta demo de prueba
+              </button>
+            </div>
+          </div>
+
+          <!-- Estado Conectado -->
+          <div id="connectedState" class="wallet-status-box" style="display: none;">
+            <div class="account-chip">
+              <div>
+                <div style="font-size: 0.75rem; color: var(--text-dim); margin-bottom: 2px;">Dirección Pública:</div>
+                <div id="displayPublicKey" class="account-address">G...</div>
+              </div>
+              <button id="btnCopyAddress" class="copy-btn" title="Copiar dirección">
+                📋 Copiar
+              </button>
+            </div>
+
+            <!-- Balance Showcase -->
+            <div class="balance-showcase">
+              <div class="balance-label">Balance Disponible en Testnet</div>
+              <div class="balance-amount">
+                <span id="displayXlmBalance">0.00</span>
+                <span class="balance-asset">XLM</span>
+              </div>
+              <div id="accountStateNotice" style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.4rem;">
+                Sincronizado con Horizon Testnet
+              </div>
+            </div>
+
+            <!-- Acciones Rápidas -->
+            <div class="quick-actions-bar">
+              <button id="btnFriendbotFaucet" class="btn btn-accent btn-sm">
+                <span>🚰 Pedir 10,000 XLM (Friendbot)</span>
+              </button>
+              <button id="btnRefreshBalance" class="btn btn-outline btn-sm">
+                <span>🔄 Actualizar</span>
+              </button>
+              <a id="btnStellarExpert" href="https://stellar.expert/explorer/testnet" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm">
+                <span>🔍 Ver en Explorer</span>
+              </a>
+              <button id="btnDisconnect" class="btn btn-danger btn-sm">
+                <span>Desconectar</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: Enviar XLM en Testnet -->
+        <div class="card" style="margin-top: 1.5rem;">
+          <div class="card-header">
+            <h3 class="card-title">
+              <span class="icon">💸</span> Transferencia de Prueba (Testnet)
+            </h3>
+            <span class="pill-badge">Stellar Horizon</span>
+          </div>
+
+          <form id="paymentForm">
+            <div class="form-group">
+              <label class="form-label" for="recipientInput">Cuenta Destino (Clave Pública Stellar G...)</label>
+              <input type="text" id="recipientInput" class="form-control" placeholder="GXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" required>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+              <div class="form-group">
+                <label class="form-label" for="amountInput">Monto (XLM)</label>
+                <input type="number" id="amountInput" class="form-control" placeholder="10.0" min="0.0001" step="0.0001" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="memoInput">Memo (Opcional)</label>
+                <input type="text" id="memoInput" class="form-control" placeholder="Pura Vida Bootcamp" maxlength="28">
+              </div>
+            </div>
+
+            <button type="submit" id="btnSendPayment" class="btn btn-primary" style="width: 100%;">
+              <span>🚀 Enviar XLM en Testnet</span>
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Columna Derecha: Historial y Stellar Raven -->
+      <section class="right-column">
+        <!-- Card: Transacciones Recientes -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">
+              <span class="icon">📜</span> Transacciones Recientes
+            </h3>
+            <span id="txCountBadge" class="pill-badge">0 registros</span>
+          </div>
+
+          <div id="txListContainer" class="tx-list">
+            <div id="txEmptyPlaceholder" style="text-align: center; padding: 2.5rem 1rem; color: var(--text-dim);">
+              <div style="font-size: 2rem; margin-bottom: 0.5rem;">🔭</div>
+              <p>Conecta una cuenta para ver sus operaciones en Stellar Testnet.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: Stellar Raven MCP Assistant Info -->
+        <div class="raven-box">
+          <div class="raven-header">
+            <span class="raven-badge">Frontier Lab</span>
+            <h3 style="font-size: 1.05rem; font-weight: 700;">Asistido por Stellar Raven MCP</h3>
+          </div>
+          <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.6; margin-bottom: 0.85rem;">
+            Esta dApp fue diseñada y estructurada utilizando <strong>Stellar Raven</strong> (<code>https://raven.stellar.org/</code>), el Model Context Protocol (MCP) oficial creado por la <em>Stellar Development Foundation (SDF)</em>.
+          </p>
+          <div style="background: rgba(0, 0, 0, 0.35); border-radius: var(--radius-md); padding: 0.85rem; font-size: 0.8rem; margin-bottom: 1rem; border: 1px solid rgba(255, 255, 255, 0.05);">
+            <div style="color: var(--primary); font-weight: 600; margin-bottom: 0.35rem;">⚡ Capacidades aplicadas:</div>
+            <ul style="padding-left: 1.25rem; color: #94a3b8; display: flex; flex-direction: column; gap: 0.25rem;">
+              <li>Detección y conexión sin fricción con la extensión <code>Freighter API</code>.</li>
+              <li>Consumo directo de la API REST de <code>Horizon Testnet</code> para balances y transacciones.</li>
+              <li>Financiamiento automático de cuentas de desarrollo vía <code>Friendbot</code>.</li>
+            </ul>
+          </div>
+          <a href="https://raven.stellar.org/" target="_blank" rel="noopener noreferrer" class="btn btn-outline btn-sm" style="width: 100%; border-color: rgba(168, 85, 247, 0.4); color: #e9d5ff;">
+            <span>🦅 Conoce más sobre Stellar Raven MCP</span>
+          </a>
+        </div>
+      </section>
+    </main>
+
+    <!-- Toast Notifications -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Footer -->
+    <footer>
+      <p>
+        Proyecto desarrollado por <strong>Maria del Mar Diaz Ruiz</strong> (<a href="mailto:maria.diaz.ruiz@est.una.ac.cr">maria.diaz.ruiz@est.una.ac.cr</a>) · Entregable 1
+      </p>
+      <p style="margin-top: 0.35rem; color: var(--text-dim); font-size: 0.75rem;">
+        Pura Vida Stellar Bootcamp 2026 · Organizado por Oppia Software Labs en colaboración con Stellar Development Foundation
+      </p>
+    </footer>
+  </div>
+
+  <!-- Scripts -->
+  <script type="module" src="js/wallet.js"></script>
+  <script type="module" src="js/stellar-service.js"></script>
+  <script type="module" src="js/transactions.js"></script>
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
