@@ -20,12 +20,24 @@ async function requireTestnet() {
 
 export async function connectWallet() {
   const { isConnected: installed } = await isConnected()
-  if (!installed) throw new WalletError('Instalá la extensión de Varial para conectar tu wallet.', true)
-
-  const { address, error } = await requestAccess()
-  if (error || !StrKey.isValidEd25519PublicKey(address)) {
-    throw new WalletError('Autorizá la conexión en Varial para continuar.')
+  if (!installed) {
+    throw new WalletError('Abrí esta página en Chrome o Firefox con Varial instalada.', true)
   }
+
+  const access = await requestAccess()
+  if (access.error?.code === -4) {
+    throw new WalletError('Cancelaste la conexión. Podés volver a intentarlo.')
+  }
+  if (access.error) {
+    throw new WalletError('Desbloqueá Varial y volvé a intentar la conexión.')
+  }
+
+  const address = access.address || (await getAddress()).address
+  if (!address) throw new WalletError('Autorizá esta página en Varial y volvé a conectar la wallet.')
+  if (!StrKey.isValidEd25519PublicKey(address)) {
+    throw new WalletError('Elegí una cuenta con dirección G en Varial.')
+  }
+
   await requireTestnet()
   return address
 }
