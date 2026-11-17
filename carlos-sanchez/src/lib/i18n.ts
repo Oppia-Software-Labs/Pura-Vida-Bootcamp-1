@@ -1,0 +1,98 @@
+export type Locale = "es" | "en";
+
+export const translations = {
+  es: {
+    skipToContent: "Saltar al contenido",
+    testnet: "Solo Testnet",
+    languageLabel: "Cambiar idioma a inglés",
+    connectWallet: "Conectar wallet",
+    connectedWallet: "Wallet conectada",
+    heroTitle: "Contribuciones públicas, reconocidas por personas.",
+    heroBody:
+      "Vincula un Pull Request fusionado y firma un reconocimiento en Stellar Testnet. Cada perfil conserva quién contribuyó, dónde y quién lo reconoció.",
+    signedNotVerified: "Firmado por una wallet, no verificado por una institución.",
+    searchLabel: "Buscar perfil Stellar",
+    searchPlaceholder: "G...",
+    searchAction: "Buscar perfil",
+    newRecognition: "Crear reconocimiento",
+    profileHeading: "Perfil de contributor",
+    emptyTitle: "Busca una dirección para abrir su historial",
+    emptyBody:
+      "Verás una cronología de contribuciones y los proyectos que esta persona ayudó.",
+    projectsHeading: "Proyectos ayudados",
+    projectsEmpty: "Los proyectos aparecerán cuando el perfil tenga reconocimientos.",
+    howTitle: "Cómo funciona",
+    howSteps: [
+      "Conecta Varial en Testnet.",
+      "Pega un Pull Request público fusionado.",
+      "Revisa los datos y firma el reconocimiento.",
+    ],
+    sheetTitle: "Crear reconocimiento",
+    sheetDescription:
+      "La evidencia se valida con GitHub y el reconocimiento se firma con tu wallet.",
+    prLabel: "URL del Pull Request",
+    prPlaceholder: "https://github.com/owner/repo/pull/123",
+    recipientLabel: "Wallet receptora",
+    recipientPlaceholder: "G...",
+    kindLabel: "Tipo de contribución",
+    kinds: {
+      code: "Código",
+      docs: "Documentación",
+      design: "Diseño",
+      testing: "Pruebas",
+      other: "Otra",
+    },
+    reviewAction: "Revisar evidencia",
+    closeAction: "Cerrar panel",
+    walletRequired: "Conecta tu wallet antes de crear un reconocimiento.",
+    footer: "Proofolio · Pura Vida Bootcamp · Stellar Testnet",
+  },
+  en: {
+    skipToContent: "Skip to content",
+    testnet: "Testnet only",
+    languageLabel: "Cambiar idioma a español",
+    connectWallet: "Connect wallet",
+    connectedWallet: "Wallet connected",
+    heroTitle: "Public contributions, recognized by people.",
+    heroBody:
+      "Link a merged Pull Request and sign a recognition on Stellar Testnet. Each profile keeps who contributed, where, and who recognized it.",
+    signedNotVerified: "Signed by a wallet, not verified by an institution.",
+    searchLabel: "Search Stellar profile",
+    searchPlaceholder: "G...",
+    searchAction: "Search profile",
+    newRecognition: "Create recognition",
+    profileHeading: "Contributor profile",
+    emptyTitle: "Search an address to open its history",
+    emptyBody:
+      "You will see a contribution timeline and the projects this person helped.",
+    projectsHeading: "Projects helped",
+    projectsEmpty: "Projects will appear when the profile has recognitions.",
+    howTitle: "How it works",
+    howSteps: [
+      "Connect Varial on Testnet.",
+      "Paste a public merged Pull Request.",
+      "Review the details and sign the recognition.",
+    ],
+    sheetTitle: "Create recognition",
+    sheetDescription:
+      "GitHub validates the evidence and your wallet signs the recognition.",
+    prLabel: "Pull Request URL",
+    prPlaceholder: "https://github.com/owner/repo/pull/123",
+    recipientLabel: "Recipient wallet",
+    recipientPlaceholder: "G...",
+    kindLabel: "Contribution type",
+    kinds: {
+      code: "Code",
+      docs: "Documentation",
+      design: "Design",
+      testing: "Testing",
+      other: "Other",
+    },
+    reviewAction: "Review evidence",
+    closeAction: "Close panel",
+    walletRequired: "Connect your wallet before creating a recognition.",
+    footer: "Proofolio · Pura Vida Bootcamp · Stellar Testnet",
+  },
+} as const;
+
+export type Translation = (typeof translations)[Locale];
