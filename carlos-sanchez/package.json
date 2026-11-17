@@ -13,6 +13,8 @@
   "dependencies": {
     "@fontsource-variable/inter": "latest",
     "@radix-ui/react-dialog": "latest",
+    "@stellar/stellar-sdk": "latest",
+    "@stellar/varial-sdk": "latest",
     "class-variance-authority": "latest",
     "clsx": "latest",
     "lucide-react": "latest",

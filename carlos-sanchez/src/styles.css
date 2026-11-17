@@ -15,6 +15,11 @@
   --color-primary-ink: var(--primary-ink);
   --color-primary-foreground: var(--primary-foreground);
   --color-overlay: var(--overlay);
+  --color-destructive: var(--destructive);
+  --color-warning-soft: var(--warning-soft);
+  --color-warning-border: var(--warning-border);
+  --color-warning-ink: var(--warning-ink);
+  --color-warning-copy: var(--warning-copy);
   --shadow-sheet: -12px 0 30px oklch(0.18 0.012 180 / 0.12);
 }
 
@@ -36,6 +41,11 @@
   --primary-ink: oklch(0.31 0.072 180);
   --primary-foreground: oklch(1 0 0);
   --overlay: oklch(0.16 0.015 180 / 0.46);
+  --destructive: oklch(0.52 0.19 25);
+  --warning-soft: oklch(0.96 0.035 75);
+  --warning-border: oklch(0.79 0.09 75);
+  --warning-ink: oklch(0.36 0.09 65);
+  --warning-copy: oklch(0.4 0.055 65);
 }
 
 * {

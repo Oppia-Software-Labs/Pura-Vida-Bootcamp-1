@@ -11,6 +11,7 @@ import {
 import { Badge } from "./components/ui/badge";
 import { Button } from "./components/ui/button";
 import { Input } from "./components/ui/input";
+import { WalletBanner } from "./components/wallet-banner";
 import {
   Sheet,
   SheetContent,
@@ -20,6 +21,8 @@ import {
   SheetTrigger,
 } from "./components/ui/sheet";
 import { translations, type Locale } from "./lib/i18n";
+import { isValidAccountAddress, truncateAddress } from "./lib/stellar";
+import { useWallet } from "./hooks/use-wallet";
 
 const kinds = ["code", "docs", "design", "testing", "other"] as const;
 
@@ -27,11 +30,19 @@ export function App() {
   const [locale, setLocale] = useState<Locale>("es");
   const [query, setQuery] = useState("");
   const [searchedAddress, setSearchedAddress] = useState("");
+  const [searchError, setSearchError] = useState("");
+  const wallet = useWallet();
   const copy = useMemo(() => translations[locale], [locale]);
 
   function handleSearch(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSearchedAddress(query.trim());
+    const address = query.trim();
+    if (!isValidAccountAddress(address)) {
+      setSearchError(copy.invalidAddress);
+      return;
+    }
+    setSearchError("");
+    setSearchedAddress(address);
   }
 
   function toggleLocale() {
@@ -71,13 +82,33 @@ export function App() {
             >
               <Languages aria-hidden="true" className="size-[18px]" />
             </Button>
-            <Button variant="secondary" className="hidden sm:inline-flex">
+            <Button
+              variant="secondary"
+              onClick={() => void wallet.connect()}
+              disabled={wallet.state.status === "connecting" || wallet.state.status === "funding"}
+              title={wallet.state.connection?.address}
+            >
               <WalletCards aria-hidden="true" className="size-[18px]" />
-              {copy.connectWallet}
+              <span className="hidden sm:inline">
+                {wallet.state.connection
+                  ? truncateAddress(wallet.state.connection.address)
+                  : copy.connectWallet}
+              </span>
+              <span className="sm:hidden">
+                {wallet.state.connection ? copy.connectedWallet : copy.connectWallet}
+              </span>
             </Button>
           </div>
         </div>
       </header>
+
+      <WalletBanner
+        copy={copy}
+        state={wallet.state}
+        onConnect={wallet.connect}
+        onFund={wallet.fund}
+        onDisconnect={wallet.disconnect}
+      />
 
       <main id="main-content">
         <section className="border-b border-border">
@@ -115,12 +146,19 @@ export function App() {
                   autoComplete="off"
                   spellCheck={false}
                   className="font-mono"
+                  aria-invalid={searchError ? true : undefined}
+                  aria-describedby={searchError ? "profile-address-error" : undefined}
                 />
                 <Button type="submit" className="shrink-0">
                   <Search aria-hidden="true" className="size-[18px]" />
                   {copy.searchAction}
                 </Button>
               </div>
+              {searchError ? (
+                <p id="profile-address-error" className="mt-2 text-sm font-medium text-destructive" role="alert">
+                  {searchError}
+                </p>
+              ) : null}
             </form>
           </div>
         </section>
@@ -185,10 +223,12 @@ export function App() {
                   </div>
 
                   <div className="mt-auto pt-8">
-                    <p className="mb-3 text-sm leading-6 text-muted-foreground">
-                      {copy.walletRequired}
-                    </p>
-                    <Button type="submit" className="w-full" disabled>
+                    {!wallet.state.connection ? (
+                      <p className="mb-3 text-sm leading-6 text-muted-foreground">
+                        {copy.walletRequired}
+                      </p>
+                    ) : null}
+                    <Button type="submit" className="w-full" disabled={!wallet.state.connection}>
                       {copy.reviewAction}
                       <ArrowRight aria-hidden="true" className="size-[18px]" />
                     </Button>
