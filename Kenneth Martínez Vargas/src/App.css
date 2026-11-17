@@ -326,7 +326,11 @@ input[aria-invalid='true'] { border-color: var(--ink); }
 .payment-address { font-family: ui-monospace, monospace; font-size: 14px; }
 
 .payment-card .primary { margin-top: 8px; }
-.payment-card .secondary { width: 100%; margin-top: 8px; }
+.payment-actions { display: flex; gap: 8px; margin-top: 8px; }
+.payment-actions .secondary { flex: 1; }
+.payment-status { margin-block: 8px 4px; }
+.payment-status strong { display: block; }
+.payment-status span { color: var(--muted); font-size: 14px; }
 
 @media (max-height: 660px) {
   .sharing-open .sharing { padding-block: 12px; }

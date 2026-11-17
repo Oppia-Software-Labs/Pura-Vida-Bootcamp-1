@@ -45,7 +45,7 @@ export async function connectWallet() {
 export async function verifyWallet(expectedAddress: string) {
   const { address, error } = await getAddress()
   if (error || address !== expectedAddress) {
-    throw new WalletError('Volvé a conectar tu wallet para confirmar la cuenta receptora.')
+    throw new WalletError('Volvé a conectar tu wallet para verificar la cuenta seleccionada.')
   }
   await requireTestnet()
 }
