@@ -16,12 +16,16 @@ export interface PaymentJournal {
 }
 export interface PaymentState {
   status: 'idle' | 'preparing' | 'review' | 'signing' | 'submitting' | 'confirming' | 'uncertain' | 'failed' | 'success'
+  /** Established facts only; never inferred from elapsed animation time. */
+  authorized: boolean
+  submissionStatus: Awaited<ReturnType<PaymentPort['send']>>['status'] | null
+  lookupStatus: PaymentLookup['status'] | null
   draft: PaymentDraft | null
   hash: string | null
   receipt: VerifiedPayment | null
   issue: PaymentIssue | null
 }
-export const initialPayment = (): PaymentState => ({ status: 'idle', draft: null, hash: null, receipt: null, issue: null })
+export const initialPayment = (): PaymentState => ({ status: 'idle', authorized: false, submissionStatus: null, lookupStatus: null, draft: null, hash: null, receipt: null, issue: null })
 export function waitForLedger(signal: AbortSignal) {
   return new Promise<void>((resolve, reject) => {
     if (signal.aborted) { reject(new PaymentError('session')); return }
@@ -64,7 +68,7 @@ export class PaymentFlow {
   prepare = async () => {
     if (this.busy() || this.state.receipt) return
     const generation = this.generation
-    this.update({ status: 'preparing', issue: null })
+    this.update({ ...initialPayment(), status: 'preparing' })
     try {
       const context = await this.guard()
       if (generation !== this.generation) return
@@ -97,11 +101,11 @@ export class PaymentFlow {
       try { this.journal.save(draft) } catch { throw new PaymentError('storage') }
       // Save public hash/unsigned body before handoff. Never save signatures or signed XDR.
       broadcast = true
-      this.update({ status: 'submitting', hash: draft.hash })
+      this.update({ status: 'submitting', hash: draft.hash, authorized: true })
       const sent = await this.port.send(signed.signedTxXdr, this.abort.signal)
       if (generation !== this.generation) return
       if (sent.hash !== draft.hash) throw new PaymentError('modified')
-      this.update({ status: 'confirming', issue: sent.status === 'ERROR' ? 'failed' : null })
+      this.update({ status: 'confirming', submissionStatus: sent.status, issue: sent.status === 'ERROR' ? 'failed' : null })
       await this.poll(draft, generation)
     } catch (error) {
       if (generation !== this.generation) return
@@ -123,6 +127,7 @@ export class PaymentFlow {
       const result = await this.port.lookup(draft.hash)
       await this.validate(draft.account, generation)
       if (result.hash !== draft.hash) throw new PaymentError('modified')
+      if (this.state.lookupStatus !== result.status) this.update({ lookupStatus: result.status })
       if (result.status === 'SUCCESS') {
         const receipt = verifyPaymentReceipt(draft, result)
         try { this.journal.clear(draft.account) } catch { /* Keeping a public record is safe; next reload rechecks RPC. */ }

@@ -55,7 +55,7 @@ El destino y el importe aprobados son **la misma cuenta conectada y 0,1 XLM**. N
 5. La comisión ofrecida es al menos 1000 stroops o diez veces el base fee, con máximo de 10000 stroops. El resumen muestra el máximo; el recibo muestra la comisión realmente cobrada.
 6. Se comprueban de nuevo cuenta/red y firma. El cuerpo firmado debe ser idéntico al revisado. Se envía al **RPC oficial de Testnet** y se consulta su hash.
 7. `PENDING`, `DUPLICATE`, `TRY_AGAIN_LATER` o un mero envío no completan la misión. Solo `getTransaction: SUCCESS` con hash, envelope, firma, resultado payment exitoso, ledger y fecha coincidentes permite **3 de 3**.
-8. Pulsar **Abrir la bóveda**: regreso de cámara, alineación de anillos, retracción de cerrojos, puerta física, iluminación y revelación del artefacto. En movimiento reducido se muestra el resultado sin la secuencia larga.
+8. Tras validar la firma, la cámara regresa automáticamente a la bóveda: núcleo y energía cian reaccionan al envío/espera reales. Solo el recibo verificado activa la oleada de luz, los cerrojos y, a continuación, la apertura física y el artefacto. Se muestran hash, ledger y enlace Testnet. En movimiento reducido se muestra el resultado sin la secuencia larga.
 9. **Ver transacción** abre Stellar Expert en Testnet. **Descargar logro** exporta una tarjeta PNG con el hash y datos del recibo; se puede compartir manualmente. La apariencia del artefacto y de la tarjeta deriva del hash verificado.
 
 El logro es educativo, sin valor monetario. No se crea un NFT ni se acuña un activo. La descarga no publica ni envía nada a terceros.
@@ -133,3 +133,21 @@ Dirección visual adaptada a la referencia de puerta circular monumental: disco 
 `src/components/scene/MechanicalFace.tsx` genera una pequeña textura de rugosidad (128 × 128, RGBA) sin recursos externos; agrupa tornillos y marcas en dos meshes instanciadas y libera sus recursos. `VaultMechanism.tsx` integra el frontal y conserva las tres cerraduras, los canales de apertura y el artefacto. `VaultScene.tsx` añade el marco arquitectónico y ajusta la materialidad/luz. La lógica de wallet, firma, pago, recibo y exportación PNG no cambia. No se añadieron dependencias ni consultas blockchain: esta etapa es exclusivamente visual.
 
 Validación del refinamiento: build correcto, 85 pruebas aprobadas y lint sin advertencias. Chromium comprobó escritorio/móvil, movimiento reducido, misiones hasta 3/3 con fixtures aislados, apertura, PNG, fallback y recuperación tras recarga. Un primer recorrido de navegador se cerró durante la apertura; la repetición secuencial con `--disable-dev-shm-usage` completó ambos escenarios. No se enviaron transacciones reales para estas pruebas visuales.
+
+
+## Verificación cinematográfica en vivo
+
+La interfaz conserva la bóveda metálica, tres misiones, cámara, túneles y parallax. La secuencia enlaza estados reales, sin porcentajes artificiales:
+
+1. **Firma validada / envío:** núcleo activo y anillos cian; puerta cerrada. Solo después de comprobar la firma y el cuerpo autorizados.
+2. **Confirmación pendiente:** pulsos y luces radiales tras un acuse RPC `PENDING`/`DUPLICATE`. Telemetría con la respuesta efectiva de envío y consulta. No equivale a éxito. Un estado incierto conserva la misma operación y permite volver a consultarla.
+3. **Recibo verificado:** se muestran hash, ledger y enlace; oleada cian, rotación y retracción mecánica. Requiere pasar todas las verificaciones existentes, no solo leer `SUCCESS`.
+4. **Apertura:** separación de la puerta, giro con peso, haces de luz, cámara y artefacto derivado del hash. Después se habilita la tarjeta PNG. La navegación no reinicia ni vuelve a enviar un pago.
+
+El icono de sonido de la cabecera permite activar señales mecánicas sintetizadas con Web Audio. Está apagado por defecto y se suspende al ocultar la pestaña. No añade archivos ni dependencias externas.
+
+Para comprobar manualmente: completar las tres misiones con Varial en Testnet siguiendo el recorrido anterior, observar **2 de 3** durante la espera, contrastar el hash/ledger en Stellar Expert y verificar que solo entonces llega **3 de 3** y se abre la puerta automáticamente. Rechazar una autorización debe conservar dos sellos sin abrir. Recargar mientras se espera debe recuperar la misma operación tras completar Identidad/Firma, sin otro envío. Comprobar también movimiento reducido, móvil, PNG y cambio de cuenta/red. No prolongamos artificialmente la espera para hacer visibles las etapas: una confirmación rápida puede abreviarlas.
+
+Archivos de esta etapa: `src/stellar/paymentFlow.ts` (hechos del ciclo real), `src/experience/paymentCinema.ts` (derivación visual), `src/components/PaymentVerification.tsx` (estado/prueba), `src/hooks/useVaultAudio.ts` (audio opcional), `src/App.tsx`/`App.css` (navegación y composición), `src/components/Vault.tsx`/`VaultScene.tsx` y `src/components/scene/{MechanicalFace,VaultMechanism,CinematicCamera,VaultOpening}.tsx` (energía, cámara y apertura), `tests/payment.test.ts`, este README y `RAVEN_USAGE.md`.
+
+Validación de esta etapa: **90 pruebas aprobadas**, build y lint correctos. Chromium comprobó autorización establecida, espera con 2/3, transición a recibo verificado y apertura automática, PNG, móvil (390/320 px), movimiento reducido, fallback WebGL, revocación de permisos y recuperación del mismo hash sin otro envío. Un recorrido adicional comprobó `FAILED` sin apertura/artefacto ni 3/3 y con reintento revisable. Los flujos de wallet/envío/finalidad del navegador usan fixtures aislados y claves efímeras de prueba; **no se envió un pago real desde estas comprobaciones**. La comprobación manual con Varial sigue pendiente. El build conserva el aviso conocido de bundles superiores a 500 kB.

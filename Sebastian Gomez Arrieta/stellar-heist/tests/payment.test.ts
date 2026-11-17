@@ -1,10 +1,11 @@
+import { paymentVisualStage } from '../src/experience/paymentCinema.ts'
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
 import { Keypair, Networks, Transaction, TransactionBuilder, xdr } from '@stellar/stellar-sdk/base'
 import { createPayment, hex, inspectPayment, PaymentError, restorePayment, rpcInteger, verifyPaymentReceipt, verifySignedPayment, xlmToStroops } from '../src/stellar/payment.ts'
 import type { PaymentAccount, PaymentDraft, PaymentLookup } from '../src/stellar/payment.ts'
 import { PaymentFlow } from '../src/stellar/paymentFlow.ts'
-import type { PaymentJournal, PaymentPort } from '../src/stellar/paymentFlow.ts'
+import type { PaymentState, PaymentJournal, PaymentPort } from '../src/stellar/paymentFlow.ts'
 import { WalletSession } from '../src/stellar/walletSession.ts'
 import type { WalletPort } from '../src/stellar/walletSession.ts'
 import { artifactAppearance } from '../src/experience/artifact.ts'
@@ -253,4 +254,78 @@ test('RPC timestamp strings are normalized despite numeric SDK declarations', ()
   assert.equal(rpcInteger('1794851615'), 1794851615)
   assert.equal(rpcInteger(1794851615), 1794851615)
   for (const bad of [null, undefined, '', '1.5', '-1', NaN, Infinity, Number.MAX_SAFE_INTEGER + 1, '9007199254740993']) assert.throws(() => rpcInteger(bad), issue('rpc'))
+})
+
+// These are RPC/wallet fixtures, never artificial success in the application.
+test('cinematic stages follow validated signature, actual enqueue, and independently verified receipt', async () => {
+  const signature = deferred<ReturnType<typeof signed>>()
+  const send = deferred<Awaited<ReturnType<PaymentPort['send']>>>()
+  const nextLedger = deferred<void>()
+  const states: PaymentState[] = []
+  let draft: PaymentDraft
+  let lookups = 0
+  let sends = 0
+  const port: PaymentPort = {
+    load: async () => account(), sign: async value => { draft = value; return signature.promise },
+    send: async () => { sends++; return send.promise },
+    lookup: async () => ++lookups === 1 ? missing(draft) : confirmed(draft),
+  }
+  const flow = new PaymentFlow(port, journalFixture().journal, async () => context, state => states.push(state), () => nextLedger.promise)
+  await flow.prepare()
+  const current = flow.getSnapshot().draft!
+  const operation = flow.submit(current.hash)
+  await new Promise(resolve => setTimeout(resolve, 0))
+  assert.equal(flow.getSnapshot().status, 'signing')
+  assert.equal(paymentVisualStage(flow.getSnapshot()), 'inactive')
+  signature.resolve(signed(current))
+  await new Promise(resolve => setTimeout(resolve, 0))
+  assert.equal(paymentVisualStage(flow.getSnapshot()), 'authorized')
+  assert.equal(flow.getSnapshot().receipt, null)
+  send.resolve({ hash: current.hash, status: 'PENDING' })
+  await new Promise(resolve => setTimeout(resolve, 0))
+  assert.equal(paymentVisualStage(flow.getSnapshot()), 'pending')
+  assert.equal(flow.getSnapshot().lookupStatus, 'NOT_FOUND')
+  assert.equal(flow.getSnapshot().receipt, null)
+  await flow.submit(current.hash) // Cannot replay an animation by sending again.
+  nextLedger.resolve(); await operation
+  assert.equal(paymentVisualStage(flow.getSnapshot()), 'verified')
+  assert(flow.getSnapshot().receipt)
+  assert.equal(sends, 1)
+  const rawSuccess = states.find(state => state.lookupStatus === 'SUCCESS' && !state.receipt)!
+  assert(rawSuccess)
+  assert.notEqual(paymentVisualStage(rawSuccess), 'verified')
+  flow.reset(); assert.equal(paymentVisualStage(flow.getSnapshot()), 'inactive')
+})
+for (const status of ['TRY_AGAIN_LATER', 'ERROR'] as const) test(`cinema does not claim network acceptance for ${status}`, async () => {
+  const { flow, port } = fixture()
+  const next = deferred<void>()
+  port.send = async () => ({ hash: flow.getSnapshot().draft!.hash, status })
+  port.lookup = async () => { await next.promise; return missing(flow.getSnapshot().draft!) }
+  await flow.prepare()
+  const pending = flow.submit(flow.getSnapshot().draft!.hash)
+  await new Promise(resolve => setTimeout(resolve, 0))
+  assert.equal(flow.getSnapshot().submissionStatus, status)
+  assert.equal(paymentVisualStage(flow.getSnapshot()), 'uncertain')
+  next.resolve(); await pending
+  assert.equal(flow.getSnapshot().receipt, null)
+})
+test('recovered tracking never invents a new authorization or enqueue acknowledgement', async () => {
+  const stored = journalFixture(); const draft = createPayment(account()); stored.journal.save(draft)
+  const { flow } = fixture({ lookup: async () => confirmed(draft) }, stored.journal)
+  await flow.prepare()
+  assert.equal(flow.getSnapshot().authorized, false)
+  assert.equal(flow.getSnapshot().submissionStatus, null)
+  assert.equal(paymentVisualStage(flow.getSnapshot()), 'uncertain')
+  await flow.check(); assert.equal(paymentVisualStage(flow.getSnapshot()), 'verified')
+})
+test('failed and rejected operations never become a verified cinematic stage', async () => {
+  for (const reject of [true, false]) {
+    const { flow, port } = fixture()
+    if (reject) port.sign = async () => { throw new PaymentError('rejected') }
+    else port.lookup = async () => ({ ...confirmed(flow.getSnapshot().draft!), status: 'FAILED' })
+    await flow.prepare(); await flow.submit(flow.getSnapshot().draft!.hash)
+    assert.equal(paymentVisualStage(flow.getSnapshot()), 'failed')
+    assert.equal(flow.getSnapshot().receipt, null)
+    if (reject) assert.equal(flow.getSnapshot().authorized, false)
+  }
 })

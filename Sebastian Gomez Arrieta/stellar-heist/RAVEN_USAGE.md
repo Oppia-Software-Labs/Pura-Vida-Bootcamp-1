@@ -155,3 +155,25 @@ Las pruebas automatizadas de envío/finalidad emplean fixtures aislados y firmas
 - Chromium con el SDK real, doble aislado del puente de extensión y respuestas RPC interceptadas: revisión explícita, firma criptográfica de la transacción, `PENDING` sin desbloqueo, `SUCCESS` validado con 3/3, puerta/artefacto, tarjeta PNG, móvil, movimiento reducido, pérdida de WebGL y revocación de sesión. Recargar un envío pendiente recupera el hash sin otra firma/envío. Estas respuestas son fixtures; no se confunden con una confirmación on-chain real.
 - El adaptador real consultó además una transacción pública ya existente: `SUCCESS`, ledger `5765975`, envelope/resultado presentes, fechas convertidas a números seguros. Esa lectura no completó misiones ni demuestra un pago nuevo del usuario. No se registró ese hash como logro de la app.
 - Se afinó únicamente la cámara de revelación para mantener el artefacto en el lado visual del encuadre, conservar la legibilidad y poder regresar normalmente a las misiones. La escena y las transiciones previas se mantienen.
+
+
+## Verificación cinematográfica — 16 de noviembre de 2026
+
+Consultas reales de esta etapa, observadas a las **19:34:52 UTC**:
+
+1. `stellar-raven.search` con `query: "get_doc_page sendTransaction getTransaction RPC transaction lifecycle"`, `service: "stellarDocs"`, `limit: 2`. Descubrió `stellarDocs.get_doc_page` y `stellarDocs.search_rpc_horizon_data_docs`.
+2. `stellar-raven.execute`: una función async con `Promise.all` para leer mediante `stellarDocs.get_doc_page` los paths `/docs/data/apis/rpc/api-reference/methods/sendTransaction` y `/docs/data/apis/rpc/api-reference/methods/getTransaction`. Ambas lecturas devolvieron `ok`; se proyectaron URL y texto, excluyendo ejemplos extensos.
+
+Fuentes oficiales efectivamente leídas:
+- [sendTransaction](https://developers.stellar.org/docs/data/apis/rpc/api-reference/methods/sendTransaction): valida/encola; no espera el resultado. Estados `PENDING`, `DUPLICATE`, `TRY_AGAIN_LATER`, `ERROR`. No constituye confirmación.
+- [getTransaction](https://developers.stellar.org/docs/data/apis/rpc/api-reference/methods/getTransaction): consulta periódica por hash; estados `SUCCESS`, `NOT_FOUND`, `FAILED`; ledger/fecha/envelope/resultado cuando existen. Historial acotado. `NOT_FOUND` por sí solo no prueba un fallo definitivo.
+
+Decisiones:
+- Se conservan SDKs, construcción, validación de firmas/resultados, destinos, guardas de sesión y política de envío único existentes. La máquina publica adicionalmente hechos tipados: firma validada (`authorized`), respuesta efectiva de envío (`submissionStatus`) y última respuesta de consulta (`lookupStatus`). No se persisten como autorización ni se reconstruyen a partir de un temporizador.
+- `paymentVisualStage` deriva la presentación de esos hechos. Firmar en la extensión todavía no es autorización aceptada por la app: primero se revalida contexto, cuerpo y firma. `TRY_AGAIN_LATER`, `ERROR`, fallos de transporte y recuperación sin acuse conocido muestran incertidumbre, nunca una aceptación inventada.
+- Solo un recibo producido por `verifyPaymentReceipt` habilita luz de verificación, cerrojos, puerta y artefacto. Una respuesta `SUCCESS` todavía sin recibo validado no habilita apertura.
+- Las etapas no retrasan ni reinician consultas/pagos para durar más en pantalla. Una respuesta rápida puede hacer muy breve la autorización/espera. Los tiempos de GSAP describen únicamente movimiento mecánico posterior al recibo; no porcentajes ni progreso de la red.
+- Recuperar/reintentar consulta sigue usando el mismo hash, sin firma ni envío automático. Rechazo/cambio de cuenta/red/permisos/fallo conserva las reglas previas de invalidación y seguimiento.
+- La prueba de consenso continúa siendo la verificación RPC en navegador descrita anteriormente, no una atestación de servidor.
+
+Validación de la secuencia: 90 pruebas aprobadas, build y lint correctos. Nuevas regresiones cubren firma aún pendiente, firma validada, acuse PENDING, NOT_FOUND sin recibo, SUCCESS aún sin validar, éxito con recibo, ERROR/TRY_AGAIN_LATER, fallo/rechazo y recuperación sin inventar autorización. Chromium comprobó las cuatro etapas, 2/3 mientras se espera, 3/3 únicamente con recibo, apertura automática, PNG, móvil, movimiento reducido, fallback, revocación y recuperación sin otro envío. Un escenario móvil adicional de FAILED conservó puerta cerrada y 2/3. Respuestas de envío/finalidad aisladas mediante fixtures; no se realizó un pago real nuevo. Un primer intento del navegador requirió localizar explícitamente el binario instalado y una captura de autorización prolongó un fixture de transporte hasta su timeout: el producto conservó correctamente el estado incierto. Tras ajustar el harness, ambos recorridos y el escenario de fallo completaron correctamente. El aviso de tamaño de chunks se mantiene; la prueba manual con Varial real continúa pendiente.

@@ -1,3 +1,4 @@
+import type { PaymentVisualStage } from '../../experience/paymentCinema'
 import { useEffect, useMemo, useRef } from 'react'
 import type { RefObject } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
@@ -7,7 +8,7 @@ import type { SceneSignals, VaultCompletion } from '../../experience/types'
 import { MechanicalFace } from './MechanicalFace'
 import { artifactAppearance } from '../../experience/artifact'
 
-interface Props { transactionComplete: boolean; proofComplete: boolean; identityComplete: boolean; signals: RefObject<SceneSignals>; animated: boolean; mobile: boolean; missionId: number }
+interface Props { paymentStage: PaymentVisualStage; transactionComplete: boolean; proofComplete: boolean; identityComplete: boolean; signals: RefObject<SceneSignals>; animated: boolean; mobile: boolean; missionId: number }
 const CYAN = '#61e9ff'
 const VIOLET = '#a68aff'
 
@@ -34,7 +35,7 @@ function HardwareInstances({ radius, count, kind }: { radius: number; count: num
   </instancedMesh>
 }
 
-export function VaultMechanism({ transactionComplete, proofComplete, identityComplete, signals, animated, mobile, missionId }: Props) {
+export function VaultMechanism({ paymentStage, transactionComplete, proofComplete, identityComplete, signals, animated, mobile, missionId }: Props) {
   const identityProgress = useRef(0)
   const proofProgress = useRef(0)
   const shackles = useRef<(Mesh | null)[]>([])
@@ -45,22 +46,31 @@ export function VaultMechanism({ transactionComplete, proofComplete, identityCom
   const inner = useRef<Group>(null)
   const door = useRef<Group>(null)
   const bolts = useRef<(Group | null)[]>([])
+  const energyPhase = useRef(0)
+  const outerEnergy = useRef<(MeshStandardMaterial | null)[]>([])
   const lights = useRef<MeshStandardMaterial>(null)
   const lockLights = useRef<(MeshBasicMaterial | null)[]>([])
   useFrame((_, delta) => {
     const { unlock, door: opening, boot, travel } = signals.current
     if (root.current) root.current.visible = travel < 0.36 || signals.current.reveal > 0
     const dt = animated ? Math.min(delta, 0.05) * MathUtils.smoothstep(boot, 0.2, 0.7) : 0
+    const energized = paymentStage === 'pending' || paymentStage === 'authorized'
+    if (energized) energyPhase.current += dt * 0.18
+    outerEnergy.current.forEach((material, i) => {
+      if (!material) return
+      const pulse = animated ? Math.pow((Math.sin(energyPhase.current * 12 - i * 2.1) + 1) * 0.5, 3) : 0.5
+      material.emissiveIntensity = boot * (0.9 + (energized ? pulse * 3 : 0) + Math.sin(unlock * Math.PI) * 3)
+    })
     if (!proofComplete) {
       outerAngle.current += dt * (0.045 + unlock * 0.4)
       innerAngle.current -= dt * (0.075 + unlock * 0.5)
     }
     if (outer.current) outer.current.rotation.z = unlock > 0
       ? Math.PI * 2 + unlock * 0.18
-      : proofComplete ? animated ? MathUtils.damp(outer.current.rotation.z, Math.PI * 2, 3, dt) : Math.PI * 2 : outerAngle.current
+      : proofComplete ? animated ? MathUtils.damp(outer.current.rotation.z, Math.PI * 2 + energyPhase.current, 3, dt) : Math.PI * 2 : outerAngle.current
     if (inner.current) inner.current.rotation.z = unlock > 0
       ? -Math.PI * 2 - unlock * 0.25
-      : proofComplete ? animated ? MathUtils.damp(inner.current.rotation.z, -Math.PI * 2, 3, dt) : -Math.PI * 2 : innerAngle.current
+      : proofComplete ? animated ? MathUtils.damp(inner.current.rotation.z, -Math.PI * 2 - energyPhase.current * 0.65, 3, dt) : -Math.PI * 2 : innerAngle.current
     if (door.current) {
       door.current.rotation.y = -opening * Math.PI * 0.62
       door.current.position.x = -2.06 - opening * 0.5
@@ -90,7 +100,7 @@ export function VaultMechanism({ transactionComplete, proofComplete, identityCom
     <HardwareInstances radius={2.23} count={24} kind="bolt" />
     <group ref={outer}>
       <HardwareInstances radius={2.53} count={36} kind="segment" />
-      {[0, 2.1, 4.2].map(angle => <mesh key={angle} rotation={[0, 0, angle]} position={[0, 0, 0.31]}><torusGeometry args={[2.39, 0.018, 6, 56, 0.85]} /><meshStandardMaterial color={CYAN} emissive={CYAN} emissiveIntensity={1.5} toneMapped={false} /></mesh>)}
+      {[0, 2.1, 4.2].map((angle, i) => <mesh key={angle} rotation={[0, 0, angle]} position={[0, 0, 0.31]}><torusGeometry args={[2.39, 0.018, 6, 56, 0.85]} /><meshStandardMaterial ref={material => { outerEnergy.current[i] = material }} color={CYAN} emissive={CYAN} emissiveIntensity={1.5} toneMapped={false} /></mesh>)}
     </group>
     <group ref={door} position={[-2.06, 0, 0]}>
       <group position={[2.06, 0, 0]}>
@@ -103,7 +113,7 @@ export function VaultMechanism({ transactionComplete, proofComplete, identityCom
         {Array.from({ length: 6 }, (_, i) => <group key={i} rotation={[0, 0, i * Math.PI / 3]}>
           <mesh position={[0, 1.13, 0.3]}><boxGeometry args={[0.025, 0.5, 0.035]} /><meshStandardMaterial color="#61758b" metalness={0.9} roughness={0.3} /></mesh>
         </group>)}
-        <MechanicalFace signals={signals} animated={animated} />
+        <MechanicalFace paymentStage={paymentStage} signals={signals} animated={animated} />
         {[Math.PI / 2, Math.PI * 7 / 6, Math.PI * 11 / 6].map((angle, i) => <group key={i} position={[Math.cos(angle) * 1.53, Math.sin(angle) * 1.53, 0.4]} rotation={[0, 0, angle - Math.PI / 2]}>
           <RoundedBox args={[0.39, 0.56, 0.17]} radius={0.035} smoothness={2}><meshStandardMaterial color="#53667c" metalness={0.95} roughness={0.3} /></RoundedBox>
           <mesh position={[0, 0, 0.11]}><boxGeometry args={[0.26, 0.34, 0.06]} /><meshStandardMaterial color="#080f20" /></mesh>

@@ -1,8 +1,9 @@
+import type { PaymentVisualStage } from '../experience/paymentCinema'
 import { useEffect, useMemo, useRef } from 'react'
 import type { RefObject } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
 import { AdaptiveDpr, Environment, Lightformer, PerformanceMonitor } from '@react-three/drei'
-import { AmbientLight, Color, DirectionalLight, Group, Path, PointLight, Shape, Vector2 } from 'three'
+import { AdditiveBlending, AmbientLight, Color, DoubleSide, MeshBasicMaterial, DirectionalLight, Group, Path, PointLight, Shape, Vector2 } from 'three'
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js'
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js'
@@ -15,6 +16,8 @@ import { VaultOpening } from './scene/VaultOpening'
 import type { ProofVisualState, SceneSignals, VaultCompletion } from '../experience/types'
 
 export interface VaultSceneProps {
+  paymentStage: PaymentVisualStage
+  onOpening: () => void
   completion: VaultCompletion | null
   revealActive: boolean
   reducedMotion: boolean
@@ -95,6 +98,28 @@ function Lighting({ signals, animated, shadows }: { signals: RefObject<SceneSign
   </>
 }
 
+/** Lightweight light shafts emerge only after the verified door begins separating. */
+function ChamberLight({ signals, mobile }: { signals: RefObject<SceneSignals>; mobile: boolean }) {
+  const root = useRef<Group>(null)
+  const materials = useRef<(MeshBasicMaterial | null)[]>([])
+  const light = useRef<PointLight>(null)
+  useFrame(() => {
+    const { door, unlock, travel } = signals.current
+    if (root.current) root.current.visible = door > 0.015 && travel < 0.36
+    materials.current.forEach((material, i) => { if (material) material.opacity = Math.min(1, door * 2) * (0.038 - i * 0.009) })
+    if (light.current) light.current.intensity = Math.sin(unlock * Math.PI) * 26 + door * 22
+  })
+  return <group position={[mobile ? 0 : 1.8, 0, 0.05]}>
+    <pointLight ref={light} color="#95f5fa" distance={9} intensity={0} />
+    <group ref={root} visible={false}>
+      {[0, 1, 2].map(i => <mesh key={i} position={[0, 0, 1.6]} rotation={[-Math.PI / 2, 0, 0]}>
+        <coneGeometry args={[2.2 + i * 0.35, 3.2, 48, 1, true]} />
+        <meshBasicMaterial ref={material => { materials.current[i] = material }} color="#83efff" side={DoubleSide} transparent opacity={0} depthWrite={false} blending={AdditiveBlending} toneMapped={false} />
+      </mesh>)}
+    </group>
+  </group>
+}
+
 function PostProcessing() {
   const { gl, scene, camera, size, invalidate } = useThree()
   const pipeline = useRef<EffectComposer | null>(null)
@@ -126,7 +151,7 @@ function SceneContent(props: VaultSceneProps) {
     canvas.addEventListener('webglcontextlost', lost)
     return () => canvas.removeEventListener('webglcontextlost', lost)
   }, [gl, onContextLost])
-  useEffect(() => { invalidate(); regress() }, [props.missionId, props.animated, props.identityComplete, props.proofState, props.completion, props.revealActive, props.reducedMotion, invalidate, regress])
+  useEffect(() => { invalidate(); regress() }, [props.paymentStage, props.missionId, props.animated, props.identityComplete, props.proofState, props.completion, props.revealActive, props.reducedMotion, invalidate, regress])
   return <>
     <fog attach="fog" args={['#080c17', 11, 45]} />
     <Environment resolution={64} frames={1}>
@@ -135,14 +160,15 @@ function SceneContent(props: VaultSceneProps) {
       <Lightformer intensity={2} color="#a2d8ea" position={[5, 0, 2]} rotation={[0, -Math.PI / 2, 0]} scale={[4, 7, 1]} />
     </Environment>
     <Lighting signals={props.signals} animated={props.animated} shadows={!compact} />
+    <ChamberLight signals={props.signals} mobile={mobile} />
     <Chamber compact={mobile} signals={props.signals} />
-    <VaultMechanism transactionComplete={!!props.completion} proofComplete={props.proofState === 'verified'} identityComplete={props.identityComplete} signals={props.signals} animated={props.animated} mobile={mobile} missionId={props.missionId} />
+    <VaultMechanism paymentStage={props.paymentStage} transactionComplete={!!props.completion} proofComplete={props.proofState === 'verified'} identityComplete={props.identityComplete} signals={props.signals} animated={props.animated} mobile={mobile} missionId={props.missionId} />
     <MissionTransition signals={props.signals} animated={props.animated} mobile={mobile} missionId={props.missionId} />
     <ParticleField signals={props.signals} animated={props.animated} compact={compact} />
     <MissionInstrument proofState={props.proofState} signals={props.signals} animated={props.animated} missionId={props.missionId} compact={mobile} />
     <ArtifactReveal evidence={props.completion} signals={props.signals} animated={props.animated} />
-    <VaultOpening evidence={props.completion} signals={props.signals} active={props.revealActive} reducedMotion={props.reducedMotion} onOpened={props.onOpened} />
-    <CinematicCamera signals={props.signals} animated={props.animated} missionId={props.missionId} />
+    <VaultOpening onOpening={props.onOpening} evidence={props.completion} signals={props.signals} active={props.revealActive} reducedMotion={props.reducedMotion} onOpened={props.onOpened} />
+    <CinematicCamera paymentStage={props.paymentStage} signals={props.signals} animated={props.animated} missionId={props.missionId} />
     <AdaptiveDpr />
     {!props.lightQuality && <PerformanceMonitor ms={500} iterations={4} bounds={() => [28, 55]} flipflops={1} onDecline={props.onSlowHardware} onFallback={props.onSlowHardware} />}
     {!compact && <PostProcessing />}

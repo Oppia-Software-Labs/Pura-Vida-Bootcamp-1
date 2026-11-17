@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, MotionConfig, motion } from 'motion/react'
-import { ArrowRight, ChevronRight, CircleHelp, Crosshair, Fingerprint, Orbit, ShieldCheck, X } from 'lucide-react'
+import { ArrowRight, ChevronRight, CircleHelp, Crosshair, Fingerprint, Orbit, ShieldCheck, Volume2, VolumeX, X } from 'lucide-react'
 import { Vault } from './components/Vault'
 import { Dialog } from './components/Dialog'
 import { MagneticButton } from './components/MagneticButton'
@@ -11,6 +11,9 @@ import { useDocumentVisibility } from './hooks/useDocumentVisibility'
 import { useMotionPreference } from './hooks/useMotionPreference'
 import { introduction, missions } from './data/missions'
 import { useWallet } from './hooks/useWallet'
+import { paymentVisualStage } from './experience/paymentCinema'
+import { PaymentVerification } from './components/PaymentVerification'
+import { useVaultAudio } from './hooks/useVaultAudio'
 import './App.css'
 
 const bootLabels = ['Preparando tu entrada…', 'Encendiendo la cámara…', 'Despertando la bóveda…', 'Todo listo.']
@@ -18,12 +21,16 @@ const bootLabels = ['Preparando tu entrada…', 'Encendiendo la cámara…', 'De
 function App() {
   const wallet = useWallet()
   const receipt = wallet.payment.receipt
+  const visualStage = paymentVisualStage(wallet.payment)
+  const [openingHash, setOpeningHash] = useState<string | null>(null)
+  const onOpening = useCallback(() => setOpeningHash(receipt?.transactionHash ?? null), [receipt?.transactionHash])
   const [openedHash, setOpenedHash] = useState<string | null>(null)
   const onOpened = useCallback(() => setOpenedHash(receipt?.transactionHash ?? null), [receipt?.transactionHash])
   const completedCount = (wallet.identity ? 1 : 0) + (wallet.proof ? 1 : 0) + (receipt ? 1 : 0)
   const proofVisualState = wallet.proof ? 'verified' : ['requesting', 'verifying'].includes(wallet.proofStatus) ? 'scanning' : 'idle'
   const prefersReduced = useMotionPreference()
   const tabVisible = useDocumentVisibility()
+  const audio = useVaultAudio(receipt && openingHash === receipt.transactionHash ? 'opening' : visualStage, wallet.payment.hash, tabVisible)
   const [lightQuality, setLightQuality] = useState(false)
   const [renderMode, setRenderMode] = useState<'loading' | 'webgl' | 'fallback'>('loading')
   const [briefingOpen, setBriefingOpen] = useState(false)
@@ -41,6 +48,17 @@ function App() {
     if (!wallet.identity && missionId > 1) enterMission(1)
     else if (!wallet.proof && missionId === 3) enterMission(2)
   }, [wallet.identity, wallet.proof, missionId, enterMission])
+  const cinematicHash = useRef<string | null>(null)
+  useEffect(() => {
+    const { hash, authorized, status, receipt: verified } = wallet.payment
+    if (!hash) { cinematicHash.current = null; return }
+    const sequence = `${hash}:${verified ? 'verified' : 'tracking'}`
+    if ((authorized || status === 'confirming' || verified) && cinematicHash.current !== sequence) {
+      cinematicHash.current = sequence
+      if (phase !== 'lobby' && phase !== 'returning') returnToLobby()
+    }
+  }, [wallet.payment, phase, returnToLobby])
+  const verificationVisible = !!wallet.payment.hash && visualStage !== 'inactive' && openedHash !== wallet.payment.hash
   const mainRef = useRef<HTMLElement>(null)
 
   useEffect(() => {
@@ -61,7 +79,7 @@ function App() {
 
   return <MotionConfig reducedMotion={paused ? 'always' : 'never'}>
     <div className={`experience-shell ${paused ? 'motion-paused' : ''} phase-${phase}`} data-phase={phase}>
-      <Vault completion={receipt} revealActive={phase === 'lobby' && tabVisible} reducedMotion={paused} onOpened={onOpened} proofState={proofVisualState} identityComplete={wallet.identity} animated={!paused && tabVisible} signals={signals} missionId={missionId} lightQuality={lightQuality} onReady={onReady} onFallback={onFallback} onSlowHardware={onSlowHardware} />
+      <Vault paymentStage={visualStage} onOpening={onOpening} completion={receipt} revealActive={phase === 'lobby' && tabVisible} reducedMotion={paused} onOpened={onOpened} proofState={proofVisualState} identityComplete={wallet.identity} animated={!paused && tabVisible} signals={signals} missionId={missionId} lightQuality={lightQuality} onReady={onReady} onFallback={onFallback} onSlowHardware={onSlowHardware} />
       <div className="world-vignette" aria-hidden="true" />
       <div className="film-grain" aria-hidden="true" />
       <a className="skip-link" href="#experience-main">Saltar al contenido</a>
@@ -69,13 +87,14 @@ function App() {
         <button className="brand" onClick={returnToLobby} aria-label="Stellar Heist, regresar al inicio"><span className="brand-symbol"><Orbit size={27} strokeWidth={1.1} aria-hidden="true" /></span><span>STELLAR <strong>HEIST</strong><small>THE GENESIS VAULT</small></span></button>
         <div className="header-location"><span className="status-dot" /><span>GÉNESIS <i>/</i> 07</span></div>
         <div className="header-actions">
+          <button className="utility-button" onClick={() => void audio.toggle()} aria-pressed={audio.enabled} aria-label={audio.enabled ? 'Desactivar sonido' : 'Activar sonido'}>{audio.enabled ? <Volume2 size={16} aria-hidden="true" /> : <VolumeX size={16} aria-hidden="true" />}</button>
           <button className="utility-button help-button" onClick={() => setBriefingOpen(true)} aria-label="Leer informe de la operación"><CircleHelp size={16} aria-hidden="true" /></button>
         </div>
       </header>
 
       <main ref={mainRef} id="experience-main" className="experience-main" tabIndex={-1}>
         <AnimatePresence mode="wait" initial={false}>
-          {lobby && titleVisible && !receipt && <motion.section key="lobby" className="lobby-copy" aria-labelledby="page-heading"
+          {lobby && titleVisible && !receipt && !verificationVisible && <motion.section key="lobby" className="lobby-copy" aria-labelledby="page-heading"
             initial={{ opacity: 0, y: paused ? 0 : 50, filter: paused ? 'none' : 'blur(12px)' }}
             animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }} exit={{ opacity: 0, y: paused ? 0 : -30, filter: paused ? 'none' : 'blur(9px)' }}
             transition={{ duration: paused ? 0 : 0.85, ease: [0.16, 1, 0.3, 1] }} onAnimationComplete={() => { if (phase === 'lobby') document.getElementById('page-heading')?.focus({ preventScroll: true }) }}>
@@ -86,7 +105,8 @@ function App() {
             <MagneticButton paused={paused} className="primary-button" onClick={() => enterMission(1)}><Fingerprint size={20} aria-hidden="true" /><span>Iniciar infiltración</span><ArrowRight size={19} aria-hidden="true" /></MagneticButton>
 
           </motion.section>}
-          {phase === 'lobby' && receipt && <VaultReward key={receipt.transactionHash} receipt={receipt} opened={openedHash === receipt.transactionHash} />}
+          {phase === 'lobby' && verificationVisible && <PaymentVerification key="verification" wallet={wallet} opening={!!receipt && openingHash === receipt.transactionHash} onReview={() => openMission(3)} />}
+          {phase === 'lobby' && receipt && openedHash === receipt.transactionHash && <VaultReward key={receipt.transactionHash} receipt={receipt} opened={openedHash === receipt.transactionHash} />}
           {phase === 'mission' && <MissionHUD key={`mission-${missionId}`} mission={mission} paused={paused} wallet={wallet} onReturn={returnToLobby} onNext={() => openMission(missionId % 3 + 1)} />}
         </AnimatePresence>
 

@@ -223,3 +223,26 @@
 @media (max-width: 759px) {
   .fallback-notice { position: static; align-self: flex-start; margin: 0 5.5% 18px; max-width: 89%; }
 }
+
+/* The transaction remains the only source of truth; light is its visual interpretation. */
+.verification-interface { position: absolute; left: 7.5%; top: 24%; width: min(33vw, 440px); pointer-events: auto; }
+.verification-interface h1 { font: 500 clamp(36px, 3.8vw, 58px)/1.08 var(--font-sans); letter-spacing: -1.8px; margin: 22px 0; text-wrap: balance; }
+.verification-description { color: #b5c8d6; font-size: 18px; line-height: 1.6; max-width: 32ch; }
+.verification-ledger { display: flex; gap: 10px; align-items: center; color: #a4e6cd; font-size: 15px; margin-top: 20px; }
+.verification-proof { margin-top: 24px; }
+.verification-proof > span { color: #9bafbf; font-size: 13px; }
+.verification-proof code { display: block; overflow-wrap: anywhere; color: #c4e6ee; font: 12px/1.8 var(--font-mono); margin-top: 8px; max-width: 350px; user-select: all; }
+.verification-telemetry { color: #94afc0; font: 11px/1.8 var(--font-mono); margin: 18px 0; }
+.verification-interface .primary-button { margin-top: 18px; }
+.verification-failed h1 { color: #ecc3c2; }
+@media (max-width: 759px) {
+  .verification-interface { position: relative; top: auto; left: auto; width: auto; margin: 52vh 6% 180px; }
+  .verification-interface h1 { font-size: clamp(33px, 8vw, 46px); max-width: 18ch; }
+  .verification-description { font-size: 16px; }
+  .verification-proof { margin-top: 18px; }
+}
+@media (min-width: 760px) and (max-height: 750px) {
+  .verification-interface { top: 17%; }
+  .verification-interface h1 { font-size: 40px; margin: 12px 0; }
+  .verification-proof { margin-top: 16px; }
+}
