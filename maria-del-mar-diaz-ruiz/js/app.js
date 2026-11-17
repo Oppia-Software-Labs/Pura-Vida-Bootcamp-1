@@ -184,7 +184,7 @@ dom.btnFriendbotFaucet.addEventListener('click', async () => {
   if (!stellarWallet.publicKey) return;
   
   dom.btnFriendbotFaucet.disabled = true;
-  dom.btnFriendbotFaucet.innerHTML = '<span>⏳ Solicitando a Friendbot...</span>';
+  dom.btnFriendbotFaucet.innerHTML = '<span class="spinner"></span> <span>Solicitando a Friendbot...</span>';
 
   try {
     const result = await stellarService.requestFriendbotFunds(stellarWallet.publicKey);
