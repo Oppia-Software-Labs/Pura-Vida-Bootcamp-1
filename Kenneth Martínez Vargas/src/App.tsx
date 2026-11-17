@@ -3,14 +3,21 @@ import { toDataURL } from 'qrcode'
 import { useEffect, useRef, useState } from 'react'
 import type { FormEvent } from 'react'
 import { PaymentPage } from './PaymentPage'
-import { amountError, conceptLength, getPaymentUrl, normalizeAmount, readPaymentLink } from './payment'
+import {
+  amountError, conceptLength, getPaymentUrl, getWalletPaymentUri, normalizeAmount, readPaymentLink,
+} from './payment'
 import { WalletError, connectWallet, disconnectWallet, verifyWallet } from './wallet'
 import './App.css'
 
-type SharedPayment = {
+type ShareFormat = 'web' | 'sep7'
+
+type ShareLink = {
   url: string
   qrImage: string
 }
+
+const shareFormats = ['web', 'sep7'] as const
+const qrOptions = { width: 384, margin: 4, errorCorrectionLevel: 'M' } as const
 
 function CreatePayment() {
   const [address, setAddress] = useState('')
@@ -19,12 +26,15 @@ function CreatePayment() {
   const [pending, setPending] = useState<'wallet' | 'payment' | 'disconnect' | null>(null)
   const [invalidAmount, setInvalidAmount] = useState(false)
   const [walletIssue, setWalletIssue] = useState<WalletError | null>(null)
-  const [shared, setShared] = useState<SharedPayment | null>(null)
-  const [shareOpen, setShareOpen] = useState(false)
+  const [shared, setShared] = useState<Record<ShareFormat, ShareLink> | null>(null)
+  const [shareFormat, setShareFormat] = useState<ShareFormat>('web')
   const [shareMessage, setShareMessage] = useState('')
   const amountInput = useRef<HTMLInputElement>(null)
   const shareHeading = useRef<HTMLHeadingElement>(null)
   const linkInput = useRef<HTMLInputElement>(null)
+  const selectedShare = shared?.[shareFormat]
+  const shareOpen = shared !== null
+  const isSep7 = shareFormat === 'sep7'
 
   useEffect(() => {
     if (shareOpen) shareHeading.current?.focus()
@@ -32,7 +42,7 @@ function CreatePayment() {
 
   function clearShare() {
     setShared(null)
-    setShareOpen(false)
+    setShareFormat('web')
     setShareMessage('')
   }
 
@@ -64,10 +74,17 @@ function CreatePayment() {
     setShareMessage('')
     try {
       await verifyWallet(address)
-      const url = getPaymentUrl({ address, amount: validAmount, concept: concept.trim() })
-      const qrImage = await toDataURL(url, { width: 384, margin: 4, errorCorrectionLevel: 'M' })
-      setShared({ url, qrImage })
-      setShareOpen(true)
+      const details = { address, amount: validAmount, concept: concept.trim() }
+      const webUrl = getPaymentUrl(details)
+      const sep7Url = getWalletPaymentUri(details)
+      const [webQr, sep7Qr] = await Promise.all([
+        toDataURL(webUrl, qrOptions),
+        toDataURL(sep7Url, qrOptions),
+      ])
+      setShared({
+        web: { url: webUrl, qrImage: webQr },
+        sep7: { url: sep7Url, qrImage: sep7Qr },
+      })
     } catch (error) {
       if (error instanceof WalletError) {
         setAddress('')
@@ -97,12 +114,13 @@ function CreatePayment() {
   }
 
   async function copyLink() {
-    if (!shared) return
+    if (!selectedShare) return
     try {
-      await navigator.clipboard.writeText(shared.url)
-      setShareMessage('Enlace copiado.')
+      await navigator.clipboard.writeText(selectedShare.url)
+      setShareMessage(isSep7 ? 'Enlace SEP-7 copiado.' : 'Enlace del cobro copiado.')
     } catch {
-      linkInput.current?.select()
+      const input = linkInput.current
+      if (input?.value === selectedShare.url) input.select()
       setShareMessage('Seleccioná el enlace y copialo manualmente.')
     }
   }
@@ -200,9 +218,35 @@ function CreatePayment() {
 
         <section className="sharing" aria-labelledby="sharing-title">
           <h2 id="sharing-title" ref={shareHeading} tabIndex={-1}>Enlace y código QR</h2>
+          {selectedShare && (
+            <div className="share-formats" role="group" aria-label="Formato para compartir">
+              {shareFormats.map((format) => (
+                <button
+                  className="secondary"
+                  type="button"
+                  key={format}
+                  aria-pressed={shareFormat === format}
+                  onClick={() => {
+                    setShareFormat(format)
+                    setShareMessage('')
+                  }}
+                >
+                  {format === 'web' ? 'Navegador' : 'Wallet SEP-7'}
+                </button>
+              ))}
+            </div>
+          )}
           <div className="qr-slot">
-            {shared ? (
-              <img src={shared.qrImage} alt="Código QR del enlace de cobro" width={384} height={384} />
+            {selectedShare ? (
+              <>
+                <img
+                  src={selectedShare.qrImage}
+                  alt={isSep7 ? 'Código QR SEP-7' : 'Código QR del enlace de cobro'}
+                  width={384}
+                  height={384}
+                />
+                {isSep7 && <p>Escaneá con una wallet SEP-7.</p>}
+              </>
             ) : (
               <>
                 <ScanQrCode size={46} strokeWidth={1.6} aria-hidden="true" />
@@ -210,23 +254,23 @@ function CreatePayment() {
               </>
             )}
           </div>
-          {shared && (
+          {selectedShare && (
             <input
               className="share-link"
-              aria-label="Enlace del cobro"
+              aria-label={isSep7 ? 'Enlace SEP-7' : 'Enlace del cobro'}
               readOnly
               ref={linkInput}
-              value={shared.url}
+              value={selectedShare.url}
               onFocus={(event) => event.currentTarget.select()}
             />
           )}
-          <div className={shared ? 'share-actions' : 'share-actions empty-actions'}>
-            <button className="secondary" type="button" onClick={copyLink} disabled={!shared}>
+          <div className={selectedShare ? 'share-actions' : 'share-actions empty-actions'}>
+            <button className="secondary" type="button" onClick={copyLink} disabled={!selectedShare}>
               <Link2 size={18} aria-hidden="true" />
               Copiar enlace
             </button>
-            {shared ? (
-              <a className="secondary" href={shared.qrImage} download="cobro-qr.png">
+            {selectedShare ? (
+              <a className="secondary" href={selectedShare.qrImage} download={isSep7 ? 'cobro-sep7.png' : 'cobro-qr.png'}>
                 <Download size={18} aria-hidden="true" />
                 Descargar QR
               </a>
