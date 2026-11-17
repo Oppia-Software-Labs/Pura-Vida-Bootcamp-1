@@ -1,6 +1,6 @@
 import { Component, Suspense, lazy, memo, useCallback, useEffect, useState } from 'react'
 import type { ReactNode, RefObject } from 'react'
-import type { ProofVisualState, SceneSignals } from '../experience/types'
+import type { ProofVisualState, SceneSignals, VaultCompletion } from '../experience/types'
 import { VaultFallback } from './VaultFallback'
 const VaultScene = lazy(() => import('./VaultScene'))
 
@@ -10,30 +10,34 @@ class SceneBoundary extends Component<{ children: ReactNode; fallback: ReactNode
   render() { return this.state.failed ? this.props.fallback : this.props.children }
 }
 
-function CompatibleView({ onReady, identityComplete, proofComplete }: { onReady: () => void; identityComplete: boolean; proofComplete: boolean }) {
+function CompatibleView({ onReady, identityComplete, proofComplete, completion, revealActive, onOpened }: { onReady: () => void; identityComplete: boolean; proofComplete: boolean; completion: VaultCompletion | null; revealActive: boolean; onOpened: () => void }) {
   useEffect(onReady, [onReady])
-  return <div className="compatible-world"><VaultFallback proofComplete={proofComplete} identityComplete={identityComplete} /><p>Modo compatible · WebGL no disponible</p></div>
+  useEffect(() => { if (completion && revealActive) onOpened() }, [completion, revealActive, onOpened])
+  return <div className="compatible-world"><VaultFallback completion={completion} proofComplete={proofComplete} identityComplete={identityComplete} /><p>Modo compatible · WebGL no disponible</p></div>
 }
 
-export const Vault = memo(function Vault({ proofState, identityComplete, animated, signals, missionId, lightQuality, onReady, onFallback, onSlowHardware }: {
-  proofState: ProofVisualState; identityComplete: boolean; animated: boolean; signals: RefObject<SceneSignals>; missionId: number; lightQuality: boolean; onReady: () => void; onFallback: () => void; onSlowHardware: () => void
+export const Vault = memo(function Vault({ completion, revealActive, reducedMotion, onOpened, proofState, identityComplete, animated, signals, missionId, lightQuality, onReady, onFallback, onSlowHardware }: {
+  completion: VaultCompletion | null; revealActive: boolean; reducedMotion: boolean; onOpened: () => void; proofState: ProofVisualState; identityComplete: boolean; animated: boolean; signals: RefObject<SceneSignals>; missionId: number; lightQuality: boolean; onReady: () => void; onFallback: () => void; onSlowHardware: () => void
 }) {
   const [contextLost, setContextLost] = useState(false)
   const [availability, setAvailability] = useState<'checking' | 'available' | 'unavailable'>('checking')
   useEffect(() => {
-    try {
-      const probe = document.createElement('canvas').getContext('webgl2')
-      setAvailability(probe ? 'available' : 'unavailable')
-      probe?.getExtension('WEBGL_lose_context')?.loseContext()
-    } catch { setAvailability('unavailable') }
+    const frame = requestAnimationFrame(() => {
+      try {
+        const probe = document.createElement('canvas').getContext('webgl2')
+        setAvailability(probe ? 'available' : 'unavailable')
+        probe?.getExtension('WEBGL_lose_context')?.loseContext()
+      } catch { setAvailability('unavailable') }
+    })
+    return () => cancelAnimationFrame(frame)
   }, [])
   const handleContextLost = useCallback(() => setContextLost(true), [])
-  const fallback = <CompatibleView proofComplete={proofState === 'verified'} onReady={onFallback} identityComplete={identityComplete} />
+  const fallback = <CompatibleView completion={completion} revealActive={revealActive} onOpened={onOpened} proofComplete={proofState === 'verified'} onReady={onFallback} identityComplete={identityComplete} />
   const loading = <div className="world-loading" role="status"><span className="loading-orbit" /><span>Preparando la cámara Génesis…</span></div>
-  return <div className="world-view" role="img" aria-label={`Cámara Génesis tridimensional. ${proofState === 'verified' ? 'Dos sellos completados; uno pendiente.' : identityComplete ? 'Primer sello completado; dos pendientes.' : 'Tres cerraduras pendientes.'} La bóveda permanece sellada.`}>
+  return <div className="world-view" role="img" aria-label={`Cámara Génesis tridimensional. ${completion ? 'Tres sellos completados. Génesis verificado en Testnet.' : proofState === 'verified' ? 'Dos sellos completados; uno pendiente.' : identityComplete ? 'Primer sello completado; dos pendientes.' : 'Tres cerraduras pendientes.'} ${completion ? 'Apertura habilitada.' : 'La bóveda permanece sellada.'}`}>
     <SceneBoundary fallback={fallback}>
       {contextLost || availability === 'unavailable' ? fallback : availability === 'checking' ? loading : <Suspense fallback={loading}>
-        <VaultScene proofState={proofState} identityComplete={identityComplete} animated={animated} signals={signals} missionId={missionId} lightQuality={lightQuality} onContextLost={handleContextLost} onReady={onReady} onSlowHardware={onSlowHardware} />
+        <VaultScene completion={completion} revealActive={revealActive} reducedMotion={reducedMotion} onOpened={onOpened} proofState={proofState} identityComplete={identityComplete} animated={animated} signals={signals} missionId={missionId} lightQuality={lightQuality} onContextLost={handleContextLost} onReady={onReady} onSlowHardware={onSlowHardware} />
       </Suspense>}
     </SceneBoundary>
   </div>

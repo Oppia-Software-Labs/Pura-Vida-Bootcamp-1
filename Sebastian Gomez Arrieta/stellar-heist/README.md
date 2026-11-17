@@ -1,139 +1,127 @@
 # Stellar Heist — The Genesis Vault
 
-Experiencia de infiltración cinematográfica para Stellar Pura Vida Bootcamp. El mundo 3D permanece montado mientras la interfaz cambia de contexto: arranque, cámara Génesis, viaje holográfico y consola de misión.
+Experiencia Web3 cinematográfica para Stellar Pura Vida Bootcamp. Tres sellos: conexión de wallet, prueba de control de una clave y una operación XLM confirmada en Testnet. La bóveda 3D solo se abre cuando las tres misiones se verifican.
 
 ## Ejecutar
 
+Recomendado: **Node 24**, probado con 24.19.0. Usar un navegador compatible con la extensión oficial [Varial](https://varialwallet.com), antes Freighter.
+
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 
-Abrir la URL local que indique Vite. Compilar con `npm run build`; servir esa compilación con `npm run preview`.
+Abrir la URL de Vite en `localhost` o `127.0.0.1`. Producción requiere HTTPS; una URL LAN por HTTP no equivale a localhost.
 
-## Implementado
+```bash
+npm test
+npm run lint
+npm run build
+npm run preview
+```
 
-- Bóveda mecánica tridimensional: marco industrial con espesor, puerta cilíndrica gruesa articulada, anillos independientes, tornillería y segmentos instanciados, cerrojos retráctiles y tres cerraduras.
-- Cámara de seguridad completa con pared perforada, columnas, escalones, suelo metálico, niebla y partículas espaciales. Materiales PBR y reflejos de un entorno luminoso generado en código con Drei; sin modelos, texturas ni fuentes remotas.
-- Arranque GSAP de unos cinco segundos: iluminación, inicio de mecanismos, aproximación de cámara y aparición del título. Tiene un límite de seguridad y no vuelve a ejecutarse al navegar entre protocolos. Sin controles visibles de calidad, pausa ni salto; conserva movimiento reducido según el sistema.
-- Anillos contrarrotativos, núcleo flotante/pulsante, variaciones de luces, partículas, escáner biométrico y señales holográficas continuas.
-- Cámara amortiguada con parallax limitado y recorrido de profundidad real. Al seleccionar una misión se alinea con el núcleo, atraviesa una proyección energética y recorre un túnel de geometría y partículas. El regreso invierte el viaje.
-- Los viajes pueden cancelarse con **Volver a la bóveda**, Escape o la navegación normal. La puerta física permanece sellada: entrar en una consola holográfica no verifica una misión.
-- Conexión real con Varial: autorización, dirección Stellar válida, Testnet por passphrase y saldo XLM mediante el RPC oficial. Copiar dirección, actualizar saldo y desconectar localmente.
-- Primer sello ligado a la sesión autorizada: luz y arco de cerradura animados, progreso 1/3 y acceso a Misión 2.
-- Misión 2 funcional: `signMessage` real de Varial, desafío con nonce/origen/cuenta/Testnet/vencimiento y verificación criptográfica local SEP-53. Solo una firma válida abre el segundo sello y actualiza a 2/3. Escáner 3D neutral durante la espera; alineación de anillos, pulso y candado abierto después de verificar.
-- Controles magnéticos, teclado, Escape para regresar, informe accesible y foco al entrar en una consola.
+`npm test` comprueba los tipos de las pruebas y ejecuta el runner de Node sobre un bundle temporal generado por Vite. No añade dependencias de testing. La interfaz es responsive; no se implementa WalletConnect ni una conexión específica para apps móviles: la integración requiere un navegador que admita Varial.
 
-## Comprobar cada efecto
+## Recorrido real
 
-1. Recargar y observar el encendido gradual, la aproximación y el título. Las animaciones están activas por defecto.
-2. Mover el cursor sobre el entorno libre del HUD para ver parallax e inercia. Observar anillos, núcleo y partículas.
-3. Pulsar **INICIAR INFILTRACIÓN** o elegir un protocolo inferior. Observar el portal y el túnel, sin abrir físicamente la bóveda.
-4. Probar **Volver a la bóveda** y Escape durante un viaje; cambiar entre misiones habilitadas con el selector inferior. Firma requiere Identidad; Operación requiere Firma. La acción de enviar sigue deshabilitada.
-5. Completar Identidad siguiendo las instrucciones siguientes. Los instrumentos 3D siguen visibles y el primer sello se abre sin abrir la puerta final.
-6. Probar `prefers-reduced-motion` del sistema, también cambiándolo con la página abierta. Las secuencias largas se resuelven sin bloquear la navegación; los sellos siguen reflejando la verificación.
-7. La calidad se adapta automáticamente. En móvil o ante baja tasa de fotogramas se reducen resolución, partículas y posprocesamiento. No hay interruptores visibles de calidad o pausa.
-8. Ocultar y recuperar la pestaña. El bucle WebGL se suspende cuando está oculta.
-9. Probar móvil desde 320 px. Las consolas permiten leer su contenido y los protocolos permanecen accesibles.
-10. Si WebGL falta o pierde su contexto, se muestra la bóveda SVG compatible y el recorrido sigue funcionando con una transición simplificada.
+### 1. Identidad
 
-## Estado Stellar y apertura final
+1. Desbloquear Varial y elegir **Testnet**. Passphrase exacta: `Test SDF Network ; September 2015`.
+2. Entrar en **Identidad**, pulsar **Conectar wallet** y autorizar el sitio en la extensión.
+3. Comprobar dirección, saldo y **1 de 3**. Se valida autorización vigente, dirección Ed25519 y passphrase; el nombre visible de la red no basta.
+4. Se puede copiar la dirección, verla completa, actualizar saldo y desconectar localmente. El saldo es total, no saldo gastable tras reservas.
 
-**Implementado:** Misión 1 con extensión Varial real, validación de autorización/dirección/Testnet y consulta de saldo. Una cuenta inactiva o sin fondos puede completar Identidad: disponer de XLM no forma parte de esta misión. El saldo mostrado es total, no saldo disponible tras reservas.
+Una cuenta inactiva o sin fondos puede completar Identidad. Para el pago posterior debe estar activada y tener XLM de prueba. El enlace a [Stellar Lab](https://lab.stellar.org/account/fund) permite financiársela por decisión del usuario; la aplicación no llama a Friendbot automáticamente. Nunca introducir claves privadas ni frases de recuperación en esta aplicación.
 
-**Implementado también:** firma de un mensaje legible mediante Varial y verificación SEP-53 de la clave correspondiente a la dirección conectada. Nonce de 256 bits con Web Crypto, origen completo, propósito, cuenta, passphrase y fechas. TTL de 3 minutos; consumo único en memoria. La cuenta y la red se revisan de nuevo antes y después de firmar. Firmar no necesita XLM ni cuenta activada en el ledger.
+### 2. Prueba criptográfica
 
-**Alcance:** prueba criptográfica local de control de una clave para esta experiencia educativa. No es autenticación segura de servidor, no valida los thresholds/signers multisig ni crea sesiones autenticadas para un backend. No se guardan firmas ni logros en almacenamiento persistente. Conectar por sí solo sigue sin demostrar control de la clave.
+1. Pulsar **Continuar al segundo sello** y **Firmar mensaje**.
+2. Revisar el mensaje legible en Varial: propósito, origen exacto de la página, dirección, Testnet, nonce y fechas. No envía dinero ni necesita XLM.
+3. Autorizar. Se verifica localmente la firma SEP-53, los bytes exactos del desafío, la cuenta, el origen, el vencimiento y que el nonce no haya sido consumido.
+4. Solo entonces se muestra **Segundo sello abierto**, aparece el pulso/alineación 3D y el progreso llega a **2 de 3**.
 
-**Pendiente:** construir, firmar, enviar y verificar una operación XLM real de Testnet para Misión 3. No existen wallets, pagos, hashes ni verificaciones ficticias en la aplicación.
+Nonce de 256 bits generado con Web Crypto y vencimiento de 3 minutos. `signMessage` y `Keypair.verifyMessage` reciben el mensaje original; el SDK aplica el prefijo y SHA-256 de SEP-53 exactamente una vez. Se acepta firma base64 canónica o bytes de 64 posiciones; no se adivinan otros formatos.
 
-`verifiedCompletion` permanece explícitamente en `null`. No hay botón, parámetro de URL, valor de localStorage ni consola de demostración que active la apertura.
+**Cancelar firma** o salir de la misión invalida el intento local, pero no cierra el popup de Varial. Cerrar solicitudes antiguas en la extensión antes de reintentar. Las respuestas tardías se ignoran.
 
-Está preparada una secuencia 3D para un futuro adaptador confiable: iluminar cerraduras, acelerar y alinear anillos, retraer cerrojos, abrir físicamente la puerta, cambiar la luz a dorado, emitir una onda/partículas y revelar un artefacto mientras la cámara orbita. Su geometría/color/orientación se derivan de un hash válido aportado por ese adaptador; no se utiliza un hash de muestra.
+### 3. Operación de Testnet
 
-El tipo `TrustedVaultCompletion` separa arquitectónicamente esa entrada. **Un tipo TypeScript o las comprobaciones de formato no verifican una transacción.** La siguiente etapa debe incorporar evidencia verificada mediante la red y validación confiable en servidor antes de habilitar ese adaptador. La secuencia final permanece inaccesible en este recorrido visual y no se presenta como funcionalidad blockchain terminada.
+El destino y el importe aprobados son **la misma cuenta conectada y 0,1 XLM**. No hay transferencias a terceros ni destinos configurables en este flujo.
 
-La investigación realizada con `stellar-raven.search` y `stellar-raven.execute`, las fuentes contrastadas, las versiones y las limitaciones se registran en [RAVEN_USAGE.md](./RAVEN_USAGE.md), según `AGENTS.md`.
+1. Completar Identidad y Firma, entrar en **La prueba final** y pulsar **Revisar operación**.
+2. Revisar importe, dirección de destino y comisión máxima. Marcar **He revisado el destino y la comisión**.
+3. Pulsar **Autorizar en Varial** y confirmar en la extensión que son XLM de Testnet a la propia cuenta. La aplicación construye una única operación de pago con secuencia actual, memo hash aleatorio y límites de tiempo de 5 minutos.
+4. El importe permanece en la cuenta; el coste neto es la comisión de prueba. Se comprueba conservadoramente margen para importe + fee por encima de reservas y obligaciones de venta. Reserva y base fee se leen de la cabecera del ledger.
+5. La comisión ofrecida es al menos 1000 stroops o diez veces el base fee, con máximo de 10000 stroops. El resumen muestra el máximo; el recibo muestra la comisión realmente cobrada.
+6. Se comprueban de nuevo cuenta/red y firma. El cuerpo firmado debe ser idéntico al revisado. Se envía al **RPC oficial de Testnet** y se consulta su hash.
+7. `PENDING`, `DUPLICATE`, `TRY_AGAIN_LATER` o un mero envío no completan la misión. Solo `getTransaction: SUCCESS` con hash, envelope, firma, resultado payment exitoso, ledger y fecha coincidentes permite **3 de 3**.
+8. Pulsar **Abrir la bóveda**: regreso de cámara, alineación de anillos, retracción de cerrojos, puerta física, iluminación y revelación del artefacto. En movimiento reducido se muestra el resultado sin la secuencia larga.
+9. **Ver transacción** abre Stellar Expert en Testnet. **Descargar logro** exporta una tarjeta PNG con el hash y datos del recibo; se puede compartir manualmente. La apariencia del artefacto y de la tarjeta deriva del hash verificado.
 
-## Comprobar la wallet real
+El logro es educativo, sin valor monetario. No se crea un NFT ni se acuña un activo. La descarga no publica ni envía nada a terceros.
 
-1. Usar Node 24 y ejecutar `npm install` y `npm run dev`. Abrir la URL de Vite en `localhost` o `127.0.0.1`, en un navegador con la extensión oficial [Varial](https://varialwallet.com) instalada. En producción se requiere HTTPS; una URL LAN por HTTP no equivale a localhost.
-2. Desbloquear la extensión, seleccionar una cuenta y la red **Testnet**. La passphrase debe ser `Test SDF Network ; September 2015`.
-3. Entrar en **Identidad**, pulsar **Conectar wallet** y autorizar el sitio en Varial. Esta misión no solicita firma, secreto ni pago. Comprobar dirección, saldo, **Identidad conectada**, primer sello iluminado/abierto y **1 de 3**. Misión 2 queda habilitada.
-4. Pulsar la dirección para copiarla. **Ver dirección completa** permite seleccionarla si el navegador bloquea el portapapeles. **Actualizar saldo** vuelve a consultar el ledger.
-5. Con una cuenta nueva sin activar, comprobar el aviso correspondiente. El enlace a Stellar Lab permite obtener XLM de prueba por decisión del usuario; después pulsar **Actualizar saldo**. Una cuenta con cero XLM muestra **Sin saldo**. La aplicación no envía solicitudes de financiación.
-6. Cambiar de cuenta o a Mainnet mientras la página sigue abierta, o revocar el permiso del sitio en la extensión. Al detectarlo deben desaparecer dirección/saldo, bajar a 0/3, cerrarse el primer sello y regresar a Identidad si se estaba en otra misión. Para continuar hay que reconectar; Mainnet se rechaza. Una red con nombre Testnet y otra passphrase también se rechaza.
-7. Probar rechazar la solicitud, bloquear la extensión y conectar desde un navegador sin Varial. Deben aparecer errores claros y mantenerse 0/3. Si el sitio ya tenía permiso, Varial puede no volver a mostrar el popup: revocarlo en la extensión para probar el rechazo.
-8. Bloquear `soroban-testnet.stellar.org` en las herramientas de desarrollo y actualizar saldo: debe mostrarse error de consulta, no cuenta inactiva ni saldo cero. Restaurar la conexión y reintentar.
-9. **Desconectar** borra la sesión local y el progreso. No revoca el permiso de Varial ni cierra una solicitud ya abierta. Recargar también borra la sesión: no se guarda identidad en almacenamiento local.
+## Errores, cancelación y recuperación
 
-El SDK utiliza sondeo para cambios de wallet. Aquí se consulta cada segundo mientras la pestaña está visible, al recuperar foco/visibilidad y antes/después de leer saldo o firmar. La invalidación ocurre al detectar el cambio; no es una notificación instantánea desde la extensión. Lecturas con límite de 10 s; autorización y firma, 120 s. Una cancelación local ignora respuestas tardías. La futura Misión 3 también debe revalidar antes de firmar/enviar.
+- Varial ausente, bloqueada, permisos rechazados o revocados: aviso breve y reintento; no se solicita ningún secreto.
+- Cambio de cuenta/red o pérdida de permisos: al detectarlo se invalidan los tres sellos, se retira el artefacto y se restablece la puerta. Se debe reconectar y volver a firmar.
+- La wallet se comprueba cada segundo mientras la pestaña está visible, al recuperar foco/visibilidad y antes/después de acciones sensibles. El SDK usa sondeo; no hay garantía de detección instantánea.
+- Lecturas con límite de 10 s; autorización/firma con límite de 120 s. Un desafío/operación vencidos no se aprueban.
+- Una cuenta inactiva o sin saldo suficiente para el margen requerido muestra acceso a XLM de prueba. No se aumenta el límite de comisión automáticamente.
+- Cancelar antes de entregar el envelope al RPC evita completar con una firma tardía. Tras entregarlo, desconectar o navegar **no deshace un envío en la red**.
+- Un fallo de transporte tras entregar la operación se trata como **incierto**. Se guarda únicamente seguimiento público en `sessionStorage`: hash, cuerpo sin firmas, cuenta y límites. No se guardan firmas ni XDR firmado.
+- **Consultar estado** consulta la misma operación. El sondeo es finito: 15 consultas separadas por 2 s; se puede consultar nuevamente. No reenvía ni genera otra operación por su cuenta.
+- Tras recargar, completar de nuevo Identidad y Firma y pulsar **Revisar operación**. Si existe seguimiento pendiente, aparece **Consultar estado**, sin pedir otra firma ni construir otro hash.
+- Solo un fallo definitivo o un `NOT_FOUND` cuando el nodo ya ingirió ledgers posteriores al vencimiento libera el intento. Fuera de la ventana histórica del RPC se conserva como incierto y se ofrece el explorador. No borrar el seguimiento para forzar un segundo pago mientras el primero siga incierto.
+- El seguimiento pertenece a esta pestaña; no coordina dispositivos ni pestañas independientes. Una vez completado se elimina y el logro queda en la sesión actual. Descargar la tarjeta antes de cerrar si se quiere conservarla.
 
-## Probar la firma con Varial
+## Alcance de la verificación
 
-1. Completar Identidad en Testnet y pulsar **Continuar al segundo sello**. Se muestra **Demuestra que eres tú**, una explicación breve y **Firmar mensaje**. Progreso inicial 1/3; Operación bloqueada.
-2. Pulsar **Firmar mensaje**. Revisar en la extensión el mensaje legible: propósito del segundo sello, origen exacto de la página, dirección elegida, passphrase Testnet, nonce y vencimiento. No es una transacción y no gasta XLM.
-3. Rechazar la firma: debe aparecer un aviso breve y conservarse 1/3. Reintentar genera otro nonce. Mientras se espera, el escáner puede moverse, pero no debe aparecer el pulso ni el estado de éxito.
-4. Autorizar la firma desde Varial. Solo tras verificar sus bytes y el desafío se muestra **Firma verificada**, **Segundo sello abierto** y 2/3, con alineación/pulso/candado abierto. **Continuar al último sello** permite ver Misión 3; **Enviar prueba** sigue deshabilitado. Volver a la bóveda muestra dos sellos abiertos y la puerta final cerrada.
-5. Probar **Cancelar firma** o regresar a la bóveda mientras la wallet espera. Se cancela el intento local, pero **no se cierra el popup** de la extensión. Cerrar la solicitud antigua en Varial antes de reintentar; sus respuestas tardías no pueden completar otro intento.
-6. Cambiar cuenta/red o revocar permisos durante la solicitud y después de completar Firma. Al detectarlo deben invalidarse ambos sellos y el acceso a Misión 3; la interfaz regresa a Identidad. Recargar o desconectar también elimina la prueba local.
-7. Los casos de mensaje/firma alterados, vencimiento y replay se cubren automáticamente con `npm test`. No hay botones de prueba, parámetros de URL ni proveedor simulado en la aplicación para aprobarlos.
+La firma es una **prueba criptográfica local de control de una clave**. El pago se confirma consultando el RPC oficial mediante TLS y verificando el envelope y resultado recibidos. No se verifica el consenso de Stellar de forma independiente ni se emite una atestación de servidor.
 
-Si la extensión devuelve una firma de formato no admitido o no implementa SEP-53, se rechaza y conviene actualizar Varial. No se aceptan otros algoritmos como alternativa. Una cuenta con permisos multisig especiales puede no poder demostrar autorización de cuenta mediante este flujo de clave individual; esa autorización queda fuera del alcance de Misión 2.
+`VerifiedPayment` declara `verification: rpc-browser`; el tipo TypeScript no sustituye la verificación. No existe un botón de prueba, parámetro de URL, booleano persistido ni hash de demostración que complete una misión. Las respuestas ficticias se limitan a los tests y nunca se importan desde `src/`.
 
-## Arquitectura y propiedad de las animaciones
+No hay backend ni autenticación segura de servidor. El flujo está destinado a una cuenta de demostración con su clave maestra habilitada y peso suficiente; no agrega firmas de varias personas ni valida por sí solo todos los permisos multisig de una cuenta. Para premios persistentes o con valor, añadir un servicio confiable que verifique desafíos, autorización de cuenta y transacción.
 
-- `src/experience/useExperienceController.ts`: estado narrativo y timelines GSAP cancelables. Único escritor de canales de arranque y viaje; no actualiza React por fotograma.
-- `src/experience/types.ts`: fases, señales mutables y frontera de la futura verificación confiable.
-- `src/components/Vault.tsx`: carga diferida, estado del renderizador y alternativa ante error/pérdida de contexto.
-- `src/components/VaultScene.tsx`: Canvas, cámara de seguridad, luces, entorno PBR procedural, sombras, posprocesamiento y presupuesto gráfico adaptativo.
-- `src/components/scene/VaultMechanism.tsx`: puerta, anillos, núcleo, cerrojos, hardware instanciado y revelación determinista preparada.
-- `src/components/scene/CinematicCamera.tsx`: único escritor de la posición/orientación de cámara. Lee las señales y amortigua el recorrido; sin tweens que compitan sobre la cámara.
-- `src/components/scene/MissionTransition.tsx`: túnel tridimensional y portal procedural; no utiliza vídeo.
-- `src/components/scene/ParticleField.tsx`: partículas e instrumentos 3D de cada misión.
-- `src/components/scene/SignatureScanner.tsx`: escáner, anillos, pulso y transformación de candado del segundo sello; éxito condicionado al verificador.
-- `src/components/scene/VaultOpening.tsx`: timeline final condicionado a evidencia de un futuro adaptador. Inactivo actualmente.
-- `src/components/MissionHUD.tsx`, `MagneticButton.tsx`, `Dialog.tsx`: consolas, interacción y ayuda accesible.
-- `src/hooks/`: preferencias reactivas de movimiento y visibilidad de pestaña.
-- `src/stellar/walletSession.ts`: estado tipado, validación de identidad, invalidación y protección frente a respuestas tardías.
-- `src/stellar/varial.ts`: APIs reales de Varial y saldo del RPC oficial.
-- `src/stellar/messageProof.ts`: desafíos de un solo uso, conversión de firma y verificación SEP-53.
-- `src/components/WalletProof.tsx`: solicitud de firma, cancelación local y mensajes breves.
-- `src/hooks/useWallet.ts`, `src/components/WalletIdentity.tsx`: suscripción/ciclo de vida y controles mínimos de wallet.
-- `src/App.tsx`, `src/App.css`: composición cinematográfica, navegación y responsive.
+## Escena y accesibilidad
 
-GSAP escribe progreso narrativo; `useFrame` lee ese progreso y anima objetos mediante referencias. Motion controla únicamente paneles HTML. Los recursos del compositor, animaciones y listeners se liberan al desmontar.
+Se conservan Three.js/React Three Fiber, cámara amortiguada con parallax, bóveda mecánica con espesor, anillos y hardware instanciado, iluminación PBR procedural, niebla, partículas, túneles y transiciones GSAP. La apertura final añade un artefacto determinista sin cargar modelos, texturas ni fuentes remotas.
 
-## Dependencias y validación
+Sin controles visibles de pausa, calidad o salto. La calidad se adapta a hardware/móvil; se respeta `prefers-reduced-motion`, se suspenden frames al ocultar la pestaña y se limpian timelines/listeners al desmontar. **Volver a la bóveda**, Escape, marca y selector de misiones conservan la navegación normal. Si WebGL falta o pierde el contexto, el modo compatible refleja los sellos y el artefacto; no bloquea la conexión ni la navegación.
 
-Dependencia añadida para Misión 1: **@stellar/varial-sdk 7.0.0**. El SDK Stellar 17.4.0 y las dependencias visuales ya estaban instalados.
+Comprobar escritorio y móvil desde 320 px, teclado/foco, movimiento reducido, ocultar/recuperar pestaña y pérdida de WebGL. El objetivo visual es 60 FPS con aceleración apropiada; no se garantiza en un renderizador por software.
 
-Ejecutar `npm test` para comprobar las 17 pruebas de Identidad y las de Firma: vectores oficiales ASCII/Unicode SEP-53, bytes/base64, prefijo correcto, firma válida, firma/mensaje alterados, cuenta/red/origen incorrectos, desafío vencido, replay, rechazo, cambio de wallet, cancelación/reintento y respuestas tardías. Se usan claves efímeras y dobles aislados exclusivamente en pruebas; no se incluyen en producción. Vite empaqueta `tests/all.test.ts` en un directorio temporal y el runner de Node lo ejecuta, sin añadir dependencias. `npm run build` valida tipos y genera producción. `npm run lint` comprueba el código.
+## Validación y limitaciones
 
-La aprobación con una extensión real requiere la comprobación manual anterior; el Chromium de automatización no tiene Varial instalada y no sustituye esa validación. Los logros son estado temporal de interfaz, no evidencia confiable en servidor. La apertura final permanece bloqueada.
+- `npm test`: **85 pruebas aprobadas**, con comprobación TypeScript de pruebas y fuentes de integración. Incluye regresión de Identidad/Firma, vectores SEP-53, políticas de pago, reservas/patrocinios, firmas Mainnet rechazadas, cuerpos modificados, envío incierto, recuperación de recarga y retirada del progreso al desconectar.
+- `npm run build`: correcto. Vite advierte de módulos de más de 500 kB, principalmente SDK/entrada y escena 3D. La escena y exportación PNG se cargan de forma diferida.
+- `npm run lint`: sin errores ni advertencias. Se corrigieron las advertencias anteriores de efectos y dependencias sin desactivar reglas.
+- Lecturas reales del RPC oficial contrastaron passphrase, cabecera, reserva, fee, cuenta y respuesta `NOT_FOUND`. El SDK instalado puede mantener fechas RPC como strings aunque sus tipos indiquen números; se normalizan estrictamente.
+- Chromium comprobó el recorrido completo con SDK real y fixtures aislados: `PENDING` conserva 2/3, solo el recibo validado permite 3/3, apertura de puerta/artefacto, descarga PNG, móvil 320/390 px, apertura con movimiento reducido, pérdida de WebGL y revocación de permisos que restablece 0/3. Una segunda prueba recargó durante un envío incierto, recuperó el mismo hash y lo verificó sin otra firma ni envío.
+- El adaptador de consulta también leyó una transacción pública existente con estado real `SUCCESS`, envelope y resultado XDR y fechas normalizadas. Era una lectura de una transacción ajena al recorrido de pruebas; no se usó para completar una misión ni como evidencia de un pago nuevo de la aplicación.
+- Las pruebas de envío/finalidad usan proveedores RPC y puente de extensión aislados con firmas efímeras. No equivalen a una autorización desde una extensión real ni demuestran que se haya transmitido una operación real durante esta sesión del agente.
+- **Pendiente de comprobación manual:** realizar el recorrido anterior desde Varial real y confirmar en el explorador el autopago aprobado. No se enviaron operaciones reales desde las herramientas. No afirmar una demo on-chain terminada hasta completar esa comprobación.
+- RPC conserva un historial limitado y Testnet puede reiniciarse; cuentas y seguimientos antiguos pueden dejar de estar disponibles. El logro no implica persistencia ni valor.
 
-Validación realizada el 16/11/2026: **17 pruebas de sesión aprobadas**, compilación TypeScript/Vite correcta y recorrido Chromium con WebGL, aviso real de extensión ausente, bloqueo de misiones, movimiento reducido y móvil de 320/390 px sin desbordamiento ni errores de página. El adaptador real obtuvo el mismo saldo que Horizon para una cuenta pública de Testnet; una dirección pública aleatoria sin entrada devolvió `null`, como se esperaba. Estas consultas fueron de solo lectura. La primera búsqueda de cuentas en Horizon sin filtros respondió HTTP 400; se obtuvo una cuenta pública desde una transacción existente para contrastar el saldo. Una dirección pública de referencia resultó tener fondos, por lo que no se utilizó como evidencia de cuenta inactiva.
+La investigación real mediante `stellar-raven.search` y `stellar-raven.execute`, fuentes, respuestas y decisiones está en [RAVEN_USAGE.md](./RAVEN_USAGE.md).
 
-Validación de Misión 2 (16/11/2026): **47 pruebas aprobadas**, `npm run build` correcto y lint sin errores. Chromium comprobó el SDK real mediante un doble aislado del puente de extensión, con firmas SEP-53 Ed25519 generadas independientemente en memoria: rechazo, firma inválida, cancelación/reintento, respuesta tardía, progreso 1/3 → 2/3, habilitación de Misión 3, cambio de cuenta → 0/3, ausencia de controles retirados, WebGL y móvil 320/390 px. No se solicitaron operaciones. Este recorrido **no equivale a aprobar un popup de Varial real**; esa validación manual sigue pendiente.
+## Arquitectura y archivos de la última etapa
 
-También se provocó pérdida de contexto WebGL después de verificar la firma: el modo compatible conserva 2/3 y la navegación. Esta prueba detectó que el aviso flotante cubría **Volver** en móvil; se corrigió colocándolo en el flujo de la página y el recorrido completo volvió a pasar.
+| Archivos | Responsabilidad |
+| --- | --- |
+| `src/stellar/payment.ts` | Política de autopago, construcción, validación del cuerpo/firma y recibo confirmado |
+| `src/stellar/paymentFlow.ts` | Revisión, envío único, sondeo finito, invalidación y recuperación de incertidumbre |
+| `src/stellar/paymentJournal.ts` | Seguimiento público por pestaña, sin firmas ni secretos |
+| `src/stellar/varial.ts`, `walletSession.ts`, `src/hooks/useWallet.ts` | Adaptadores reales, guardas de cuenta/red y progreso integrado |
+| `src/components/WalletPayment.tsx`, `MissionHUD.tsx` | Revisión y autorización minimalistas de Misión 3 |
+| `src/components/VaultReward.tsx`, `ArtifactFallback.tsx` | Recibo, descarga y alternativa sin WebGL |
+| `src/components/Vault.tsx`, `VaultFallback.tsx`, `VaultScene.tsx` | Recibo conectado a la escena y al modo compatible |
+| `src/components/scene/VaultMechanism.tsx`, `VaultOpening.tsx`, `CinematicCamera.tsx` | Tercer sello, apertura condicionada al recibo, encuadre del artefacto y limpieza de animaciones |
+| `src/experience/artifact.ts`, `rewardCard.ts` | Apariencia determinista y exportación PNG local |
+| `src/experience/types.ts`, `useExperienceController.ts` | Tipos honestos de evidencia, movimiento reducido y limpieza de timelines |
+| `src/App.tsx`, `App.css`, `src/data/missions.ts` | Progreso 3/3, navegación, textos y responsive |
+| `tests/payment.test.ts`, `browserFixtures.ts`, `all.test.ts`, `tsconfig.tests.json`, `package.json` | Cobertura, datos aislados para QA y comprobación de tipos |
+| `README.md`, `RAVEN_USAGE.md` | Ejecución, evaluación y fuentes verificadas |
 
-Limitaciones conocidas: sondeo con latencia; verificación local educativa sin autoridad de servidor; cuatro advertencias de lint existentes (`set-state-in-effect` en `Vault` y el controlador, `exhaustive-deps` en el controlador y `VaultScene`). Vite advierte de módulos superiores a 500 kB (escena 3D y entrada con SDK); no impide compilar. No se ha implementado firma, envío ni validación de **transacciones**.
+No se añadieron dependencias para esta etapa. SDKs contrastados: `@stellar/stellar-sdk 17.4.0` y `@stellar/varial-sdk 7.0.0`. La lógica blockchain está separada de React y Three.js; no hay actualizaciones React por fotograma. GSAP escribe señales narrativas y `useFrame` las consume mediante referencias.
 
-El objetivo es 60 FPS en equipos con aceleración gráfica adecuada; no se garantiza en un renderizador por software. Se limita DPR y se adapta calidad. La escena 3D está en un módulo diferido; Vite puede advertir que supera 500 kB minificados. La compilación puede terminar correctamente con esa advertencia. No se añade profundidad de campo para conservar legibilidad y presupuesto de render.
-
-## Refinamiento de interfaz
-
-La escena 3D, la cámara, los efectos y las transiciones se conservan. La interfaz prioriza título, una frase, estado y acción. Dirección y saldo aparecen únicamente tras conectar; los detalles secundarios se mantienen discretos. Los dos primeros sellos reflejan autorización y prueba de firma, con progreso máximo 2/3. La calidad se adapta internamente y el sistema respeta movimiento reducido, sin controles visuales añadidos.
-
-## Siguiente etapa: Misión 3
-
-Falta definir explícitamente un destino de Testnet aprobado y el importe; comprobar saldo gastable/reservas, construir una transacción con fee y timeout, revalidar cuenta/red, solicitar firma de transacción en Varial, enviar al RPC oficial y esperar éxito definitivo. Deben tratarse rechazos, cambios de wallet, respuestas inciertas y reintentos sin duplicar envíos. Solo entonces puede generarse evidencia de la transacción y habilitarse la apertura final/artefacto. Para logros persistentes o de valor, la verificación debe realizarse en un servicio confiable. No se añadieron métodos de envío en esta etapa.
-
-## Archivos de esta etapa
-
-- Criptografía y sesión: `src/stellar/messageProof.ts` (nuevo), `src/stellar/walletSession.ts`, `src/stellar/varial.ts`, `src/hooks/useWallet.ts`.
-- Interfaz: `src/components/WalletProof.tsx` (nuevo), `src/components/MissionHUD.tsx`, `src/App.tsx`, `src/App.css`, `src/data/missions.ts`.
-- Escena y recorrido: `src/components/scene/SignatureScanner.tsx` (nuevo), `src/components/scene/ParticleField.tsx`, `src/components/scene/VaultMechanism.tsx`, `src/components/Vault.tsx`, `src/components/VaultFallback.tsx`, `src/components/VaultScene.tsx`, `src/experience/types.ts`, `src/experience/useExperienceController.ts`.
-- Pruebas: `tests/signature.test.ts` y `tests/all.test.ts` (nuevos), `tests/wallet.test.ts`, `tests/run.mjs`.
-- Documentación: `README.md`, `RAVEN_USAGE.md`. Sin nuevas dependencias ni cambios en otros proyectos.
+Los requisitos de entrega de commits/PR siguen siendo pasos separados: no se realizaron commits, push ni Pull Request en esta etapa.

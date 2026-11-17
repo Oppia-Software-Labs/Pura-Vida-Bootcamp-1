@@ -10,17 +10,5 @@ export interface SceneSignals {
   reveal: number
 }
 
-// Only a future trusted verification adapter may construct this evidence.
-// This brand is an architectural boundary, NOT cryptographic verification.
-declare const verifiedByTrustedAdapter: unique symbol
-export interface TrustedVaultCompletion {
-  readonly [verifiedByTrustedAdapter]: true
-  readonly network: 'TESTNET'
-  readonly transactionHash: string
-  readonly account: string
-  readonly verifiedMissions: readonly [true, true, true]
-}
-
-// No browser action, URL, localStorage value, or preview control sets this.
-// Local key proof never authorizes the final opening; transaction verification is pending.
-export const verifiedCompletion: TrustedVaultCompletion | null = null
+// Verified against official Testnet RPC in this browser; not server-authenticated evidence.
+export type { VerifiedPayment as VaultCompletion } from '../stellar/payment'

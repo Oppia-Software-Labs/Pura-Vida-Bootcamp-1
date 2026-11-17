@@ -34,7 +34,7 @@ export const missions: readonly Mission[] = [
   {
     id: 3, title: 'La prueba final', navTitle: 'Operación', icon: Send,
     summary: 'Deja tu huella.',
-    description: 'Envía una operación de prueba para abrir el último sello.',
+    description: 'Envía 0,1 XLM de prueba a tu propia cuenta y abre el último sello.',
     objective: 'Enviar XLM de prueba y comprobar su confirmación en Testnet.',
     notice: 'En Testnet no usas dinero real.',
     action: 'Enviar prueba',

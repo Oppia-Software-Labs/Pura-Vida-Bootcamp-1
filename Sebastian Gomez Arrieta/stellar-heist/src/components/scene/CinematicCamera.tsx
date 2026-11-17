@@ -10,6 +10,8 @@ export function CinematicCamera({ signals, animated, missionId }: {
   const { size } = useThree()
   const target = useMemo(() => new Vector3(), [])
   const look = useMemo(() => new Vector3(), [])
+  const revealPosition = useMemo(() => new Vector3(), [])
+  const revealFocus = useMemo(() => new Vector3(), [])
   const time = useRef(0)
   useFrame(({ camera, pointer }, delta) => {
     const dt = Math.min(delta, 0.05)
@@ -32,9 +34,12 @@ export function CinematicCamera({ signals, animated, missionId }: {
     )
     look.set(MathUtils.lerp(MathUtils.lerp(mobile ? 0 : 0.1, vaultX, align), 0, release), mobile && travel < 0.1 ? 1.2 : 0.1, z - 12)
     if (reveal > 0) {
-      const angle = reveal * Math.PI * 0.65
-      target.set(Math.sin(angle) * 5.5, 0.8, Math.cos(angle) * 5.5)
-      look.set(0, 0.5, 0)
+      const angle = reveal * 0.7
+      const mix = 1 - MathUtils.smoothstep(travel, 0, 0.35)
+      revealPosition.set(vaultX + Math.sin(angle) * 7.5, 0.9, Math.cos(angle) * 7.5)
+      revealFocus.set(vaultX - (mobile ? 0 : 2.5), 0.6, 0.5)
+      target.lerp(revealPosition, mix)
+      look.lerp(revealFocus, mix)
     }
     if (animated) camera.position.lerp(target, 1 - Math.exp(-dt * (travel > 0 && travel < 1 ? 8 : 2.5)))
     else camera.position.copy(target)

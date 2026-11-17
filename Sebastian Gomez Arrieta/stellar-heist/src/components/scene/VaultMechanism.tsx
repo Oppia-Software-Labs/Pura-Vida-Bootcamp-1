@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef } from 'react'
 import type { RefObject } from 'react'
-import { useFrame } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import { Group, InstancedMesh, MathUtils, MeshBasicMaterial, MeshStandardMaterial, Object3D, Points, Mesh } from 'three'
-import type { SceneSignals, TrustedVaultCompletion } from '../../experience/types'
+import type { SceneSignals, VaultCompletion } from '../../experience/types'
+import { artifactAppearance } from '../../experience/artifact'
 
-interface Props { proofComplete: boolean; identityComplete: boolean; signals: RefObject<SceneSignals>; animated: boolean; mobile: boolean; missionId: number }
+interface Props { transactionComplete: boolean; proofComplete: boolean; identityComplete: boolean; signals: RefObject<SceneSignals>; animated: boolean; mobile: boolean; missionId: number }
 const CYAN = '#61e9ff'
 const VIOLET = '#a68aff'
 
@@ -54,7 +55,7 @@ function EnergyCore({ signals, animated }: Pick<Props, 'signals' | 'animated'>) 
   </group>
 }
 
-export function VaultMechanism({ proofComplete, identityComplete, signals, animated, mobile, missionId }: Props) {
+export function VaultMechanism({ transactionComplete, proofComplete, identityComplete, signals, animated, mobile, missionId }: Props) {
   const identityProgress = useRef(0)
   const proofProgress = useRef(0)
   const shackles = useRef<(Mesh | null)[]>([])
@@ -91,10 +92,10 @@ export function VaultMechanism({ proofComplete, identityComplete, signals, anima
     if (!identityComplete) identityProgress.current = 0
     proofProgress.current = !proofComplete ? 0 : animated ? MathUtils.damp(proofProgress.current, 1, 4, Math.min(delta, 0.05)) : 1
     shackles.current.forEach((shackle, i) => {
-      const progress = i === 0 ? identityProgress.current : i === 1 ? proofProgress.current : 0
+      const progress = i === 0 ? identityProgress.current : i === 1 ? proofProgress.current : transactionComplete ? unlock : 0
       if (shackle) { shackle.position.y = 0.04 + progress * 0.12; shackle.rotation.z = progress * -0.4 }
     })
-    lockLights.current.forEach((material, i) => material?.color.set((i === 0 && identityComplete || i === 1 && proofComplete) ? '#9ff4d9' : unlock > 0.5 ? '#ffda90' : missionId === i + 1 ? CYAN : VIOLET))
+    lockLights.current.forEach((material, i) => material?.color.set((i === 0 && identityComplete || i === 1 && proofComplete || i === 2 && transactionComplete) ? '#9ff4d9' : unlock > 0.5 ? '#ffda90' : missionId === i + 1 ? CYAN : VIOLET))
   })
   return <group ref={root} position={[mobile ? 0 : 1.8, 0, 0]}>
     <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, -0.3]} castShadow receiveShadow><cylinderGeometry args={[2.7, 2.76, 0.8, 96]} /><meshStandardMaterial color="#152335" metalness={0.95} roughness={0.28} /></mesh>
@@ -137,28 +138,24 @@ export function VaultMechanism({ proofComplete, identityComplete, signals, anima
 }
 
 export function ArtifactReveal({ evidence, signals, animated }: {
-  evidence: TrustedVaultCompletion | null; signals: RefObject<SceneSignals>; animated: boolean
+  evidence: VaultCompletion | null; signals: RefObject<SceneSignals>; animated: boolean
 }) {
+  const mobile = useThree(state => state.size.width < 760)
   const ref = useRef<Group>(null)
   const appearance = useMemo(() => {
     if (!evidence || !/^[a-f0-9]{64}$/i.test(evidence.transactionHash)) return null
-    return {
-      hash: evidence.transactionHash,
-      hue: parseInt(evidence.transactionHash.slice(0, 4), 16) % 360,
-      detail: parseInt(evidence.transactionHash.slice(4, 6), 16) % 2,
-      rotation: parseInt(evidence.transactionHash.slice(6, 10), 16) / 65535 * Math.PI,
-    }
+    return artifactAppearance(evidence.transactionHash)
   }, [evidence])
   useFrame((_, delta) => {
     if (!ref.current || !appearance) return
     ref.current.visible = signals.current.reveal > 0
-    ref.current.scale.setScalar(Math.max(0.001, signals.current.reveal))
-    ref.current.position.set(0, -0.8 + signals.current.reveal * 1.5, 0.9)
+    ref.current.scale.setScalar(Math.max(0.001, signals.current.reveal * 1.3))
+    ref.current.position.set(mobile ? 0 : 1.8, -0.8 + signals.current.reveal * 1.5, 0.9)
     if (animated) ref.current.rotation.y += Math.min(delta, 0.05) * 0.25
   })
   if (!appearance) return null
   return <group ref={ref} visible={false} rotation={[0.3, appearance.rotation, 0.2]}>
-    <mesh><icosahedronGeometry args={[0.7, appearance.detail]} /><meshStandardMaterial color={`hsl(${appearance.hue}, 65%, 65%)`} metalness={0.9} roughness={0.16} emissive="#71520e" emissiveIntensity={0.5} /></mesh>
+    <mesh><icosahedronGeometry args={[0.7, appearance.detail]} /><meshStandardMaterial color={`hsl(${appearance.hue}, 65%, 65%)`} metalness={0.8} roughness={0.22} emissive={`hsl(${appearance.hue}, 65%, 45%)`} emissiveIntensity={0.45} /></mesh>
     <mesh scale={1.25}><icosahedronGeometry args={[0.7]} /><meshBasicMaterial color="#ffe2a1" wireframe /></mesh>
     <pointLight color="#ffda87" intensity={15} distance={8} />
     <CompletionWave hash={appearance.hash} signals={signals} />

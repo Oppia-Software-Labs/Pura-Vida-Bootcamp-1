@@ -213,6 +213,13 @@
 .proof-cancel { display: block; margin-top: 12px; }
 .proof-local-note { color: #9dacc0; font-size: 13px; margin-top: 14px; }
 .fallback-notice { pointer-events: none; }
+.payment-amount { color: #e3d6f7; font-size: 27px; margin: 12px 0; }
+.payment-amount span { color: #adbed3; display: block; font-size: 16px; margin-top: 6px; }
+.payment-fee { color: #adbed3; font-size: 14px; margin: 18px 0; }
+.payment-approval { display: flex; align-items: flex-start; gap: 12px; color: #c0ccdc; font-size: 14px; line-height: 1.6; margin: 20px 0; cursor: pointer; }
+.payment-approval input { width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; accent-color: #c6b1ee; }
+.vault-reward h1 { font: 500 clamp(44px, 4.4vw, 66px)/1.08 var(--font-sans); letter-spacing: -2px; margin: 22px 0; }
+.vault-reward > .wallet-link { display: flex; width: fit-content; margin-top: 22px; }
 @media (max-width: 759px) {
   .fallback-notice { position: static; align-self: flex-start; margin: 0 5.5% 18px; max-width: 89%; }
 }

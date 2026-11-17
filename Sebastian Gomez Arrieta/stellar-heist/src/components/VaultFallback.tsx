@@ -1,6 +1,9 @@
+import type { VaultCompletion } from '../experience/types'
+import { ArtifactFallback } from './ArtifactFallback'
 import { Check, Fingerprint, LockKeyhole, ScanLine, Send } from 'lucide-react'
 
-export function VaultFallback({ identityComplete = false, proofComplete = false }: { identityComplete?: boolean; proofComplete?: boolean }) {
+export function VaultFallback({ identityComplete = false, proofComplete = false, completion = null }: { identityComplete?: boolean; proofComplete?: boolean; completion?: VaultCompletion | null }) {
+  if (completion) return <ArtifactFallback hash={completion.transactionHash} />
   return (
     <div className="vault-art" role="img" aria-label={`Bóveda Génesis sellada. ${proofComplete ? 'Dos sellos completados; uno pendiente.' : identityComplete ? 'Primer sello completado; dos pendientes.' : 'Tres cerraduras pendientes.'}`}>
       <svg className="vault-svg" viewBox="0 0 700 640" fill="none" aria-hidden="true">

@@ -13,7 +13,7 @@ export function useExperienceController(paused: boolean, visible: boolean, ready
   const [missionId, setMissionId] = useState(1)
   const bootTimeline = useRef<gsap.core.Timeline | null>(null)
   const travelTimeline = useRef<gsap.core.Timeline | null>(null)
-  const initiallyPaused = useRef(paused)
+  const initiallyVisible = useRef(visible)
   const bootFinished = useRef(false)
   const pausedRef = useRef(paused)
   useEffect(() => { pausedRef.current = paused }, [paused])
@@ -29,9 +29,9 @@ export function useExperienceController(paused: boolean, visible: boolean, ready
 
   useEffect(() => {
     if (!ready || bootFinished.current) return
-    if (initiallyPaused.current) { skipBoot(); return }
+    if (pausedRef.current) { skipBoot(); return }
     signals.current.boot = 0
-    const timeline = gsap.timeline({ paused: !visible, onComplete: () => { bootFinished.current = true; setPhase('lobby') } })
+    const timeline = gsap.timeline({ paused: !initiallyVisible.current, onComplete: () => { bootFinished.current = true; setPhase('lobby') } })
     const deadline = window.setTimeout(() => { if (!bootFinished.current) skipBoot() }, 8000)
     bootTimeline.current = timeline
     timeline
@@ -42,7 +42,7 @@ export function useExperienceController(paused: boolean, visible: boolean, ready
       .to(signals.current, { boot: 0.72, duration: 1.3, ease: 'power2.out' })
       .call(() => { setTitleVisible(true); setBootStep(3) })
       .to(signals.current, { boot: 1, duration: 1.8, ease: 'power2.out' })
-    return () => { window.clearTimeout(deadline); timeline.kill(); travelTimeline.current?.kill() }
+    return () => { window.clearTimeout(deadline); timeline.kill() }
   }, [skipBoot, ready])
 
   const enterMission = useCallback((id: number) => {
@@ -75,12 +75,14 @@ export function useExperienceController(paused: boolean, visible: boolean, ready
 
   useEffect(() => {
     if (paused) {
-      if (phase === 'boot') skipBoot()
-      else travelTimeline.current?.progress(1)
+      bootTimeline.current?.progress(1)
+      travelTimeline.current?.progress(1)
     }
     bootTimeline.current?.paused(!visible)
     travelTimeline.current?.paused(!visible)
-  }, [paused, visible, phase, skipBoot])
+  }, [paused, visible, phase])
+
+  useEffect(() => () => { bootTimeline.current?.kill(); travelTimeline.current?.kill() }, [])
 
   return { phase, bootStep, titleVisible, missionId, signals, enterMission, returnToLobby }
 }

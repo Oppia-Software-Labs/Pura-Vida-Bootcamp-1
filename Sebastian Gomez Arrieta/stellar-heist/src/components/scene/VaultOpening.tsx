@@ -1,23 +1,35 @@
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import type { RefObject } from 'react'
 import { gsap } from 'gsap'
-import type { SceneSignals, TrustedVaultCompletion } from '../../experience/types'
+import { useThree } from '@react-three/fiber'
+import type { SceneSignals, VaultCompletion } from '../../experience/types'
 
-/** Prepared sequence only. No preview trigger and no client-side success setter. */
-export function VaultOpening({ evidence, signals, paused }: {
-  evidence: TrustedVaultCompletion | null
-  signals: RefObject<SceneSignals>
-  paused: boolean
+/** Receipt is verified by the payment service; animation cannot manufacture completion. */
+export function VaultOpening({ evidence, signals, active, reducedMotion, onOpened }: {
+  evidence: VaultCompletion | null; signals: RefObject<SceneSignals>; active: boolean; reducedMotion: boolean; onOpened: () => void
 }) {
+  const sequence = useRef<gsap.core.Timeline | null>(null)
+  const invalidate = useThree(state => state.invalidate)
   useEffect(() => {
+    const channels = signals.current
+    Object.assign(channels, { unlock: 0, door: 0, reveal: 0 })
+    invalidate()
     if (!evidence) return
-    // Shape checks are defensive; the future adapter must verify evidence server-side.
-    if (evidence.network !== 'TESTNET' || !/^[a-f0-9]{64}$/i.test(evidence.transactionHash) || !evidence.verifiedMissions.every(Boolean)) return
-    const timeline = gsap.timeline()
-      .to(signals.current, { unlock: 1, duration: paused ? 0 : 2, ease: 'power2.inOut' })
-      .to(signals.current, { door: 1, duration: paused ? 0 : 3.2, ease: 'power3.inOut' })
-      .to(signals.current, { reveal: 1, duration: paused ? 0 : 2.8, ease: 'power2.out' }, '-=1')
-    return () => { timeline.kill() }
-  }, [evidence, signals, paused])
+    const timeline = gsap.timeline({ paused: true, onComplete: onOpened })
+      .to(channels, { unlock: 1, duration: 2, ease: 'power2.inOut' })
+      .to(channels, { door: 1, duration: 3.2, ease: 'power3.inOut' })
+      .to(channels, { reveal: 1, duration: 2.8, ease: 'power2.out' }, '-=1')
+    sequence.current = timeline
+    return () => {
+      timeline.kill(); sequence.current = null
+      Object.assign(channels, { unlock: 0, door: 0, reveal: 0 })
+    }
+  }, [evidence, signals, onOpened, invalidate])
+  useEffect(() => {
+    if (!active) sequence.current?.pause()
+    else if (reducedMotion) sequence.current?.progress(1)
+    else sequence.current?.play()
+    invalidate()
+  }, [active, reducedMotion, evidence, onOpened, invalidate])
   return null
 }

@@ -1,8 +1,9 @@
 import { useEffect, useSyncExternalStore } from 'react'
 import { WalletSession } from '../stellar/walletSession'
-import { varialPort } from '../stellar/varial'
+import { varialPayments, varialPort } from '../stellar/varial'
+import { paymentJournal } from '../stellar/paymentJournal'
 
-const session = new WalletSession(varialPort)
+const session = new WalletSession(varialPort, undefined, { port: varialPayments, journal: paymentJournal })
 export function useWallet() {
   const state = useSyncExternalStore(session.subscribe, session.getSnapshot)
   useEffect(() => {
@@ -17,6 +18,6 @@ export function useWallet() {
       session.disconnect()
     }
   }, [])
-  return { ...state, connect: session.connect, disconnect: session.disconnect, refreshBalance: session.refreshBalance, signProof: session.signProof, cancelProof: session.cancelProof }
+  return { ...state, connect: session.connect, disconnect: session.disconnect, refreshBalance: session.refreshBalance, signProof: session.signProof, cancelProof: session.cancelProof, preparePayment: session.preparePayment, submitPayment: session.submitPayment, checkPayment: session.checkPayment, cancelPayment: session.cancelPayment }
 }
 export type WalletConnection = ReturnType<typeof useWallet>

@@ -12,10 +12,13 @@ import { ArtifactReveal, VaultMechanism } from './scene/VaultMechanism'
 import { MissionTransition } from './scene/MissionTransition'
 import { MissionInstrument, ParticleField } from './scene/ParticleField'
 import { VaultOpening } from './scene/VaultOpening'
-import { verifiedCompletion } from '../experience/types'
-import type { ProofVisualState, SceneSignals } from '../experience/types'
+import type { ProofVisualState, SceneSignals, VaultCompletion } from '../experience/types'
 
 export interface VaultSceneProps {
+  completion: VaultCompletion | null
+  revealActive: boolean
+  reducedMotion: boolean
+  onOpened: () => void
   proofState: ProofVisualState
   identityComplete: boolean
   animated: boolean
@@ -101,6 +104,7 @@ function PostProcessing() {
 }
 
 function SceneContent(props: VaultSceneProps) {
+  const { onContextLost } = props
   const mobile = useThree(state => state.size.width < 760)
   const compact = mobile || props.lightQuality
   const gl = useThree(state => state.gl)
@@ -108,11 +112,11 @@ function SceneContent(props: VaultSceneProps) {
   const regress = useThree(state => state.performance.regress)
   useEffect(() => {
     const canvas = gl.domElement
-    const lost = (event: Event) => { event.preventDefault(); props.onContextLost() }
+    const lost = (event: Event) => { event.preventDefault(); onContextLost() }
     canvas.addEventListener('webglcontextlost', lost)
     return () => canvas.removeEventListener('webglcontextlost', lost)
-  }, [gl, props.onContextLost])
-  useEffect(() => { invalidate(); regress() }, [props.missionId, props.animated, props.identityComplete, props.proofState, invalidate, regress])
+  }, [gl, onContextLost])
+  useEffect(() => { invalidate(); regress() }, [props.missionId, props.animated, props.identityComplete, props.proofState, props.completion, props.revealActive, props.reducedMotion, invalidate, regress])
   return <>
     <fog attach="fog" args={['#080c17', 11, 45]} />
     <Environment resolution={64} frames={1}>
@@ -122,12 +126,12 @@ function SceneContent(props: VaultSceneProps) {
     </Environment>
     <Lighting signals={props.signals} animated={props.animated} shadows={!compact} />
     <Chamber compact={mobile} signals={props.signals} />
-    <VaultMechanism proofComplete={props.proofState === 'verified'} identityComplete={props.identityComplete} signals={props.signals} animated={props.animated} mobile={mobile} missionId={props.missionId} />
+    <VaultMechanism transactionComplete={!!props.completion} proofComplete={props.proofState === 'verified'} identityComplete={props.identityComplete} signals={props.signals} animated={props.animated} mobile={mobile} missionId={props.missionId} />
     <MissionTransition signals={props.signals} animated={props.animated} mobile={mobile} missionId={props.missionId} />
     <ParticleField signals={props.signals} animated={props.animated} compact={compact} />
     <MissionInstrument proofState={props.proofState} signals={props.signals} animated={props.animated} missionId={props.missionId} compact={mobile} />
-    <ArtifactReveal evidence={verifiedCompletion} signals={props.signals} animated={props.animated} />
-    <VaultOpening evidence={verifiedCompletion} signals={props.signals} paused={!props.animated} />
+    <ArtifactReveal evidence={props.completion} signals={props.signals} animated={props.animated} />
+    <VaultOpening evidence={props.completion} signals={props.signals} active={props.revealActive} reducedMotion={props.reducedMotion} onOpened={props.onOpened} />
     <CinematicCamera signals={props.signals} animated={props.animated} missionId={props.missionId} />
     <AdaptiveDpr />
     {!props.lightQuality && <PerformanceMonitor ms={500} iterations={4} bounds={() => [28, 55]} flipflops={1} onDecline={props.onSlowHardware} onFallback={props.onSlowHardware} />}

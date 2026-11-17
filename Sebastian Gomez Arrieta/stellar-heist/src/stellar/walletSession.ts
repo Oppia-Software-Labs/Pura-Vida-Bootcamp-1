@@ -1,6 +1,9 @@
 import { Networks, StrKey } from '@stellar/stellar-sdk/base'
 import { MessageChallenges, ProofError } from './messageProof.ts'
 import type { MessageChallenge, ProofIssue, SignedMessage } from './messageProof.ts'
+import { initialPayment, PaymentFlow } from './paymentFlow.ts'
+import type { PaymentJournal, PaymentPort, PaymentState } from './paymentFlow.ts'
+import { PaymentError } from './payment.ts'
 
 export interface WalletContext { address: string; passphrase: string }
 export interface WalletPort {
@@ -25,8 +28,9 @@ export interface WalletState {
   proof: boolean
   proofStatus: 'idle' | 'requesting' | 'verifying' | 'verified' | 'error'
   proofIssue: ProofIssue | WalletIssue | null
+  payment: PaymentState
 }
-const initial = (): WalletState => ({ status: 'disconnected', address: null, balance: null, balanceStatus: 'idle', issue: null, identity: false, proof: false, proofStatus: 'idle', proofIssue: null })
+const initial = (): WalletState => ({ status: 'disconnected', address: null, balance: null, balanceStatus: 'idle', issue: null, identity: false, proof: false, proofStatus: 'idle', proofIssue: null, payment: initialPayment() })
 
 export function validateContext(context: WalletContext) {
   if (!StrKey.isValidEd25519PublicKey(context.address)) throw new WalletError('address')
@@ -47,7 +51,7 @@ export const walletMessages: Record<WalletIssue, string> = {
   rpc: 'No pudimos consultar Testnet. Actualiza el saldo para reintentar.',
 }
 
-/** Local educational proof, no persistence or transaction methods. */
+/** Educational session. Only a verified RPC receipt can complete the final mission. */
 export class WalletSession {
   private state = initial()
   private listeners = new Set<() => void>()
@@ -57,7 +61,11 @@ export class WalletSession {
   private proofRequest = 0
   private challenges: MessageChallenges
   private readonly port: WalletPort
-  constructor(port: WalletPort, challenges = new MessageChallenges()) { this.port = port; this.challenges = challenges }
+  private readonly payments: PaymentFlow | null
+  constructor(port: WalletPort, challenges = new MessageChallenges(), payment?: { port: PaymentPort; journal: PaymentJournal; wait?: (signal: AbortSignal) => Promise<void> }) {
+    this.port = port; this.challenges = challenges
+    this.payments = payment ? new PaymentFlow(payment.port, payment.journal, this.paymentContext, state => this.update({ payment: state }), payment.wait) : null
+  }
   getSnapshot = () => this.state
   subscribe = (listener: () => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener) } }
   private update(patch: Partial<WalletState>) {
@@ -69,17 +77,20 @@ export class WalletSession {
   disconnect = () => {
     this.generation++; this.balanceRequest++
     this.proofRequest++; this.challenges.clear()
+    this.payments?.reset()
     this.update(initial())
   }
   private fail(error: unknown) {
     this.generation++; this.balanceRequest++
     this.proofRequest++; this.challenges.clear()
+    this.payments?.reset()
     this.update({ ...initial(), status: 'error', issue: error instanceof WalletError ? error.code : 'provider' })
   }
   connect = async () => {
     if (this.state.status === 'connecting') return
     const generation = ++this.generation
     this.proofRequest++; this.challenges.clear()
+    this.payments?.reset()
     this.update({ ...initial(), status: 'connecting' })
     try {
       if (!await this.port.installed()) throw new WalletError('missing')
@@ -158,4 +169,14 @@ export class WalletSession {
       if (current()) this.update({ proof: false, proofStatus: 'error', proofIssue: error instanceof ProofError || error instanceof WalletError ? error.code : 'provider' })
     } finally { this.challenges.abandon(challenge) }
   }
+  private paymentContext = async (): Promise<WalletContext> => {
+    const generation = this.generation
+    await this.check(true)
+    if (generation !== this.generation || !this.state.identity || !this.state.proof || !this.state.address) throw new PaymentError('session')
+    return { address: this.state.address, passphrase: Networks.TESTNET }
+  }
+  preparePayment = async () => { await this.payments?.prepare() }
+  submitPayment = async (approvedHash: string) => { await this.payments?.submit(approvedHash); if (this.state.payment.receipt) void this.refreshBalance() }
+  checkPayment = async () => { await this.payments?.check(); if (this.state.payment.receipt) void this.refreshBalance() }
+  cancelPayment = () => { this.payments?.cancel() }
 }
