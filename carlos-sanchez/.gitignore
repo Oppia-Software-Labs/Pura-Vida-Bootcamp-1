@@ -4,6 +4,5 @@ coverage
 .env
 .env.local
 target
-bindings
 *.log
 
