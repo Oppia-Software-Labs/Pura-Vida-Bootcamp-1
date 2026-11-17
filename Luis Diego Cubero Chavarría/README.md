@@ -30,7 +30,7 @@ npm run preview
 - Tras aprobar el acceso, se lee la red de la wallet. Testnet se confirma por su passphrase, no solo por el nombre; otras redes muestran una advertencia. La app no cambia la red automáticamente.
 - Si falla la lectura de red, no se muestran datos parciales y se permite reintentar. «Disconnect» solicita la desconexión para la cuenta y red activas; no revoca todos los permisos históricos. Si no puede confirmarse, se ocultan los datos y se permite reintentar la desconexión.
 - Al volver el foco a la página, se comprueban dirección y red sin pedir acceso de nuevo. Si cambian o no pueden leerse, se limpian los datos y se pide reconectar. No es una actualización continua ni hay sondeo periódico.
-- No hay firmas, pagos ni transacciones. La prueba real de conexión con la extensión sigue pendiente.
+- No hay firmas, pagos ni transacciones. La conexión y desconexión con la extensión real se comprobaron manualmente.
 - La barra de progreso (Extensión, Aprobación, Red) solo avanza con el estado real devuelto por la wallet; en otra red la etiqueta de red y el mensaje usan el color de advertencia. Mientras hay conexión se muestra solo «Desconectar».
 
 ## Esperas y diagnóstico local
