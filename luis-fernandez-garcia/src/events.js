@@ -1,4 +1,4 @@
-export const ORGANIZER = 'GAHK7EEG2WWHVKDNT4CEQFZGKF2LGDSW2IVM4S5DP42RBW3K6BTODB4A';
+export const ORGANIZER = 'GDA6ZHDB5F32HPC5TL5XZJTT4EZHLZABBTVUBVCL2CMFEGQ6MJV6X36P';
 
 export const EVENTS = [
   { id: 1, name: 'Recital Rock Nacional', place: 'Estadio Central', date: '2026-12-05', price: 10, emoji: '🎸' },
