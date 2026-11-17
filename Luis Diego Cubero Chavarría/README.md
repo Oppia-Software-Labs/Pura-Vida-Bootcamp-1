@@ -31,6 +31,7 @@ npm run preview
 - Si falla la lectura de red, no se muestran datos parciales y se permite reintentar. «Disconnect» solicita la desconexión para la cuenta y red activas; no revoca todos los permisos históricos. Si no puede confirmarse, se ocultan los datos y se permite reintentar la desconexión.
 - Al volver el foco a la página, se comprueban dirección y red sin pedir acceso de nuevo. Si cambian o no pueden leerse, se limpian los datos y se pide reconectar. No es una actualización continua ni hay sondeo periódico.
 - No hay firmas, pagos ni transacciones. La prueba real de conexión con la extensión sigue pendiente.
+- La barra de progreso (Extensión, Aprobación, Red) solo avanza con el estado real devuelto por la wallet; en otra red la etiqueta de red y el mensaje usan el color de advertencia. Mientras hay conexión se muestra solo «Desconectar».
 
 ## Esperas y diagnóstico local
 
@@ -40,7 +41,7 @@ Solo en desarrollo (`import.meta.env.DEV`), la app usa `console.debug` con dos l
 
 ## Tema e idioma
 
-La interfaz inicia siempre en español y modo oscuro, sin depender del navegador o del sistema. Los controles de la cabecera permiten alternar español/inglés y oscuro/claro. Las preferencias solo viven en memoria: al recargar vuelven los valores iniciales. Cambiarlas no solicita acceso a la wallet ni reinicia una operación pendiente. Los nombres de red y direcciones se muestran tal como los devuelve Varial.
+La interfaz inicia siempre en español y modo oscuro, sin depender del navegador o del sistema. Los controles de la cabecera permiten alternar español/inglés (globo con `ES`/`EN`) y oscuro/claro (sol/luna); su nombre completo aparece al pasar el cursor y lo anuncian los lectores de pantalla. Las preferencias solo viven en memoria: al recargar vuelven los valores iniciales. Cambiarlas no solicita acceso a la wallet ni reinicia una operación pendiente. Los nombres de red y direcciones se muestran tal como los devuelve Varial.
 
 ## Comprobación manual
 

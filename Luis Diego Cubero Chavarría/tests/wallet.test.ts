@@ -138,13 +138,49 @@ describe('presentation preferences', () => {
     expect(button().textContent).toBe('Conectar Varial');
     document.querySelector<HTMLButtonElement>('#theme')!.click();
     expect(document.documentElement.dataset.theme).toBe('light');
-    expect(document.querySelector('#theme')?.textContent).toContain('Cambiar a oscuro');
+    expect(document.querySelector('#theme')?.getAttribute('aria-label')).toContain('Cambiar a oscuro');
     document.querySelector<HTMLButtonElement>('#locale')!.click();
     expect(document.documentElement.lang).toBe('en');
     expect(button().textContent).toBe('Connect Varial');
     expect(output().getAttribute('aria-label')).toBe('Public wallet address');
     expect(sdk.isConnected).not.toHaveBeenCalled();
     expect(sdk.requestAccess).not.toHaveBeenCalled();
+  });
+
+  it('marks connection progress from the real status, never ahead of it', async () => {
+    const done = () => [...document.querySelectorAll<HTMLElement>('.progress li')].map(e => e.dataset.done === 'true');
+    expect(done()).toEqual([false, false, false]);
+    button().click();
+    await vi.waitFor(() => expect(output().hidden).toBe(false));
+    expect(done()).toEqual([true, true, true]);
+    disconnect().click();
+    await vi.waitFor(() => expect(disconnect().hidden).toBe(true));
+    expect(done()).toEqual([false, false, false]);
+    sdk.getNetwork.mockResolvedValueOnce({ network: 'PUBLIC', networkPassphrase: 'Public Global Stellar Network ; September 2015' });
+    button().click();
+    await vi.waitFor(() => expect(output().hidden).toBe(false));
+    expect(done()).toEqual([true, true, false]);
+    document.querySelector<HTMLButtonElement>('#locale')!.click();
+    expect([...document.querySelectorAll('.progress li')].map(e => e.textContent)).toEqual(['Extension', 'Approval', 'Network']);
+  });
+
+  it('shows compact icon toggles with full accessible names and tooltips', () => {
+    const theme = document.querySelector<HTMLButtonElement>('#theme')!;
+    const locale = document.querySelector<HTMLButtonElement>('#locale')!;
+    expect(theme.textContent!.trim()).toBe('');
+    expect(theme.getAttribute('aria-label')).toBe('Tema: oscuro · Cambiar a claro');
+    expect(theme.title).toBe('Tema: oscuro · Cambiar a claro');
+    expect(locale.textContent!.trim()).toBe('ES');
+    expect(locale.getAttribute('aria-label')).toBe('Idioma: español · Cambiar a inglés');
+    expect(locale.title).toBe('Idioma: español · Cambiar a inglés');
+    theme.click();
+    expect(theme.getAttribute('aria-label')).toBe('Tema: claro · Cambiar a oscuro');
+    expect(document.querySelector('#moon')!.hasAttribute('hidden')).toBe(false);
+    expect(document.querySelector('#sun')!.hasAttribute('hidden')).toBe(true);
+    locale.click();
+    expect(locale.textContent!.trim()).toBe('EN');
+    expect(locale.getAttribute('aria-label')).toBe('Language: English · Switch to Spanish');
+    expect(theme.title).toBe('Theme: light · Switch to dark');
   });
 
   it('translates the current error without requesting again', async () => {

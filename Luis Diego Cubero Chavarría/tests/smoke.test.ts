@@ -6,7 +6,9 @@ describe('lab page', () => {
     document.documentElement.innerHTML = html;
     const main = document.querySelector('main');
     expect(main).not.toBeNull();
-    expect(main?.querySelector('h1')?.textContent).toBe('Tu wallet. El contexto claro.');
+    expect(main?.querySelector('h1')?.textContent).toBe('Conecta tu wallet Stellar');
+    expect([...document.querySelectorAll('main summary')].map(e => e.textContent)).toEqual(['¿Qué pasa al conectar?', '¿Por qué Testnet?']);
+    expect([...document.querySelectorAll('.progress li')].map(e => e.textContent)).toEqual(['Extensión', 'Aprobación', 'Red']);
     expect(main?.textContent).toContain('Práctica solo en Testnet.');
     expect(main?.textContent).toContain('Sin fondos reales, pagos ni firmas.');
     expect(main?.textContent).toContain('Nunca compartas claves privadas ni frases de recuperación.');
