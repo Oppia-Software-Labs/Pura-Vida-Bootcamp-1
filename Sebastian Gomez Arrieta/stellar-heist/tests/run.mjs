@@ -11,11 +11,11 @@ try {
   await build({
     configFile: false, publicDir: false, logLevel: 'warn', ssr: { noExternal: true },
     build: {
-      ssr: 'tests/wallet.test.ts', outDir: directory, emptyOutDir: true,
-      rolldownOptions: { output: { entryFileNames: 'wallet.test.mjs' } },
+      ssr: 'tests/all.test.ts', outDir: directory, emptyOutDir: true,
+      rolldownOptions: { output: { entryFileNames: 'all.test.mjs' } },
     },
   })
-  const result = spawnSync(process.execPath, [join(directory, 'wallet.test.mjs')], { stdio: 'inherit' })
+  const result = spawnSync(process.execPath, [join(directory, 'all.test.mjs')], { stdio: 'inherit' })
   if (result.error) throw result.error
   process.exitCode = result.status ?? 1
 } finally { await rm(directory, { recursive: true, force: true }) }

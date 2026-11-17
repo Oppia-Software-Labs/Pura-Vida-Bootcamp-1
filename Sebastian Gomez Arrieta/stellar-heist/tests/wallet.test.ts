@@ -12,6 +12,7 @@ function fixture(overrides: Partial<WalletPort> = {}) {
     installed: async () => true, authorize: async () => {},
     context: async () => ({ address, passphrase: Networks.TESTNET }),
     balance: async () => '100.1234567', ...overrides,
+    signMessage: async () => { throw new Error('Signing is not used in identity tests') },
   }
   return { port, session: new WalletSession(port) }
 }

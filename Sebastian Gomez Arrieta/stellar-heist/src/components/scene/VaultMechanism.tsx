@@ -5,7 +5,7 @@ import { RoundedBox } from '@react-three/drei'
 import { Group, InstancedMesh, MathUtils, MeshBasicMaterial, MeshStandardMaterial, Object3D, Points, Mesh } from 'three'
 import type { SceneSignals, TrustedVaultCompletion } from '../../experience/types'
 
-interface Props { identityComplete: boolean; signals: RefObject<SceneSignals>; animated: boolean; mobile: boolean; missionId: number }
+interface Props { proofComplete: boolean; identityComplete: boolean; signals: RefObject<SceneSignals>; animated: boolean; mobile: boolean; missionId: number }
 const CYAN = '#61e9ff'
 const VIOLET = '#a68aff'
 
@@ -54,9 +54,10 @@ function EnergyCore({ signals, animated }: Pick<Props, 'signals' | 'animated'>) 
   </group>
 }
 
-export function VaultMechanism({ identityComplete, signals, animated, mobile, missionId }: Props) {
+export function VaultMechanism({ proofComplete, identityComplete, signals, animated, mobile, missionId }: Props) {
   const identityProgress = useRef(0)
-  const identityShackle = useRef<Mesh>(null)
+  const proofProgress = useRef(0)
+  const shackles = useRef<(Mesh | null)[]>([])
   const root = useRef<Group>(null)
   const outerAngle = useRef(0)
   const innerAngle = useRef(0)
@@ -70,14 +71,16 @@ export function VaultMechanism({ identityComplete, signals, animated, mobile, mi
     const { unlock, door: opening, boot, travel } = signals.current
     if (root.current) root.current.visible = travel < 0.36 || signals.current.reveal > 0
     const dt = animated ? Math.min(delta, 0.05) * MathUtils.smoothstep(boot, 0.2, 0.7) : 0
-    outerAngle.current += dt * (0.045 + unlock * 0.4)
-    innerAngle.current -= dt * (0.075 + unlock * 0.5)
+    if (!proofComplete) {
+      outerAngle.current += dt * (0.045 + unlock * 0.4)
+      innerAngle.current -= dt * (0.075 + unlock * 0.5)
+    }
     if (outer.current) outer.current.rotation.z = unlock > 0.98
       ? MathUtils.damp(outer.current.rotation.z, Math.round(outer.current.rotation.z / (Math.PI / 3)) * Math.PI / 3, 3, dt)
-      : outerAngle.current
+      : proofComplete ? animated ? MathUtils.damp(outer.current.rotation.z, Math.PI * 2, 3, dt) : Math.PI * 2 : outerAngle.current
     if (inner.current) inner.current.rotation.z = unlock > 0.98
       ? MathUtils.damp(inner.current.rotation.z, Math.round(inner.current.rotation.z / (Math.PI / 3)) * Math.PI / 3, 3, dt)
-      : innerAngle.current
+      : proofComplete ? animated ? MathUtils.damp(inner.current.rotation.z, -Math.PI * 2, 3, dt) : -Math.PI * 2 : innerAngle.current
     if (door.current) {
       door.current.rotation.y = -opening * Math.PI * 0.62
       door.current.position.x = -2.06 - opening * 0.5
@@ -86,8 +89,12 @@ export function VaultMechanism({ identityComplete, signals, animated, mobile, mi
     if (lights.current) lights.current.emissiveIntensity = boot * 1.5
     identityProgress.current = animated ? MathUtils.damp(identityProgress.current, identityComplete ? 1 : 0, 4, Math.min(delta, 0.05)) : identityComplete ? 1 : 0
     if (!identityComplete) identityProgress.current = 0
-    if (identityShackle.current) { identityShackle.current.position.y = 0.04 + identityProgress.current * 0.12; identityShackle.current.rotation.z = identityProgress.current * -0.4 }
-    lockLights.current.forEach((material, i) => material?.color.set(i === 0 && identityComplete ? '#9ff4d9' : unlock > 0.5 ? '#ffda90' : missionId === i + 1 ? CYAN : VIOLET))
+    proofProgress.current = !proofComplete ? 0 : animated ? MathUtils.damp(proofProgress.current, 1, 4, Math.min(delta, 0.05)) : 1
+    shackles.current.forEach((shackle, i) => {
+      const progress = i === 0 ? identityProgress.current : i === 1 ? proofProgress.current : 0
+      if (shackle) { shackle.position.y = 0.04 + progress * 0.12; shackle.rotation.z = progress * -0.4 }
+    })
+    lockLights.current.forEach((material, i) => material?.color.set((i === 0 && identityComplete || i === 1 && proofComplete) ? '#9ff4d9' : unlock > 0.5 ? '#ffda90' : missionId === i + 1 ? CYAN : VIOLET))
   })
   return <group ref={root} position={[mobile ? 0 : 1.8, 0, 0]}>
     <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, -0.3]} castShadow receiveShadow><cylinderGeometry args={[2.7, 2.76, 0.8, 96]} /><meshStandardMaterial color="#152335" metalness={0.95} roughness={0.28} /></mesh>
@@ -116,7 +123,7 @@ export function VaultMechanism({ identityComplete, signals, animated, mobile, mi
           <RoundedBox args={[0.39, 0.56, 0.17]} radius={0.035} smoothness={2}><meshStandardMaterial color="#53667c" metalness={0.95} roughness={0.3} /></RoundedBox>
           <mesh position={[0, 0, 0.11]}><boxGeometry args={[0.26, 0.34, 0.06]} /><meshStandardMaterial color="#080f20" /></mesh>
           <mesh position={[0, -0.1, 0.15]}><boxGeometry args={[0.18, 0.025, 0.01]} /><meshBasicMaterial ref={material => { lockLights.current[i] = material }} color={VIOLET} toneMapped={false} /></mesh>
-          <mesh ref={i === 0 ? identityShackle : undefined} position={[0, 0.04, 0.15]}><torusGeometry args={[0.055, 0.009, 5, 14, Math.PI]} /><meshBasicMaterial color="#c2d1e4" /></mesh>
+          <mesh ref={node => { shackles.current[i] = node }} position={[0, 0.04, 0.15]}><torusGeometry args={[0.055, 0.009, 5, 14, Math.PI]} /><meshBasicMaterial color="#c2d1e4" /></mesh>
           <mesh position={[0, 0, 0.15]}><boxGeometry args={[0.12, 0.06, 0.01]} /><meshStandardMaterial color="#8c9eb1" metalness={0.9} /></mesh>
         </group>)}
       </group>

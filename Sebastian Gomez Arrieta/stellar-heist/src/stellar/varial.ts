@@ -13,6 +13,11 @@ function checkError(error: { code?: number; message?: string } | undefined, fall
   if (error) throw new WalletError(error.code === -4 ? 'rejected' : /locked/i.test(error.message ?? '') ? 'locked' : fallback === 'rejected' ? 'provider' : fallback)
 }
 export const varialPort: WalletPort = {
+  async signMessage(message, context) {
+    const result = await bounded((await api()).signMessage(message, { address: context.address, networkPassphrase: context.passphrase }), 120000)
+    checkError(result.error, 'provider')
+    return { signedMessage: result.signedMessage, signerAddress: result.signerAddress }
+  },
   async installed() {
     const result = await bounded((await api()).isConnected())
     checkError(result.error, 'provider')

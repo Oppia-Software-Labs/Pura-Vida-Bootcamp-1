@@ -13,9 +13,10 @@ import { MissionTransition } from './scene/MissionTransition'
 import { MissionInstrument, ParticleField } from './scene/ParticleField'
 import { VaultOpening } from './scene/VaultOpening'
 import { verifiedCompletion } from '../experience/types'
-import type { SceneSignals } from '../experience/types'
+import type { ProofVisualState, SceneSignals } from '../experience/types'
 
 export interface VaultSceneProps {
+  proofState: ProofVisualState
   identityComplete: boolean
   animated: boolean
   missionId: number
@@ -111,7 +112,7 @@ function SceneContent(props: VaultSceneProps) {
     canvas.addEventListener('webglcontextlost', lost)
     return () => canvas.removeEventListener('webglcontextlost', lost)
   }, [gl, props.onContextLost])
-  useEffect(() => { invalidate(); regress() }, [props.missionId, props.animated, props.identityComplete, invalidate, regress])
+  useEffect(() => { invalidate(); regress() }, [props.missionId, props.animated, props.identityComplete, props.proofState, invalidate, regress])
   return <>
     <fog attach="fog" args={['#080c17', 11, 45]} />
     <Environment resolution={64} frames={1}>
@@ -121,10 +122,10 @@ function SceneContent(props: VaultSceneProps) {
     </Environment>
     <Lighting signals={props.signals} animated={props.animated} shadows={!compact} />
     <Chamber compact={mobile} signals={props.signals} />
-    <VaultMechanism identityComplete={props.identityComplete} signals={props.signals} animated={props.animated} mobile={mobile} missionId={props.missionId} />
+    <VaultMechanism proofComplete={props.proofState === 'verified'} identityComplete={props.identityComplete} signals={props.signals} animated={props.animated} mobile={mobile} missionId={props.missionId} />
     <MissionTransition signals={props.signals} animated={props.animated} mobile={mobile} missionId={props.missionId} />
     <ParticleField signals={props.signals} animated={props.animated} compact={compact} />
-    <MissionInstrument signals={props.signals} animated={props.animated} missionId={props.missionId} compact={mobile} />
+    <MissionInstrument proofState={props.proofState} signals={props.signals} animated={props.animated} missionId={props.missionId} compact={mobile} />
     <ArtifactReveal evidence={verifiedCompletion} signals={props.signals} animated={props.animated} />
     <VaultOpening evidence={verifiedCompletion} signals={props.signals} paused={!props.animated} />
     <CinematicCamera signals={props.signals} animated={props.animated} missionId={props.missionId} />

@@ -24,11 +24,11 @@ export const missions: readonly Mission[] = [
     action: 'Conectar wallet',
   },
   {
-    id: 2, title: 'Tu firma', navTitle: 'Firma', icon: ScanLine,
+    id: 2, title: 'Demuestra que eres tú', navTitle: 'Firma', icon: ScanLine,
     summary: 'Demuestra que es tuya.',
-    description: 'Firma un mensaje para demostrar que esta wallet es tuya.',
+    description: 'Firma un mensaje con tu wallet para abrir el segundo sello.',
     objective: 'Verificar la firma de un mensaje único con vencimiento.',
-    notice: 'Firmar este mensaje no envía dinero.',
+    notice: 'No gastarás XLM.',
     action: 'Firmar mensaje',
   },
   {

@@ -210,3 +210,9 @@
 .protocol-button[aria-disabled="true"] { opacity: .55; }
 .next-mission:disabled { opacity: .45; cursor: not-allowed; }
 .vault-lock.is-complete { color: #a4e6cd; border-color: #a4e6cd80; }
+.proof-cancel { display: block; margin-top: 12px; }
+.proof-local-note { color: #9dacc0; font-size: 13px; margin-top: 14px; }
+.fallback-notice { pointer-events: none; }
+@media (max-width: 759px) {
+  .fallback-notice { position: static; align-self: flex-start; margin: 0 5.5% 18px; max-width: 89%; }
+}

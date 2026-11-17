@@ -17,6 +17,6 @@ export function useWallet() {
       session.disconnect()
     }
   }, [])
-  return { ...state, connect: session.connect, disconnect: session.disconnect, refreshBalance: session.refreshBalance }
+  return { ...state, connect: session.connect, disconnect: session.disconnect, refreshBalance: session.refreshBalance, signProof: session.signProof, cancelProof: session.cancelProof }
 }
 export type WalletConnection = ReturnType<typeof useWallet>

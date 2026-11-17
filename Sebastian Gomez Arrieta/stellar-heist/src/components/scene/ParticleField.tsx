@@ -2,7 +2,8 @@ import { useMemo, useRef } from 'react'
 import type { RefObject } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { AdditiveBlending, BufferAttribute, Group, Points } from 'three'
-import type { SceneSignals } from '../../experience/types'
+import type { ProofVisualState, SceneSignals } from '../../experience/types'
+import { SignatureScanner } from './SignatureScanner'
 
 export function ParticleField({ signals, animated, compact }: {
   signals: RefObject<SceneSignals>; animated: boolean; compact: boolean
@@ -36,8 +37,8 @@ export function ParticleField({ signals, animated, compact }: {
   </points>
 }
 
-export function MissionInstrument({ missionId, animated, signals, compact }: {
-  missionId: number; animated: boolean; signals: RefObject<SceneSignals>; compact: boolean
+export function MissionInstrument({ proofState, missionId, animated, signals, compact }: {
+  proofState: ProofVisualState; missionId: number; animated: boolean; signals: RefObject<SceneSignals>; compact: boolean
 }) {
   const ref = useRef<Group>(null)
   const time = useRef(0)
@@ -51,14 +52,14 @@ export function MissionInstrument({ missionId, animated, signals, compact }: {
   })
   const color = missionId === 2 ? '#b39aff' : '#81f2ff'
   return <group ref={ref} position={[compact ? 0 : 1.9, compact ? 1 : 0, -17]} visible={false}>
-    {[1.1, 1.4, 1.7].map((r, i) => <mesh key={r} rotation={[i * 0.3, i * 0.25, i * Math.PI / 4]}>
+    {missionId !== 2 && [1.1, 1.4, 1.7].map((r, i) => <mesh key={r} rotation={[i * 0.3, i * 0.25, i * Math.PI / 4]}>
       <torusGeometry args={[r, 0.012, 4, missionId === 2 ? 6 : 80]} /><meshBasicMaterial color={color} transparent opacity={0.65 - i * 0.15} />
     </mesh>)}
     {missionId === 1 ? <>
       {Array.from({ length: 10 }, (_, i) => <mesh key={i} scale={[0.65, 1, 1]} rotation={[0, 0, -0.3]}>
         <torusGeometry args={[0.2 + i * 0.065, 0.009, 4, 60, Math.PI * (1.4 + i * 0.04)]} /><meshBasicMaterial color={color} transparent opacity={0.8} />
       </mesh>)}
-    </> : missionId === 2 ? <mesh><icosahedronGeometry args={[0.75, 1]} /><meshBasicMaterial color={color} wireframe transparent opacity={0.85} /></mesh> : <>
+    </> : missionId === 2 ? <SignatureScanner state={proofState} animated={animated} /> : <>
       <mesh><icosahedronGeometry args={[0.7]} /><meshStandardMaterial color="#5d94a9" metalness={0.8} roughness={0.2} emissive="#1c889f" emissiveIntensity={0.7} /></mesh>
       <mesh scale={1.3}><icosahedronGeometry args={[0.7]} /><meshBasicMaterial color={color} wireframe /></mesh>
     </>}

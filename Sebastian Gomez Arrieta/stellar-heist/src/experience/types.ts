@@ -1,4 +1,5 @@
 export type ExperiencePhase = 'boot' | 'lobby' | 'entering' | 'mission' | 'returning'
+export type ProofVisualState = 'idle' | 'scanning' | 'verified'
 
 /** GSAP owns these channels. Three.js reads them; it never writes narrative state. */
 export interface SceneSignals {
@@ -21,5 +22,5 @@ export interface TrustedVaultCompletion {
 }
 
 // No browser action, URL, localStorage value, or preview control sets this.
-// Wallet, signature and payment verification are intentionally not implemented.
+// Local key proof never authorizes the final opening; transaction verification is pending.
 export const verifiedCompletion: TrustedVaultCompletion | null = null

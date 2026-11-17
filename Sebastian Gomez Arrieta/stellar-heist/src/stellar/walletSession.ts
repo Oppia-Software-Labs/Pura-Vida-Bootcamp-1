@@ -1,4 +1,6 @@
 import { Networks, StrKey } from '@stellar/stellar-sdk/base'
+import { MessageChallenges, ProofError } from './messageProof.ts'
+import type { MessageChallenge, ProofIssue, SignedMessage } from './messageProof.ts'
 
 export interface WalletContext { address: string; passphrase: string }
 export interface WalletPort {
@@ -6,6 +8,7 @@ export interface WalletPort {
   authorize(): Promise<void>
   context(): Promise<WalletContext>
   balance(address: string): Promise<string | null>
+  signMessage(message: string, context: WalletContext): Promise<SignedMessage>
 }
 export type WalletIssue = 'locked' | 'missing' | 'rejected' | 'network' | 'address' | 'revoked' | 'changed' | 'timeout' | 'provider' | 'rpc'
 export class WalletError extends Error {
@@ -19,8 +22,11 @@ export interface WalletState {
   balanceStatus: 'idle' | 'loading' | 'ready' | 'inactive' | 'empty' | 'error'
   issue: WalletIssue | null
   identity: boolean
+  proof: boolean
+  proofStatus: 'idle' | 'requesting' | 'verifying' | 'verified' | 'error'
+  proofIssue: ProofIssue | WalletIssue | null
 }
-const initial = (): WalletState => ({ status: 'disconnected', address: null, balance: null, balanceStatus: 'idle', issue: null, identity: false })
+const initial = (): WalletState => ({ status: 'disconnected', address: null, balance: null, balanceStatus: 'idle', issue: null, identity: false, proof: false, proofStatus: 'idle', proofIssue: null })
 
 export function validateContext(context: WalletContext) {
   if (!StrKey.isValidEd25519PublicKey(context.address)) throw new WalletError('address')
@@ -41,15 +47,17 @@ export const walletMessages: Record<WalletIssue, string> = {
   rpc: 'No pudimos consultar Testnet. Actualiza el saldo para reintentar.',
 }
 
-/** No persistence, signing or transaction methods. All completion is scoped to this session. */
+/** Local educational proof, no persistence or transaction methods. */
 export class WalletSession {
   private state = initial()
   private listeners = new Set<() => void>()
   private generation = 0
   private checking: { generation: number; promise: Promise<void> } | null = null
   private balanceRequest = 0
+  private proofRequest = 0
+  private challenges: MessageChallenges
   private readonly port: WalletPort
-  constructor(port: WalletPort) { this.port = port }
+  constructor(port: WalletPort, challenges = new MessageChallenges()) { this.port = port; this.challenges = challenges }
   getSnapshot = () => this.state
   subscribe = (listener: () => void) => { this.listeners.add(listener); return () => { this.listeners.delete(listener) } }
   private update(patch: Partial<WalletState>) {
@@ -60,15 +68,18 @@ export class WalletSession {
   }
   disconnect = () => {
     this.generation++; this.balanceRequest++
+    this.proofRequest++; this.challenges.clear()
     this.update(initial())
   }
   private fail(error: unknown) {
     this.generation++; this.balanceRequest++
+    this.proofRequest++; this.challenges.clear()
     this.update({ ...initial(), status: 'error', issue: error instanceof WalletError ? error.code : 'provider' })
   }
   connect = async () => {
     if (this.state.status === 'connecting') return
     const generation = ++this.generation
+    this.proofRequest++; this.challenges.clear()
     this.update({ ...initial(), status: 'connecting' })
     try {
       if (!await this.port.installed()) throw new WalletError('missing')
@@ -81,9 +92,12 @@ export class WalletSession {
       await this.refreshBalance()
     } catch (error) { if (generation === this.generation) this.fail(error) }
   }
-  check = (): Promise<void> => {
+  check = (fresh = false): Promise<void> => {
     if (!this.state.identity || !this.state.address) return Promise.resolve()
-    if (this.checking?.generation === this.generation) return this.checking.promise
+    if (this.checking?.generation === this.generation) {
+      const generation = this.generation
+      return fresh ? this.checking.promise.then(() => { if (generation === this.generation) return this.check() }) : this.checking.promise
+    }
     const generation = this.generation
     const address = this.state.address
     const promise = (async () => {
@@ -111,5 +125,37 @@ export class WalletSession {
       if (generation !== this.generation || request !== this.balanceRequest) return
       this.update({ balance, balanceStatus: balance === null ? 'inactive' : /^0(?:\.0+)?$/.test(balance) ? 'empty' : 'ready' })
     } catch { if (generation === this.generation && request === this.balanceRequest) this.update({ balance: null, balanceStatus: 'error' }) }
+  }
+  cancelProof = () => {
+    if (!['requesting', 'verifying'].includes(this.state.proofStatus)) return
+    this.proofRequest++
+    this.challenges.cancel()
+    this.update({ proof: false, proofStatus: 'idle', proofIssue: 'cancelled' })
+  }
+  signProof = async (origin: string) => {
+    if (!this.state.identity || !this.state.address || this.state.proof || ['requesting', 'verifying'].includes(this.state.proofStatus)) return
+    const generation = this.generation
+    const request = ++this.proofRequest
+    const address = this.state.address
+    const current = () => generation === this.generation && request === this.proofRequest && this.state.identity
+    let challenge: MessageChallenge | undefined
+    this.update({ proofStatus: 'requesting', proofIssue: null })
+    try {
+      await this.check(true)
+      if (!current()) return
+      const context = { address, passphrase: Networks.TESTNET }
+      challenge = this.challenges.create(context, origin)
+      const response = await this.port.signMessage(challenge.message, context)
+      if (!current()) return
+      this.update({ proofStatus: 'verifying' })
+      await this.check(true)
+      if (!current()) return
+      this.challenges.verifyAndConsume(challenge, response, context, origin)
+      this.update({ proof: true, proofStatus: 'verified', proofIssue: null })
+    } catch (error) {
+      if (!current()) return
+      await this.check(true)
+      if (current()) this.update({ proof: false, proofStatus: 'error', proofIssue: error instanceof ProofError || error instanceof WalletError ? error.code : 'provider' })
+    } finally { this.challenges.abandon(challenge) }
   }
 }

@@ -73,11 +73,6 @@ export function useExperienceController(paused: boolean, visible: boolean, ready
       .to(signals.current, { travel: 0, duration: Math.max(0.5, signals.current.travel * 2.5), ease: 'power2.inOut' })
   }, [])
 
-  const skipCinematic = useCallback(() => {
-    if (phase === 'boot') skipBoot()
-    else travelTimeline.current?.progress(1)
-  }, [phase, skipBoot])
-
   useEffect(() => {
     if (paused) {
       if (phase === 'boot') skipBoot()
@@ -87,5 +82,5 @@ export function useExperienceController(paused: boolean, visible: boolean, ready
     travelTimeline.current?.paused(!visible)
   }, [paused, visible, phase, skipBoot])
 
-  return { phase, bootStep, titleVisible, missionId, signals, enterMission, returnToLobby, skipCinematic }
+  return { phase, bootStep, titleVisible, missionId, signals, enterMission, returnToLobby }
 }

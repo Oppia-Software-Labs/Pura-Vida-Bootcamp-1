@@ -1,8 +1,8 @@
 import { Check, Fingerprint, LockKeyhole, ScanLine, Send } from 'lucide-react'
 
-export function VaultFallback({ identityComplete = false }: { identityComplete?: boolean }) {
+export function VaultFallback({ identityComplete = false, proofComplete = false }: { identityComplete?: boolean; proofComplete?: boolean }) {
   return (
-    <div className="vault-art" role="img" aria-label={`Bóveda Génesis sellada. ${identityComplete ? 'Primer sello completado; dos pendientes.' : 'Tres cerraduras pendientes.'}`}>
+    <div className="vault-art" role="img" aria-label={`Bóveda Génesis sellada. ${proofComplete ? 'Dos sellos completados; uno pendiente.' : identityComplete ? 'Primer sello completado; dos pendientes.' : 'Tres cerraduras pendientes.'}`}>
       <svg className="vault-svg" viewBox="0 0 700 640" fill="none" aria-hidden="true">
         <defs>
           <radialGradient id="vault-halo"><stop stopColor="#157a9a" stopOpacity=".35" /><stop offset="1" stopColor="#07101b" stopOpacity="0" /></radialGradient>
@@ -49,7 +49,7 @@ export function VaultFallback({ identityComplete = false }: { identityComplete?:
           <text x="350" y="367" textAnchor="middle" fill="#d6e4f0" fontFamily="monospace" fontSize="13" letterSpacing="6">GENESIS</text>
           <text x="350" y="386" textAnchor="middle" fill="#6d8299" fontFamily="monospace" fontSize="8" letterSpacing="2">PROTOCOLO DE ACCESO</text>
           <path d="M281 404h138" stroke="#30445b" />
-          <text x="350" y="430" textAnchor="middle" fill="#9aaec3" fontFamily="monospace" fontSize="10" letterSpacing="3">{identityComplete ? '01' : '00'} / 03</text>
+          <text x="350" y="430" textAnchor="middle" fill="#9aaec3" fontFamily="monospace" fontSize="10" letterSpacing="3">{proofComplete ? '02' : identityComplete ? '01' : '00'} / 03</text>
           <g fill="url(#steel)" stroke="#4a637b"><rect x="80" y="282" width="88" height="62" rx="5" /><rect x="532" y="282" width="88" height="62" rx="5" /></g>
           <g stroke="#08111d" strokeWidth="7"><path d="M94 299h64M94 327h64M542 299h64M542 327h64" /></g>
           <g fill="#8299ac"><circle cx="94" cy="313" r="3" /><circle cx="606" cy="313" r="3" /></g>
@@ -57,7 +57,7 @@ export function VaultFallback({ identityComplete = false }: { identityComplete?:
         <g stroke="#9b86eb" strokeOpacity=".5"><path d="M350 34v18M350 578v18M70 315H52M648 315h-18" /></g>
       </svg>
       <div className={`vault-lock vault-lock-one ${identityComplete ? 'is-complete' : ''}`}><Fingerprint size={18} /><span>01</span>{identityComplete ? <Check size={10} /> : <LockKeyhole size={10} />}</div>
-      <div className="vault-lock vault-lock-two"><ScanLine size={18} /><span>02</span><LockKeyhole size={10} /></div>
+      <div className={`vault-lock vault-lock-two ${proofComplete ? 'is-complete' : ''}`}><ScanLine size={18} /><span>02</span>{proofComplete ? <Check size={10} /> : <LockKeyhole size={10} />}</div>
       <div className="vault-lock vault-lock-three"><Send size={17} /><span>03</span><LockKeyhole size={10} /></div>
     </div>
   )
