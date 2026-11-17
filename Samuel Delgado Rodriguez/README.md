@@ -14,6 +14,17 @@ npm run dev
 
 Abre la URL local que muestra Vite. En Varial selecciona **Testnet**. Pulsa **Conectar Varial** y autoriza el acceso. Si la cuenta no existe todavía en Testnet, la app lo indica y no inventa un saldo. La consulta de saldo usa el endpoint público `https://horizon-testnet.stellar.org/accounts/{address}`. El saldo se formatea como cadena decimal para conservar hasta siete decimales sin pérdida de precisión.
 
+### Conectar Varial paso a paso
+
+1. Instala Varial y fíjala en la barra de extensiones de tu navegador.
+2. Abre Varial y desbloquea o configura tu wallet.
+3. Dentro de Varial, abre el selector de red y elige **Testnet**. La aplicación no acepta Mainnet.
+4. Regresa a la aplicación y pulsa **Conectar Varial**.
+5. Aprueba la solicitud de acceso que aparece en Varial.
+6. Si la cuenta todavía no existe en Testnet, la aplicación mostrará ese estado. Actívala con fondos de prueba y pulsa **Actualizar saldo**.
+
+Si aparece el mensaje **“Cambia Varial a Testnet y vuelve a conectar”**, la extensión sí fue detectada: solo falta seleccionar Testnet dentro de Varial y repetir la conexión.
+
 ## Comprobar
 
 ```bash

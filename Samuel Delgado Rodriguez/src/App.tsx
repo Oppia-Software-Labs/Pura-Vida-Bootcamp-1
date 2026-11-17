@@ -95,8 +95,19 @@ export default function App() {
             <div className="orb" aria-hidden="true">✳</div><h3>Todo comienza aquí.</h3><p>Conecta tu wallet Varial para ver los datos de tu cuenta Stellar.</p>
             <button className="connect-button" onClick={connect} disabled={connecting}><span>▣ &nbsp; {connecting ? 'Conectando…' : 'Conectar Varial'}</span><span>→</span></button>
             <div className="helper">¿No tienes Varial? <a href="https://varialwallet.com/" target="_blank" rel="noreferrer">Descárgalo aquí ↗</a></div>
+            {walletError && <p className="error inline-error" role="alert">{walletError}</p>}
+            <details className="setup-guide" open={walletError !== null}>
+              <summary>Cómo conectar Varial en Testnet</summary>
+              <ol>
+                <li><span>1</span><p><strong>Abre Varial</strong> desde el ícono de extensiones de tu navegador y desbloquea tu wallet.</p></li>
+                <li><span>2</span><p><strong>Cambia la red a Testnet</strong> desde el selector de red dentro de Varial.</p></li>
+                <li><span>3</span><p><strong>Regresa a esta página</strong> y vuelve a presionar “Conectar Varial”.</p></li>
+                <li><span>4</span><p><strong>Aprueba el acceso</strong> cuando Varial muestre la solicitud de conexión.</p></li>
+              </ol>
+              <p className="guide-tip"><strong>Importante:</strong> si Varial está en Mainnet, la aplicación no mostrará tu cuenta de prueba.</p>
+            </details>
           </div>}
-          {walletError && <p className="error card-error" role="alert">{walletError}</p>}
+          {address && walletError && <p className="error card-error" role="alert">{walletError}</p>}
         </section>
         <aside className="note"><span>↗</span><div><strong>Solo para explorar.</strong><p>Esta app usa Testnet y muestra datos públicos. Nunca solicita tus claves privadas ni realiza transacciones.</p></div></aside>
       </div>
