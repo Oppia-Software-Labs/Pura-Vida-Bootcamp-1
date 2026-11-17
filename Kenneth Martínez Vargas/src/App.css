@@ -330,9 +330,17 @@ input[aria-invalid='true'] { border-color: var(--ink); }
 .payment-actions .secondary { flex: 1; }
 .payment-status { margin-block: 8px 4px; }
 .payment-status strong { display: block; }
-.payment-status span { color: var(--muted); font-size: 14px; }
+.payment-receipt { padding-block: 6px; }
+.payment-receipt p { color: var(--muted); font-size: 14px; }
+.payment-receipt code { display: block; overflow-wrap: anywhere; }
 
 @media (max-height: 660px) {
+  .payment-complete { padding-block: 12px; }
+  .payment-complete .intro { margin-bottom: 12px; }
+  .payment-complete .intro h1 { font-size: clamp(32px, 5.5dvh, 42px); }
+  .payment-complete .payment-card { padding-block: 12px; }
+  .payment-complete .payment-details { margin-top: 10px; }
+  .payment-complete .payment-details > div { padding-block: 6px; }
   .sharing-open .sharing { padding-block: 12px; }
   .sharing-open .qr-slot { gap: 6px; margin-top: 8px; padding: 8px; }
   .sharing-open .qr-slot p { font-size: 14px; }

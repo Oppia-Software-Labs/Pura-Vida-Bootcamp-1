@@ -55,26 +55,29 @@ export async function authorizePayment(payer: string, details: PaymentDetails) {
   throw new Error('La firma de Varial no coincide con el pago que revisaste.')
 }
 
-type SubmissionStatus = 'submitted' | 'retry' | 'rejected' | 'unknown'
+const submissionStatuses = {
+  PENDING: 'submitted',
+  DUPLICATE: 'submitted',
+  TRY_AGAIN_LATER: 'retry',
+  ERROR: 'rejected',
+} as const
 
-export async function submitPayment(transaction: Transaction): Promise<SubmissionStatus> {
+export async function submitPayment(transaction: Transaction) {
   const hash = Array.from(transaction.hash(), (byte) => byte.toString(16).padStart(2, '0')).join('')
   try {
     const result = await testnet.sendTransaction(transaction)
-    if (result.hash !== hash) return 'unknown'
-
-    switch (result.status) {
-      case 'PENDING':
-      case 'DUPLICATE':
-        return 'submitted'
-      case 'TRY_AGAIN_LATER':
-        return 'retry'
-      case 'ERROR':
-        return 'rejected'
-    }
+    const status = result.hash === hash ? submissionStatuses[result.status] : undefined
+    return { status: status ?? 'unknown', hash } as const
   } catch {
-    return 'unknown'
+    return { status: 'unknown', hash } as const
   }
+}
 
-  return 'unknown'
+export async function getPaymentConfirmation(hash: string) {
+  const result = await testnet.getTransaction(hash)
+  if (result.txHash === hash) {
+    if (result.status === 'SUCCESS') return 'confirmed'
+    if (result.status === 'FAILED') return 'failed'
+  }
+  return 'pending'
 }
