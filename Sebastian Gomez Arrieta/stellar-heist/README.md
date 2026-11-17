@@ -125,3 +125,11 @@ La investigación real mediante `stellar-raven.search` y `stellar-raven.execute`
 No se añadieron dependencias para esta etapa. SDKs contrastados: `@stellar/stellar-sdk 17.4.0` y `@stellar/varial-sdk 7.0.0`. La lógica blockchain está separada de React y Three.js; no hay actualizaciones React por fotograma. GSAP escribe señales narrativas y `useFrame` las consume mediante referencias.
 
 Los requisitos de entrega de commits/PR siguen siendo pasos separados: no se realizaron commits, push ni Pull Request en esta etapa.
+
+## Refinamiento mecánico de la bóveda
+
+Dirección visual adaptada a la referencia de puerta circular monumental: disco de acero más grueso, núcleo de cierre cilíndrico, aros concéntricos cian, bisagras con cojinetes, placas, tornillería y marcas radiales. Los cuatro pestillos se retraen y el núcleo/anillos giran durante el desbloqueo; la puerta se separa del marco antes de completar su apertura articulada. El arco arquitectónico y las columnas enmarcan la cámara sin añadir elementos fantásticos.
+
+`src/components/scene/MechanicalFace.tsx` genera una pequeña textura de rugosidad (128 × 128, RGBA) sin recursos externos; agrupa tornillos y marcas en dos meshes instanciadas y libera sus recursos. `VaultMechanism.tsx` integra el frontal y conserva las tres cerraduras, los canales de apertura y el artefacto. `VaultScene.tsx` añade el marco arquitectónico y ajusta la materialidad/luz. La lógica de wallet, firma, pago, recibo y exportación PNG no cambia. No se añadieron dependencias ni consultas blockchain: esta etapa es exclusivamente visual.
+
+Validación del refinamiento: build correcto, 85 pruebas aprobadas y lint sin advertencias. Chromium comprobó escritorio/móvil, movimiento reducido, misiones hasta 3/3 con fixtures aislados, apertura, PNG, fallback y recuperación tras recarga. Un primer recorrido de navegador se cerró durante la apertura; la repetición secuencial con `--disable-dev-shm-usage` completó ambos escenarios. No se enviaron transacciones reales para estas pruebas visuales.

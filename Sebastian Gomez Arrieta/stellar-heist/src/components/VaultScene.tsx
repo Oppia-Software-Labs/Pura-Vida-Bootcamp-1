@@ -43,7 +43,17 @@ function Chamber({ compact, signals }: { compact: boolean; signals: RefObject<Sc
   }, [])
   const x = compact ? 0 : 1.8
   return <group ref={room}>
-    <mesh position={[x, 0, -0.82]} receiveShadow><extrudeGeometry args={[wall, { depth: 0.22, bevelEnabled: false }]} /><meshStandardMaterial color="#283447" metalness={0.87} roughness={0.4} /></mesh>
+    <group position={[x, 0, -0.6]}>
+      {[3.05, 3.32].map(radius => <mesh key={radius}>
+        <torusGeometry args={[radius, 0.09, 8, 96, Math.PI]} /><meshStandardMaterial color="#263c46" metalness={0.87} roughness={0.45} />
+      </mesh>)}
+      <mesh position={[0, 0, 0.12]}><torusGeometry args={[3.18, 0.012, 6, 96, Math.PI]} /><meshBasicMaterial color="#459fae" /></mesh>
+      {[-1, 1].map(side => <group key={side} position={[side * 3.3, -1.1, 0.1]}>
+        <mesh><cylinderGeometry args={[0.22, 0.3, 4.2, 16]} /><meshStandardMaterial color="#20323c" metalness={0.8} roughness={0.5} /></mesh>
+        {[-1.9, 1.9].map(y => <mesh key={y} position={[0, y, 0]}><cylinderGeometry args={[0.34, 0.34, 0.16, 20]} /><meshStandardMaterial color="#3c535e" metalness={0.9} roughness={0.4} /></mesh>)}
+      </group>)}
+    </group>
+    <mesh position={[x, 0, -0.82]} receiveShadow><extrudeGeometry args={[wall, { depth: 0.22, bevelEnabled: false }]} /><meshStandardMaterial color="#182d38" metalness={0.82} roughness={0.52} /></mesh>
     <mesh position={[0, -3.05, -10]} rotation={[-Math.PI / 2, 0, 0]} receiveShadow><planeGeometry args={[70, 100]} /><meshStandardMaterial color="#0b1722" metalness={0.88} roughness={0.23} /></mesh>
     <gridHelper args={[70, 70, '#2d6877', '#182b3b']} position={[0, -3.04, -12]} />
     {[-1, 1].map(side => <group key={side} position={[x + side * 3.6, 0, -0.3]}>
@@ -80,7 +90,7 @@ function Lighting({ signals, animated, shadows }: { signals: RefObject<SceneSign
     <ambientLight ref={ambient} intensity={0.03} color="#a3afc6" />
     <directionalLight ref={key} position={[-3, 6, 7]} intensity={0} color="#dceaff" castShadow={shadows} shadow-mapSize={[1024, 1024]} shadow-camera-left={-8} shadow-camera-right={8} shadow-camera-top={7} shadow-camera-bottom={-7} shadow-bias={-0.001} />
     <pointLight ref={cyan} position={[5, 1, 4]} intensity={0} color="#71e4f7" distance={16} />
-    <pointLight ref={violet} position={[-2, -1, 3]} intensity={0} color="#b094f4" distance={13} />
+    <pointLight ref={violet} position={[-2, -1, 3]} intensity={0} color="#538ba9" distance={13} />
     <pointLight position={[0, 1, -15]} intensity={12} color="#7b87ef" distance={13} />
   </>
 }

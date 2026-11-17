@@ -4,6 +4,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import { RoundedBox } from '@react-three/drei'
 import { Group, InstancedMesh, MathUtils, MeshBasicMaterial, MeshStandardMaterial, Object3D, Points, Mesh } from 'three'
 import type { SceneSignals, VaultCompletion } from '../../experience/types'
+import { MechanicalFace } from './MechanicalFace'
 import { artifactAppearance } from '../../experience/artifact'
 
 interface Props { transactionComplete: boolean; proofComplete: boolean; identityComplete: boolean; signals: RefObject<SceneSignals>; animated: boolean; mobile: boolean; missionId: number }
@@ -21,38 +22,16 @@ function HardwareInstances({ radius, count, kind }: { radius: number; count: num
     for (let i = 0; i < count; i++) {
       const angle = i / count * Math.PI * 2
       item.position.set(Math.cos(angle) * radius, Math.sin(angle) * radius, 0.32)
-      item.rotation.set(0, 0, angle)
+      item.rotation.set(kind === 'bolt' ? Math.PI / 2 : 0, 0, angle)
       item.updateMatrix()
       ref.current?.setMatrixAt(i, item.matrix)
     }
     if (ref.current) ref.current.instanceMatrix.needsUpdate = true
-  }, [radius, count])
+  }, [radius, count, kind])
   return <instancedMesh ref={ref} args={[undefined, undefined, count]} castShadow>
     {kind === 'segment' ? <boxGeometry args={[0.21, 0.08, 0.13]} /> : <cylinderGeometry args={[0.045, 0.045, 0.055, 6]} />}
     <meshStandardMaterial color={kind === 'segment' ? '#456078' : '#b1c7d5'} metalness={0.95} roughness={0.26} />
   </instancedMesh>
-}
-
-function EnergyCore({ signals, animated }: Pick<Props, 'signals' | 'animated'>) {
-  const ref = useRef<Group>(null)
-  const material = useRef<MeshStandardMaterial>(null)
-  const time = useRef(0)
-  useFrame((_, delta) => {
-    if (animated) time.current += Math.min(delta, 0.05)
-    if (ref.current) {
-      ref.current.rotation.set(Math.sin(time.current * 0.4) * 0.18, time.current * 0.3, 0.1)
-      ref.current.position.y = Math.sin(time.current * 0.9) * 0.055
-    }
-    if (material.current) material.current.emissiveIntensity = signals.current.boot * (0.7 + Math.sin(time.current * 1.4) * 0.2 + Math.sin(signals.current.travel * Math.PI) * 3)
-  })
-  return <group position={[0, 0.05, 0.77]}>
-    <mesh position={[0, 0, -0.2]} rotation={[Math.PI / 2, 0, 0]}><cylinderGeometry args={[0.7, 0.78, 0.18, 6]} /><meshStandardMaterial color="#18273e" metalness={0.92} roughness={0.25} /></mesh>
-    <mesh position={[0, 0, -0.08]} rotation={[0, 0, Math.PI / 6]}><torusGeometry args={[0.69, 0.013, 4, 6]} /><meshBasicMaterial color={VIOLET} toneMapped={false} /></mesh>
-    <group ref={ref}>
-      <mesh><octahedronGeometry args={[0.32]} /><meshStandardMaterial ref={material} color="#665197" emissive="#7b4bff" emissiveIntensity={0} metalness={0.6} roughness={0.15} /></mesh>
-      <mesh scale={1.4}><octahedronGeometry args={[0.32]} /><meshBasicMaterial color="#b8b2ff" wireframe /></mesh>
-    </group>
-  </group>
 }
 
 export function VaultMechanism({ transactionComplete, proofComplete, identityComplete, signals, animated, mobile, missionId }: Props) {
@@ -76,15 +55,16 @@ export function VaultMechanism({ transactionComplete, proofComplete, identityCom
       outerAngle.current += dt * (0.045 + unlock * 0.4)
       innerAngle.current -= dt * (0.075 + unlock * 0.5)
     }
-    if (outer.current) outer.current.rotation.z = unlock > 0.98
-      ? MathUtils.damp(outer.current.rotation.z, Math.round(outer.current.rotation.z / (Math.PI / 3)) * Math.PI / 3, 3, dt)
+    if (outer.current) outer.current.rotation.z = unlock > 0
+      ? Math.PI * 2 + unlock * 0.18
       : proofComplete ? animated ? MathUtils.damp(outer.current.rotation.z, Math.PI * 2, 3, dt) : Math.PI * 2 : outerAngle.current
-    if (inner.current) inner.current.rotation.z = unlock > 0.98
-      ? MathUtils.damp(inner.current.rotation.z, Math.round(inner.current.rotation.z / (Math.PI / 3)) * Math.PI / 3, 3, dt)
+    if (inner.current) inner.current.rotation.z = unlock > 0
+      ? -Math.PI * 2 - unlock * 0.25
       : proofComplete ? animated ? MathUtils.damp(inner.current.rotation.z, -Math.PI * 2, 3, dt) : -Math.PI * 2 : innerAngle.current
     if (door.current) {
       door.current.rotation.y = -opening * Math.PI * 0.62
       door.current.position.x = -2.06 - opening * 0.5
+      door.current.position.z = Math.min(opening * 6, 1) * 0.18
     }
     bolts.current.forEach((bolt, i) => { if (bolt) bolt.position.x = (i ? 1 : -1) * (2.2 + unlock * 0.6) })
     if (lights.current) lights.current.emissiveIntensity = boot * 1.5
@@ -99,8 +79,12 @@ export function VaultMechanism({ transactionComplete, proofComplete, identityCom
   })
   return <group ref={root} position={[mobile ? 0 : 1.8, 0, 0]}>
     <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, -0.3]} castShadow receiveShadow><cylinderGeometry args={[2.7, 2.76, 0.8, 96]} /><meshStandardMaterial color="#152335" metalness={0.95} roughness={0.28} /></mesh>
+    {[-1.05, 1.05].map(y => <group key={y} position={[-2.13, y, 0.28]}>
+      <mesh><boxGeometry args={[0.52, 0.62, 0.45]} /><meshStandardMaterial color="#304752" metalness={0.88} roughness={0.42} /></mesh>
+      <mesh><cylinderGeometry args={[0.17, 0.17, 0.8, 24]} /><meshStandardMaterial color="#667f88" metalness={0.94} roughness={0.32} /></mesh>
+    </group>)}
     <Ring radius={2.7} z={-0.05} tube={0.06} />
-    <Ring radius={2.58} z={0.11} tube={0.18} color="#718292" />
+    <Ring radius={2.58} z={0.11} tube={0.18} color="#3f5863" />
     <Ring radius={2.37} z={0.13} tube={0.08} color="#152236" />
     <Ring radius={2.23} z={0.21} tube={0.09} />
     <HardwareInstances radius={2.23} count={24} kind="bolt" />
@@ -110,16 +94,16 @@ export function VaultMechanism({ transactionComplete, proofComplete, identityCom
     </group>
     <group ref={door} position={[-2.06, 0, 0]}>
       <group position={[2.06, 0, 0]}>
-        <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0.06]} castShadow receiveShadow><cylinderGeometry args={[2.09, 2.09, 0.42, 80]} /><meshStandardMaterial color="#23334b" metalness={0.9} roughness={0.3} /></mesh>
+        <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, 0, 0.06]} castShadow receiveShadow><cylinderGeometry args={[2.09, 2.09, 0.68, 80]} /><meshStandardMaterial color="#22343d" metalness={0.86} roughness={0.48} /></mesh>
         <Ring radius={2.02} z={0.31} tube={0.04} />
         <mesh position={[0, 0, 0.28]}><boxGeometry args={[0.018, 4.1, 0.01]} /><meshStandardMaterial color="#050b13" /></mesh>
         <group ref={inner}>
-          {[0, 2.1, 4.2].map(angle => <mesh key={angle} rotation={[0, 0, angle]} position={[0, 0, 0.34]}><torusGeometry args={[1.94, 0.012, 6, 64, 1.25]} /><meshStandardMaterial ref={angle === 0 ? lights : undefined} color={VIOLET} emissive={VIOLET} emissiveIntensity={1.5} toneMapped={false} /></mesh>)}
+          {[0, 2.1, 4.2].map(angle => <mesh key={angle} rotation={[0, 0, angle]} position={[0, 0, 0.34]}><torusGeometry args={[1.94, 0.012, 6, 64, 1.25]} /><meshStandardMaterial ref={angle === 0 ? lights : undefined} color={CYAN} emissive={CYAN} emissiveIntensity={1.1} toneMapped={false} /></mesh>)}
         </group>
         {Array.from({ length: 6 }, (_, i) => <group key={i} rotation={[0, 0, i * Math.PI / 3]}>
           <mesh position={[0, 1.13, 0.3]}><boxGeometry args={[0.025, 0.5, 0.035]} /><meshStandardMaterial color="#61758b" metalness={0.9} roughness={0.3} /></mesh>
         </group>)}
-        <EnergyCore signals={signals} animated={animated} />
+        <MechanicalFace signals={signals} animated={animated} />
         {[Math.PI / 2, Math.PI * 7 / 6, Math.PI * 11 / 6].map((angle, i) => <group key={i} position={[Math.cos(angle) * 1.53, Math.sin(angle) * 1.53, 0.4]} rotation={[0, 0, angle - Math.PI / 2]}>
           <RoundedBox args={[0.39, 0.56, 0.17]} radius={0.035} smoothness={2}><meshStandardMaterial color="#53667c" metalness={0.95} roughness={0.3} /></RoundedBox>
           <mesh position={[0, 0, 0.11]}><boxGeometry args={[0.26, 0.34, 0.06]} /><meshStandardMaterial color="#080f20" /></mesh>
