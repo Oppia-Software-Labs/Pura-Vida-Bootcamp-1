@@ -19,7 +19,8 @@ Abrir la URL local que indique Vite. Compilar con `npm run build`; servir esa co
 - Anillos contrarrotativos, núcleo flotante/pulsante, variaciones de luces, partículas, escáner biométrico y señales holográficas continuas.
 - Cámara amortiguada con parallax limitado y recorrido de profundidad real. Al seleccionar una misión se alinea con el núcleo, atraviesa una proyección energética y recorre un túnel de geometría y partículas. El regreso invierte el viaje.
 - Los viajes pueden omitirse, cancelarse o reemplazarse al elegir otro protocolo. La puerta física permanece sellada: entrar en una consola holográfica no verifica una misión.
-- HUD persistente con estado de wallet sin conectar, tres cerraduras pendientes y contador verificado fijo en 0/3. Las consolas muestran requisitos reales pendientes; las acciones Stellar están deshabilitadas.
+- Conexión real con Varial: autorización, dirección Stellar válida, Testnet por passphrase y saldo XLM mediante el RPC oficial. Copiar dirección, actualizar saldo y desconectar localmente.
+- Primer sello ligado a la sesión autorizada: luz y arco de cerradura animados, progreso 1/3 y acceso a la presentación de Misión 2. Los otros sellos siguen pendientes; la puerta permanece cerrada.
 - Controles magnéticos, teclado, Escape para regresar, informe accesible y foco al entrar en una consola.
 
 ## Comprobar cada efecto
@@ -27,8 +28,8 @@ Abrir la URL local que indique Vite. Compilar con `npm run build`; servir esa co
 1. Recargar y observar el encendido gradual, la aproximación y el título. **Saltar introducción** permite ir directamente a la cámara.
 2. Mover el cursor sobre el entorno libre del HUD para ver parallax e inercia. Observar anillos, núcleo y partículas.
 3. Pulsar **INICIAR INFILTRACIÓN** o elegir un protocolo inferior. Observar el portal y el túnel, sin abrir físicamente la bóveda.
-4. Cambiar de protocolo durante un viaje: el controlador reemplaza la transición anterior. Probar **Omitir transición**, **Cancelar entrada**, **Regresar a la cámara** y Escape.
-5. En Identidad, observar el escáner; en Prueba criptográfica, la consola sin reto ni firma; en Transacción Stellar, las etapas previstas sin operación en curso. Ninguna acción completa misiones.
+4. Probar **Omitir transición**, **Volver** y Escape. Las misiones posteriores requieren conectar la wallet. La firma y la operación siguen deshabilitadas.
+5. Completar Identidad siguiendo las instrucciones siguientes. Los instrumentos 3D siguen visibles y el primer sello se abre sin abrir la puerta final.
 6. Probar **Pausar movimiento** y la preferencia `prefers-reduced-motion` del sistema, también cambiándola con la página abierta. Las secuencias largas se resuelven sin bloquear la navegación.
 7. Comparar calidad **CINE** y **LIGERA**. El modo ligero reduce resolución, partículas y posprocesamiento. En móvil se reducen los efectos; ante baja tasa de fotogramas, Drei solicita automáticamente el modo ligero.
 8. Ocultar y recuperar la pestaña. El bucle WebGL se suspende cuando está oculta.
@@ -37,7 +38,9 @@ Abrir la URL local que indique Vite. Compilar con `npm run build`; servir esa co
 
 ## Estado Stellar y apertura final
 
-**Pendiente:** conexión de wallet, validación de cuenta/Testnet, firma de un reto con nonce y vencimiento, verificación criptográfica y pago XLM real confirmado. No existen pagos, direcciones, hashes ni verificaciones ficticias.
+**Implementado:** Misión 1 con extensión Varial real, validación de autorización/dirección/Testnet y consulta de saldo. Una cuenta inactiva o sin fondos puede completar Identidad: disponer de XLM no forma parte de esta misión. El saldo mostrado es total, no saldo disponible tras reservas.
+
+**Pendiente:** firma de un reto con nonce y vencimiento, verificación criptográfica y operación XLM real confirmada. Conectar una wallet no prueba criptográficamente el control de la clave. No existen wallets, pagos, hashes ni verificaciones ficticias en la aplicación.
 
 `verifiedCompletion` permanece explícitamente en `null`. No hay botón, parámetro de URL, valor de localStorage ni consola de demostración que active la apertura.
 
@@ -45,7 +48,21 @@ Está preparada una secuencia 3D para un futuro adaptador confiable: iluminar ce
 
 El tipo `TrustedVaultCompletion` separa arquitectónicamente esa entrada. **Un tipo TypeScript o las comprobaciones de formato no verifican una transacción.** La siguiente etapa debe incorporar evidencia verificada mediante la red y validación confiable en servidor antes de habilitar ese adaptador. La secuencia final permanece inaccesible en este recorrido visual y no se presenta como funcionalidad blockchain terminada.
 
-Antes de cambiar funcionalidades Stellar, consultar `stellar-raven.search` y `stellar-raven.execute`, comprobar las APIs y registrar los hallazgos reales en `RAVEN_USAGE.md`, según `AGENTS.md`. Este rediseño modifica presentación y navegación; no añade integraciones Stellar ni nuevas consultas Raven.
+La investigación realizada con `stellar-raven.search` y `stellar-raven.execute`, las fuentes contrastadas, las versiones y las limitaciones se registran en [RAVEN_USAGE.md](./RAVEN_USAGE.md), según `AGENTS.md`.
+
+## Comprobar la wallet real
+
+1. Usar Node 24 y ejecutar `npm install` y `npm run dev`. Abrir la URL de Vite en `localhost` o `127.0.0.1`, en un navegador con la extensión oficial [Varial](https://varialwallet.com) instalada. En producción se requiere HTTPS; una URL LAN por HTTP no equivale a localhost.
+2. Desbloquear la extensión, seleccionar una cuenta y la red **Testnet**. La passphrase debe ser `Test SDF Network ; September 2015`.
+3. Entrar en **Identidad**, pulsar **Conectar wallet** y autorizar el sitio en Varial. No se solicita firma, secreto ni pago. Comprobar dirección, saldo, **Identidad conectada**, primer sello iluminado/abierto y **1 de 3**. La Misión 2 se puede visitar, pero aún no permite firmar.
+4. Pulsar la dirección para copiarla. **Ver dirección completa** permite seleccionarla si el navegador bloquea el portapapeles. **Actualizar saldo** vuelve a consultar el ledger.
+5. Con una cuenta nueva sin activar, comprobar el aviso correspondiente. El enlace a Stellar Lab permite obtener XLM de prueba por decisión del usuario; después pulsar **Actualizar saldo**. Una cuenta con cero XLM muestra **Sin saldo**. La aplicación no envía solicitudes de financiación.
+6. Cambiar de cuenta o a Mainnet mientras la página sigue abierta, o revocar el permiso del sitio en la extensión. Al detectarlo deben desaparecer dirección/saldo, bajar a 0/3, cerrarse el primer sello y regresar a Identidad si se estaba en otra misión. Para continuar hay que reconectar; Mainnet se rechaza. Una red con nombre Testnet y otra passphrase también se rechaza.
+7. Probar rechazar la solicitud, bloquear la extensión y conectar desde un navegador sin Varial. Deben aparecer errores claros y mantenerse 0/3. Si el sitio ya tenía permiso, Varial puede no volver a mostrar el popup: revocarlo en la extensión para probar el rechazo.
+8. Bloquear `soroban-testnet.stellar.org` en las herramientas de desarrollo y actualizar saldo: debe mostrarse error de consulta, no cuenta inactiva ni saldo cero. Restaurar la conexión y reintentar.
+9. **Desconectar** borra la sesión local y el progreso. No revoca el permiso de Varial ni cierra una solicitud ya abierta. Recargar también borra la sesión: no se guarda identidad en almacenamiento local.
+
+El SDK utiliza sondeo para cambios de wallet. Aquí se consulta cada segundo mientras la pestaña está visible, al recuperar foco/visibilidad y antes/después de leer saldo. La invalidación ocurre al detectar el cambio; no es una notificación instantánea desde la extensión. Lecturas con límite de 10 s y autorización con límite de 120 s. Una cancelación local ignora respuestas tardías. Las futuras misiones deben volver a validar la sesión antes de firmar/enviar.
 
 ## Arquitectura y propiedad de las animaciones
 
@@ -60,14 +77,27 @@ Antes de cambiar funcionalidades Stellar, consultar `stellar-raven.search` y `st
 - `src/components/scene/VaultOpening.tsx`: timeline final condicionado a evidencia de un futuro adaptador. Inactivo actualmente.
 - `src/components/MissionHUD.tsx`, `MagneticButton.tsx`, `Dialog.tsx`: consolas, interacción y ayuda accesible.
 - `src/hooks/`: preferencias reactivas de movimiento y visibilidad de pestaña.
+- `src/stellar/walletSession.ts`: estado tipado, validación de identidad, invalidación y protección frente a respuestas tardías.
+- `src/stellar/varial.ts`: APIs reales de Varial y saldo del RPC oficial.
+- `src/hooks/useWallet.ts`, `src/components/WalletIdentity.tsx`: suscripción/ciclo de vida y controles mínimos de wallet.
 - `src/App.tsx`, `src/App.css`: composición cinematográfica, navegación y responsive.
 
 GSAP escribe progreso narrativo; `useFrame` lee ese progreso y anima objetos mediante referencias. Motion controla únicamente paneles HTML. Los recursos del compositor, animaciones y listeners se liberan al desmontar.
 
 ## Dependencias y validación
 
-Única dependencia añadida para este rediseño: **GSAP 3.15.1**. React, TypeScript, Vite, Tailwind, Motion, Lucide, Three.js, React Three Fiber y Drei ya estaban instalados.
+Dependencia añadida para Misión 1: **@stellar/varial-sdk 7.0.0**. El SDK Stellar 17.4.0 y las dependencias visuales ya estaban instalados.
 
-El proyecto no incluye un script de tests unitarios. La validación de esta etapa utiliza compilación TypeScript/Vite y recorridos de navegador para arranque, cambio/cancelación de misiones, progreso pendiente, pausa, responsive, preferencias de movimiento y fallback.
+Ejecutar `npm test` para probar autorización, rechazo, red y dirección inválidas, cambios de cuenta/red/permisos, cuenta inactiva, saldo cero, fallo RPC, desconexión y respuestas asíncronas tardías. Se usan dobles aislados exclusivamente en pruebas; no se incluyen en producción. Vite empaqueta la prueba en un directorio temporal y el runner incorporado de Node la ejecuta, sin añadir dependencias. `npm run build` valida tipos y genera producción. `npm run lint` comprueba el código.
+
+La aprobación con una extensión real requiere la comprobación manual anterior; el Chromium de automatización no tiene Varial instalada y no sustituye esa validación. Los logros son estado temporal de interfaz, no evidencia confiable en servidor. La apertura final permanece bloqueada.
+
+Validación realizada el 16/11/2026: **17 pruebas de sesión aprobadas**, compilación TypeScript/Vite correcta y recorrido Chromium con WebGL, aviso real de extensión ausente, bloqueo de misiones, movimiento reducido y móvil de 320/390 px sin desbordamiento ni errores de página. El adaptador real obtuvo el mismo saldo que Horizon para una cuenta pública de Testnet; una dirección pública aleatoria sin entrada devolvió `null`, como se esperaba. Estas consultas fueron de solo lectura. La primera búsqueda de cuentas en Horizon sin filtros respondió HTTP 400; se obtuvo una cuenta pública desde una transacción existente para contrastar el saldo. Una dirección pública de referencia resultó tener fondos, por lo que no se utilizó como evidencia de cuenta inactiva.
+
+Limitaciones conocidas: falta completar la prueba manual de aprobación/cambio de cuenta en una extensión real; el sondeo no garantiza detección instantánea; el lint conserva cuatro advertencias anteriores en la escena/controlador visual. Vite advierte de módulos superiores a 500 kB (escena 3D y entrada con SDK); no impide compilar. No se ha implementado firma, envío ni validación de transacciones.
 
 El objetivo es 60 FPS en equipos con aceleración gráfica adecuada; no se garantiza en un renderizador por software. Se limita DPR y se adapta calidad. La escena 3D está en un módulo diferido; Vite puede advertir que supera 500 kB minificados. La compilación puede terminar correctamente con esa advertencia. No se añade profundidad de campo para conservar legibilidad y presupuesto de render.
+
+## Refinamiento de interfaz
+
+La escena 3D, la cámara, los efectos y las transiciones se conservan. La interfaz prioriza título, una frase, estado y acción. Dirección y saldo aparecen únicamente tras conectar; los detalles secundarios se mantienen discretos. El primer sello refleja la sesión real y el progreso máximo actual es 1/3.

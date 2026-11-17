@@ -4,6 +4,7 @@ import type { LucideIcon } from 'lucide-react'
 export interface Mission {
   id: number
   title: string
+  navTitle: string
   icon: LucideIcon
   summary: string
   description: string
@@ -15,33 +16,33 @@ export interface Mission {
 // Presentation content only. No client-controlled completion or blockchain evidence.
 export const missions: readonly Mission[] = [
   {
-    id: 1, title: 'Identidad', icon: Fingerprint,
-    summary: 'Tu wallet es tu identidad. El primer paso está en tus manos.',
-    description: 'Toda infiltración comienza con una identidad. Tu wallet será la llave de entrada a la cámara Génesis.',
-    objective: 'Conectar una wallet compatible con Stellar y comprobar su dirección y configuración en Testnet.',
-    notice: 'Solo necesitarás tu dirección pública. Nunca te pediremos claves privadas ni frases de recuperación.',
-    action: 'Conectar wallet · Próximamente',
+    id: 1, title: 'Tu identidad', navTitle: 'Identidad', icon: Fingerprint,
+    summary: 'Conecta tu wallet.',
+    description: 'Conecta tu wallet: será tu identidad en la bóveda.',
+    objective: 'Conectar una wallet y comprobar la cuenta en Stellar Testnet.',
+    notice: 'Una wallet es tu cuenta digital. Tu clave privada siempre es tuya.',
+    action: 'Conectar wallet',
   },
   {
-    id: 2, title: 'Prueba criptográfica', icon: ScanLine,
-    summary: 'No basta con decir quién eres. Demuestra que tienes el control.',
-    description: 'La segunda cerradura necesita una prueba que solo tú puedes crear: una firma con la clave de tu wallet.',
-    objective: 'Firmar un reto único con un nonce y fecha de vencimiento. El protocolo comprobará la firma y el mensaje exacto.',
-    notice: 'La firma demostrará control de la clave. Este desafío no requiere enviar un pago.',
-    action: 'Solicitar firma · Próximamente',
+    id: 2, title: 'Tu firma', navTitle: 'Firma', icon: ScanLine,
+    summary: 'Demuestra que es tuya.',
+    description: 'Firma un mensaje para demostrar que esta wallet es tuya.',
+    objective: 'Verificar la firma de un mensaje único con vencimiento.',
+    notice: 'Firmar este mensaje no envía dinero.',
+    action: 'Firmar mensaje',
   },
   {
-    id: 3, title: 'Transacción Stellar', icon: Send,
-    summary: 'Deja tu huella en la red. La última cerradura espera una prueba real.',
-    description: 'El último protocolo conectará tu recorrido con la red Stellar. La bóveda solo reconocerá una transacción confirmada.',
-    objective: 'Autorizar un envío de XLM de prueba a un destino aprobado y verificar su resultado exitoso en Stellar Testnet.',
-    notice: 'Se utilizará exclusivamente Testnet. En esta vista no hay pagos ni hashes de transacciones.',
-    action: 'Preparar transacción · Próximamente',
+    id: 3, title: 'La prueba final', navTitle: 'Operación', icon: Send,
+    summary: 'Deja tu huella.',
+    description: 'Envía una operación de prueba para abrir el último sello.',
+    objective: 'Enviar XLM de prueba y comprobar su confirmación en Testnet.',
+    notice: 'En Testnet no usas dinero real.',
+    action: 'Enviar prueba',
   },
 ]
 
 export const introduction = [
-  { icon: ShieldCheck, label: '01 / EL OBJETIVO', title: 'Hay algo al otro lado.', description: 'La cámara Génesis protege un artefacto digital único. Tres protocolos custodian su acceso. Tu misión: demostrar que mereces cruzar la puerta.' },
-  { icon: Fingerprint, label: '02 / EL PLAN', title: 'Tu identidad es la llave.', description: 'Conectarás tu wallet, demostrarás el control de tu clave y autorizarás una transacción en Stellar Testnet. Cada prueba verificada abrirá una cerradura.' },
-  { icon: Sparkles, label: '03 / EL ARTEFACTO', title: 'Una huella irrepetible.', description: 'Al completar la operación, el hash de tu transacción dará forma al artefacto Génesis. Por ahora puedes explorar los desafíos; la integración blockchain llegará en la siguiente etapa.' },
+  { icon: ShieldCheck, label: '01', title: 'Conecta tu wallet.', description: 'Tu cuenta digital será tu identidad en la bóveda.' },
+  { icon: Fingerprint, label: '02', title: 'Demuestra que es tuya.', description: 'Firma un mensaje. Este paso no envía dinero.' },
+  { icon: Sparkles, label: '03', title: 'Abre el último sello.', description: 'Una operación de prueba en Stellar dará forma a tu artefacto. Testnet no usa dinero real.' },
 ] as const

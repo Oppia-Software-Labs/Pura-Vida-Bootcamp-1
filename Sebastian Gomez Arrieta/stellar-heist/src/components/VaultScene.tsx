@@ -16,6 +16,7 @@ import { verifiedCompletion } from '../experience/types'
 import type { SceneSignals } from '../experience/types'
 
 export interface VaultSceneProps {
+  identityComplete: boolean
   animated: boolean
   missionId: number
   signals: RefObject<SceneSignals>
@@ -110,7 +111,7 @@ function SceneContent(props: VaultSceneProps) {
     canvas.addEventListener('webglcontextlost', lost)
     return () => canvas.removeEventListener('webglcontextlost', lost)
   }, [gl, props.onContextLost])
-  useEffect(() => { invalidate(); regress() }, [props.missionId, props.animated, invalidate, regress])
+  useEffect(() => { invalidate(); regress() }, [props.missionId, props.animated, props.identityComplete, invalidate, regress])
   return <>
     <fog attach="fog" args={['#080c17', 11, 45]} />
     <Environment resolution={64} frames={1}>
@@ -120,7 +121,7 @@ function SceneContent(props: VaultSceneProps) {
     </Environment>
     <Lighting signals={props.signals} animated={props.animated} shadows={!compact} />
     <Chamber compact={mobile} signals={props.signals} />
-    <VaultMechanism signals={props.signals} animated={props.animated} mobile={mobile} missionId={props.missionId} />
+    <VaultMechanism identityComplete={props.identityComplete} signals={props.signals} animated={props.animated} mobile={mobile} missionId={props.missionId} />
     <MissionTransition signals={props.signals} animated={props.animated} mobile={mobile} missionId={props.missionId} />
     <ParticleField signals={props.signals} animated={props.animated} compact={compact} />
     <MissionInstrument signals={props.signals} animated={props.animated} missionId={props.missionId} compact={mobile} />

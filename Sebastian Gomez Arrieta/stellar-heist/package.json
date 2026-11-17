@@ -7,12 +7,14 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test": "node tests/run.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^10.7.9",
     "@react-three/fiber": "^9.8.2",
     "@stellar/stellar-sdk": "^17.4.0",
+    "@stellar/varial-sdk": "^7.0.0",
     "@tailwindcss/vite": "^4.3.5",
     "gsap": "^3.15.1",
     "lucide-react": "^1.73.0",
