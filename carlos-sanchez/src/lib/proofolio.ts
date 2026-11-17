@@ -1,4 +1,3 @@
-import { signTransaction as signWithVarial } from "@stellar/varial-sdk";
 import type { SignTransaction } from "@stellar/stellar-sdk/contract";
 import {
   Client,
@@ -7,6 +6,7 @@ import {
   type ContributionKind,
 } from "../bindings/proofolio/src";
 import { RPC_URL } from "./stellar";
+import { signWithWalletsKit } from "./wallet";
 
 export const PROOFOLIO_CONTRACT_ID = networks.testnet.contractId;
 
@@ -40,15 +40,11 @@ function contractKind(kind: ContributionKindName): ContributionKind {
   return { tag: kind, values: undefined };
 }
 
-const varialSigner: SignTransaction = async (xdr, options) => {
-  const signed = await signWithVarial(xdr, {
+const walletsKitSigner: SignTransaction = async (xdr, options) => {
+  const signed = await signWithWalletsKit(xdr, {
     networkPassphrase: options?.networkPassphrase,
     address: options?.address,
   });
-  if (signed.error) {
-    const message = signed.error.message || "Varial rejected the signature request.";
-    throw new ProofolioError("signature-rejected", message);
-  }
   return {
     signedTxXdr: signed.signedTxXdr,
     signerAddress: signed.signerAddress,
@@ -60,7 +56,7 @@ function createClient(publicKey?: string, write = false) {
     ...networks.testnet,
     rpcUrl: RPC_URL,
     publicKey,
-    signTransaction: write ? varialSigner : undefined,
+    signTransaction: write ? walletsKitSigner : undefined,
   });
 }
 

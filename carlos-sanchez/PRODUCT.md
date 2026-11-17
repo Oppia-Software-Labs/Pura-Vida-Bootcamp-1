@@ -12,7 +12,7 @@ Personas que colaboran en proyectos públicos de software y quieren mostrar cont
 
 Proofolio registra en Stellar Testnet reconocimientos firmados entre wallets. Cada reconocimiento enlaza un Pull Request fusionado, identifica el tipo de contribución y queda visible en el perfil público de la persona receptora. La demo debe permitir conectar Varial, fondear la cuenta con Friendbot, emitir un reconocimiento y consultar perfiles sin backend ni GitHub OAuth.
 
-El producto tiene éxito cuando una persona puede completar ese flujo localmente, entender quién firmó cada registro y distinguir con claridad qué validó GitHub fuera de cadena y qué quedó almacenado en Soroban.
+El producto tiene éxito cuando una persona puede completar ese flujo localmente, entender quién firmó cada registro y distinguir con claridad qué validó GitHub fuera de cadena y qué quedó almacenado en Soroban. La conexión de wallet usa Stellar Wallets Kit en Testnet.
 
 ## Brand Personality
 

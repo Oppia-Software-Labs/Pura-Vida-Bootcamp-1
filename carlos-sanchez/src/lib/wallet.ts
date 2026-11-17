@@ -1,10 +1,7 @@
 import { Horizon } from "@stellar/stellar-sdk";
-import {
-  disconnect,
-  getNetworkDetails,
-  isConnected,
-  requestAccess,
-} from "@stellar/varial-sdk";
+import { StellarWalletsKit } from "@creit.tech/stellar-wallets-kit/sdk";
+import { defaultModules } from "@creit.tech/stellar-wallets-kit/modules/utils";
+import { Networks } from "@creit.tech/stellar-wallets-kit/types";
 import {
   FRIENDBOT_URL,
   HORIZON_URL,
@@ -48,9 +45,20 @@ export interface WalletAdapter {
 }
 
 const horizon = new Horizon.Server(HORIZON_URL);
+let kitInitialized = false;
 
-function extensionMessage(error: { message?: string } | undefined, fallback: string) {
-  return error?.message || fallback;
+function initializeWalletsKit() {
+  if (kitInitialized) return;
+
+  StellarWalletsKit.init({
+    modules: defaultModules(),
+    network: Networks.TESTNET,
+    authModal: {
+      showInstallLabel: true,
+      hideUnsupportedWallets: false,
+    },
+  });
+  kitInitialized = true;
 }
 
 function isNotFound(error: unknown) {
@@ -70,55 +78,53 @@ async function readAccount(address: string): Promise<AccountSnapshot> {
   }
 }
 
-export const varialWalletAdapter: WalletAdapter = {
-  async connect() {
-    const availability = await isConnected();
-    if (availability.error) {
-      throw new WalletError(
-        "not-installed",
-        extensionMessage(availability.error, "Varial is not available."),
-      );
-    }
-    if (!availability.isConnected) {
-      throw new WalletError("not-installed", "Varial is not installed or enabled.");
-    }
+export async function signWithWalletsKit(
+  xdr: string,
+  options?: { networkPassphrase?: string; address?: string },
+) {
+  initializeWalletsKit();
+  return StellarWalletsKit.signTransaction(xdr, {
+    networkPassphrase: options?.networkPassphrase ?? NETWORK_PASSPHRASE,
+    address: options?.address,
+  });
+}
 
-    const access = await requestAccess();
-    if (access.error || !access.address) {
+export const stellarWalletsKitAdapter: WalletAdapter = {
+  async connect() {
+    initializeWalletsKit();
+    StellarWalletsKit.setNetwork(Networks.TESTNET);
+
+    try {
+      const { address } = await StellarWalletsKit.authModal();
+      const network = await StellarWalletsKit.getNetwork();
+
+      if (network.networkPassphrase !== NETWORK_PASSPHRASE) {
+        await StellarWalletsKit.disconnect();
+        throw new WalletError("wrong-network", `Expected ${STELLAR_NETWORK}.`);
+      }
+
+      return {
+        address,
+        network: network.network || STELLAR_NETWORK,
+        networkPassphrase: network.networkPassphrase,
+      };
+    } catch (error) {
+      if (error instanceof WalletError) throw error;
       throw new WalletError(
         "access-denied",
-        extensionMessage(access.error, "The wallet connection was rejected."),
+        error instanceof Error ? error.message : "The wallet connection was cancelled.",
       );
     }
-
-    const network = await getNetworkDetails();
-    if (network.error) {
-      throw new WalletError(
-        "unknown",
-        extensionMessage(network.error, "Varial did not return its network."),
-      );
-    }
-
-    if (
-      network.network.toUpperCase() !== STELLAR_NETWORK ||
-      network.networkPassphrase !== NETWORK_PASSPHRASE
-    ) {
-      throw new WalletError("wrong-network", `Expected ${STELLAR_NETWORK}.`);
-    }
-
-    return {
-      address: access.address,
-      network: network.network,
-      networkPassphrase: network.networkPassphrase,
-    };
   },
 
   async disconnect() {
-    const result = await disconnect();
-    if (result.error) {
+    initializeWalletsKit();
+    try {
+      await StellarWalletsKit.disconnect();
+    } catch (error) {
       throw new WalletError(
         "unknown",
-        extensionMessage(result.error, "Varial could not disconnect."),
+        error instanceof Error ? error.message : "The wallet could not disconnect.",
       );
     }
   },

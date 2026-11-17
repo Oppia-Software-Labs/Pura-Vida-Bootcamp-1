@@ -1,6 +1,6 @@
 import { useCallback, useState } from "react";
 import {
-  varialWalletAdapter,
+  stellarWalletsKitAdapter,
   WalletError,
   type AccountSnapshot,
   type WalletAdapter,
@@ -42,7 +42,7 @@ function normalizeError(error: unknown) {
   };
 }
 
-export function useWallet(adapter: WalletAdapter = varialWalletAdapter) {
+export function useWallet(adapter: WalletAdapter = stellarWalletsKitAdapter) {
   const [state, setState] = useState<WalletState>(initialState);
 
   const connect = useCallback(async () => {

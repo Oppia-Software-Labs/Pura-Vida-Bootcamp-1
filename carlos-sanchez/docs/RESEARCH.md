@@ -13,9 +13,9 @@ El repositorio exige una aplicación básica sobre Stellar apoyada por Stellar R
 - Estado local: servidor agregado y autenticación completada.
 - La documentación oficial describe dos herramientas, `search` para descubrir operaciones y skills, y `execute` para componer consultas de solo lectura dentro de un entorno aislado.
 
-La sesión de Codex que instaló el servidor debe recargar sus herramientas antes de ejecutar las consultas. El README final conservará el texto exacto de al menos tres preguntas hechas a Raven, una síntesis de sus respuestas y la decisión aplicada al código.
+Se consultó Raven durante esta implementación. Sus búsquedas oficiales confirmaron las guías de wallet, almacenamiento persistente y simulación de transacciones citadas abajo.
 
-Consultas previstas:
+Consultas realizadas:
 
 1. Conexión Varial y verificación de Testnet antes de solicitar una firma.
 2. Diseño de almacenamiento persistente, índices acotados y extensión de TTL en Soroban.
@@ -25,9 +25,9 @@ Consultas previstas:
 
 ### Wallet
 
-La nueva integración usa `@stellar/varial-sdk`. Varial continúa la API de Freighter desde la versión 7 y expone conexión, dirección, red y firma de transacciones. Proofolio bloquea el flujo de emisión cuando la wallet no reporta Testnet.
+La integración actual usa `@creit.tech/stellar-wallets-kit` v2.8.0. Se inicializa con `defaultModules()` y Testnet; el modal selecciona wallets compatibles. La red y su passphrase se comprueban tras la conexión. Las transacciones Soroban se simulan con el SDK generado, luego Stellar Wallets Kit firma el XDR.
 
-Fuente: [documentación de integración de Varial](https://github.com/stellar/freighter-developer-docs/blob/main/extension/installation.md).
+Fuentes: [Stellar Wallets Kit](https://github.com/Creit-Tech/Stellar-Wallets-Kit) y [guía oficial de simulación](https://developers.stellar.org/docs/learn/fundamentals/contract-development/contract-interactions/transaction-simulation#sdk-usage).
 
 ### Almacenamiento y TTL
 
@@ -47,7 +47,7 @@ Toda llamada de escritura se simula antes de firmarse para obtener recursos y re
 
 ## Investigación visual
 
-ScreensDesign quedó agregado y autenticado con la skill `screensdesign-data` versión 1.0.8. La herramienta necesita recargarse en una sesión nueva. Hasta entonces, el sistema inicial usa referencias públicas concretas:
+ScreensDesign está conectado, pero sus búsquedas requieren una cuenta Pro. No se usaron resultados de esa herramienta. La revisión de interfaz usa patrones comunes de cronología y evidencia de proyectos, conexión de wallet reconocible y una revisión explícita antes de la firma; no atribuye estos patrones a una pantalla concreta.
 
 - GitHub para cronologías y evidencia de contribuciones.
 - Linear para densidad, jerarquía y estados compactos.

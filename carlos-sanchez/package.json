@@ -11,10 +11,10 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@creit.tech/stellar-wallets-kit": "^2.8.0",
     "@fontsource-variable/inter": "latest",
     "@radix-ui/react-dialog": "latest",
     "@stellar/stellar-sdk": "latest",
-    "@stellar/varial-sdk": "latest",
     "class-variance-authority": "latest",
     "clsx": "latest",
     "lucide-react": "latest",
@@ -37,7 +37,7 @@
     "globals": "latest",
     "jsdom": "latest",
     "tailwindcss": "latest",
-    "typescript": "latest",
+    "typescript": "^6.0.2",
     "typescript-eslint": "latest",
     "vite": "latest",
     "vitest": "latest"

@@ -4,6 +4,7 @@ import type { Locale, Translation } from "../lib/i18n";
 import { listAttestations, type Attestation } from "../lib/proofolio";
 import { truncateAddress } from "../lib/stellar";
 import { Badge } from "./ui/badge";
+import { groupAttestationsByProject } from "../lib/attestations";
 
 interface ProfileViewProps {
   address: string;
@@ -45,11 +46,7 @@ export function ProfileView({ address, copy, locale }: ProfileViewProps) {
   }, [address]);
 
   const projects = useMemo(() => {
-    const grouped = new Map<string, number>();
-    for (const attestation of state.attestations) {
-      grouped.set(attestation.repo, (grouped.get(attestation.repo) ?? 0) + 1);
-    }
-    return [...grouped.entries()].sort((a, b) => a[0].localeCompare(b[0]));
+    return groupAttestationsByProject(state.attestations);
   }, [state.attestations]);
 
   if (state.status === "loading") {
@@ -131,7 +128,7 @@ export function ProfileView({ address, copy, locale }: ProfileViewProps) {
           {copy.projectsHeading}
         </h3>
         <ul className="mt-3 divide-y divide-border border-y border-border">
-          {projects.map(([repo, count]) => (
+          {projects.map(({ repo, count }) => (
             <li key={repo} className="flex items-center justify-between gap-3 py-3 text-sm">
               <span className="min-w-0 truncate font-medium">{repo}</span>
               <span className="shrink-0 text-xs text-muted-foreground">
