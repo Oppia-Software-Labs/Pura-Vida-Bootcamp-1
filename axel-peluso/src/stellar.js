@@ -36,6 +36,12 @@ export async function connectFreighter() {
   return address;
 }
 
+// Devuelve true si la wallet está en Testnet (compara el passphrase de la red).
+export async function isWalletOnTestnet() {
+  const { networkPassphrase } = await StellarWalletsKit.getNetwork();
+  return networkPassphrase === NETWORK_PASSPHRASE;
+}
+
 export async function disconnectWallet() {
   await StellarWalletsKit.disconnect();
 }

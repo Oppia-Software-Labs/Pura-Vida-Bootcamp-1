@@ -31,3 +31,6 @@ button.ghost { background: transparent; color: var(--fg); border: 1px solid var(
 .ok { color: #30a46c; }
 .warn { color: #d48a00; }
 a { color: var(--accent); }
+.network-warning { border-color: #d48a00; background: color-mix(in srgb, #d48a00 12%, var(--card)); }
+.network-warning p, .network-warning ol { margin: 8px 0 0; }
+.network-warning ol { padding-left: 20px; }

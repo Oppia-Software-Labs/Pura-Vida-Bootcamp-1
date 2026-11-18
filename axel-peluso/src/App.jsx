@@ -1,5 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
-import { addUsdcTrustline, connectFreighter, disconnectWallet, getBalances, sendXlm } from "./stellar.js";
+import {
+  addUsdcTrustline,
+  connectFreighter,
+  disconnectWallet,
+  getBalances,
+  isWalletOnTestnet,
+  sendXlm,
+} from "./stellar.js";
 
 const short = (a) => `${a.slice(0, 6)}…${a.slice(-6)}`;
 
@@ -28,9 +35,19 @@ export default function App() {
   const [status, setStatus] = useState(null);
   const [trusting, setTrusting] = useState(false);
   const [trustStatus, setTrustStatus] = useState(null);
+  const [onTestnet, setOnTestnet] = useState(true);
+
+  const checkNetwork = useCallback(async () => {
+    try {
+      setOnTestnet(await isWalletOnTestnet());
+    } catch {
+      // Si no se puede leer la red no bloqueamos la app.
+    }
+  }, []);
 
   const refresh = useCallback(async (addr) => {
     setError(null);
+    checkNetwork();
     try {
       setBalances(await getBalances(addr));
     } catch (e) {
@@ -41,6 +58,13 @@ export default function App() {
   useEffect(() => {
     if (address) refresh(address);
   }, [address, refresh]);
+
+  // Al volver a la pestaña (p. ej. tras cambiar la red en Freighter) se revisa de nuevo.
+  useEffect(() => {
+    if (!address) return;
+    window.addEventListener("focus", checkNetwork);
+    return () => window.removeEventListener("focus", checkNetwork);
+  }, [address, checkNetwork]);
 
   const onConnect = async () => {
     setError(null);
@@ -112,6 +136,19 @@ export default function App() {
         </button>
       ) : (
         <>
+          {!onTestnet && (
+            <section className="card network-warning" role="alert">
+              <strong>Tu wallet no está en Testnet.</strong>
+              <p>Esta app solo funciona en la red de prueba de Stellar. Para cambiarla:</p>
+              <ol>
+                <li>Abre la extensión Freighter.</li>
+                <li>Pulsa el selector de red (arriba, normalmente dice «Mainnet» o «Public»).</li>
+                <li>Elige <strong>Testnet</strong>.</li>
+                <li>Vuelve a esta pestaña o pulsa Actualizar.</li>
+              </ol>
+            </section>
+          )}
+
           <section className="card">
             <span className="label">Dirección</span>
             <div className="row">
@@ -144,7 +181,7 @@ export default function App() {
 
             {balances?.funded && balances.usdc === null && (
               <div className="row">
-                <button onClick={onAddTrustline} disabled={trusting}>
+                <button onClick={onAddTrustline} disabled={trusting || !onTestnet}>
                   {trusting ? "Agregando…" : "Agregar trustline USDC"}
                 </button>
               </div>
@@ -180,7 +217,7 @@ export default function App() {
                   required
                 />
               </label>
-              <button type="submit" disabled={sending}>
+              <button type="submit" disabled={sending || !onTestnet}>
                 {sending ? "Enviando…" : "Enviar"}
               </button>
             </form>
