@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
+import { HomePath } from "@/components/ProgressPath";
 import { TurtleSVG } from "@/components/TurtleSVG";
 
 export default function Home() {
@@ -28,6 +29,7 @@ export default function Home() {
           </ul>
         </div>
       </section>
+      <HomePath/>
     </main>
   );
 }
