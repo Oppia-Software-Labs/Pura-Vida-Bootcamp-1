@@ -56,14 +56,14 @@ Pantalla 2.
 - ✅ Pantalla `CreateDeposit` con modo demo (`E` y `D` en minutos).
 - ✅ Vista previa en lenguaje natural antes de firmar.
 - ✅ `friendlyError`: errores en inglés traducidos a mensajes en español.
-- ✅ Mostrar el link `?deposit=<id>` y guardar el id en `localStorage`.
+- ✅ Mostrar el link `/depositos/<id>` y guardar el id en `localStorage`.
 
 ## Fase 4 · Listar y reclamar ✅
 
 Pantalla 3 y detalle por link.
 
 - ✅ `listDepositsFor` con Horizon, por claimant.
-- ✅ `getDepositById` con RPC, para el link `?deposit=<id>`.
+- ✅ `getDepositById` con RPC, para el link `/depositos/<id>`.
 - ✅ Hooks `useDeposits` y `useNow` (cuenta regresiva).
 - ✅ `DepositCard`: rol, monto, estado y botón o cuenta regresiva.
 - ✅ `buildClaim` y flujo de reclamo con firma.

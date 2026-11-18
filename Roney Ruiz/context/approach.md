@@ -87,7 +87,7 @@ Material directo para el README del PR.
 | Nivel | Incluye |
 |---|---|
 | **v1 (MVP)** | Conectar Varial (testnet) y mostrar dirección y saldo · crear depósito (un balance, XLM nativo) con arrendador, monto, `E` y `D` · listar depósitos de la cuenta con rol y estado · reclamar cuando el predicado lo permita · **modo demo** (`E` y `D` en minutos) · errores legibles. |
-| **Reto** (si da tiempo) | Tope de reparaciones (dos balances) · evaluador de predicados con cuenta regresiva · link `?deposit=<id>` para que el arrendador encuentre el depósito · activo de prueba en vez de XLM (aprender trustlines). |
+| **Reto** (si da tiempo) | Tope de reparaciones (dos balances) · evaluador de predicados con cuenta regresiva · link `/depositos/<id>` para que el arrendador encuentre el depósito · activo de prueba en vez de XLM (aprender trustlines). |
 | **Fuera de alcance** | Backend propio, mainnet, arbitraje, notificaciones, stablecoins reales, identidad/KYC, validez legal. |
 
 ## 7. Entrega de la Tarea 1
@@ -118,5 +118,5 @@ Construida sobre Stellar, con Stellar Raven como asistente (documentar su uso en
 | Tope de reparaciones | **Reto**, después del MVP | Primero el flujo completo con un solo balance. |
 | Activo | **XLM nativo** | Sin trustlines; Friendbot lo da gratis. |
 | Idioma de la UI | **Solo español** | El código y sus errores siguen en inglés; la UI traduce. |
-| Descubrir depósitos | **Horizon + link `?deposit=<id>`** | Se lista con Horizon mientras responda; el link lee por RPC si Horizon falla. |
+| Descubrir depósitos | **Horizon + link `/depositos/<id>`** | Se lista con Horizon mientras responda; el link lee por RPC si Horizon falla. |
 | Entrega | **Repo propio, copiado al fork al final** | Historial limpio aquí; al cerrar se copia a la carpeta con el nombre completo (paso 2 de la sección 7). |

@@ -28,8 +28,11 @@ Frontend-only SPA, no backend. Code lives in `source/`:
 - `bloc/entity/`: pure logic. It does not import React, the wallet or the network.
 - `bloc/stellar/` and `bloc/wallet/`: adapters to the network and to Varial (`@stellar/varial-sdk`, a single wallet).
 - `hooks/`: React state hooks.
-- `shared/`: screens and `friendlyError`.
-- Import aliases, one per folder in `source/`: `@config/*`, `@hooks/*`, `@shared/*`, `@bloc/*`.
+- `helpers/`: UI helpers without React (formatting, Tailwind class builders, `friendlyError`, links).
+- `layouts/`: app shell (header, navigation, wallet chip) rendered around every route.
+- `pages/`: one component per route (React Router).
+- `shared/`: reusable components (primitives, cards, forms).
+- Import aliases, one per folder in `source/`: `@config/*`, `@hooks/*`, `@helpers/*`, `@layouts/*`, `@pages/*`, `@shared/*`, `@bloc/*`.
 
 The network is fixed to testnet and defined in one place (`source/config/network.ts`).
 

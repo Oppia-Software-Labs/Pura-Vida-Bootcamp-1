@@ -49,7 +49,7 @@ Si el arrendador no hace nada entre `E` y `D`, el inquilino recupera el depósit
 
 ## Tecnologías
 
-React, TypeScript, Vite, Tailwind CSS, Vitest, `@stellar/stellar-sdk` y `@stellar/varial-sdk`.
+React, React Router, TypeScript, Vite, Tailwind CSS, Vitest, `@stellar/stellar-sdk` y `@stellar/varial-sdk`.
 
 ## Cómo ejecutarlo
 

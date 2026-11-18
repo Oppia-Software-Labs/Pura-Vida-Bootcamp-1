@@ -17,6 +17,7 @@
 |---|---|---|
 | Build / dev | **Vite** | arranque rápido |
 | UI | **React + TypeScript** | los tipos ayudan con predicados y dinero |
+| Rutas | **React Router** (`react-router`) | pantallas con URL propia y link compartible |
 | Estilos | **Tailwind CSS** (`@tailwindcss/vite`) | utilidades, sin librerías de UI |
 | Stellar | **`@stellar/stellar-sdk`** | transacciones, claimants, Horizon y RPC |
 | Wallet | **`@stellar/varial-sdk`** | una sola wallet, sin kit multi-wallet |
@@ -47,7 +48,7 @@ export const DEMO_MODE_DEFAULT = true; // E y D en minutos
 
 ```mermaid
 flowchart LR
-    UI["shared<br/>pantallas React"] --> H["hooks<br/>estado"]
+    UI["pages · layouts · shared<br/>pantallas React"] --> H["hooks<br/>estado"]
     H --> A["bloc/stellar · bloc/wallet<br/>adaptadores"]
     A --> D["bloc/entity<br/>lógica pura"]
     A -. red .-> N[("Stellar<br/>testnet")]
@@ -65,11 +66,24 @@ plazo/
 ├─ package.json
 └─ source/
    ├─ main.tsx
-   ├─ App.tsx
+   ├─ App.tsx                    # rutas
    ├─ index.css                  # @import "tailwindcss"
    ├─ config/
    │  └─ network.ts
-   ├─ hooks/                     # useWallet, useBalance, useCreateDeposit, useDeposits, useClaim, useNow
+   ├─ hooks/                     # useWallet, useAppContext, useBalance, useCreateDeposit,
+   │                             # useDeposits, useDeposit, useClaim, useNow
+   ├─ helpers/                   # utilidades de UI, sin React
+   │  ├─ format.ts               # montos, direcciones, fechas, cuenta regresiva
+   │  ├─ classes.ts              # clases de Tailwind de tarjeta y botón
+   │  ├─ friendlyError.ts        # error en inglés → mensaje en español
+   │  └─ links.ts                # link compartible de un depósito
+   ├─ layouts/
+   │  └─ AppLayout.tsx           # cabecera, navegación, chip de wallet, Outlet
+   ├─ pages/                     # una por ruta
+   │  ├─ HomePage.tsx            # /
+   │  ├─ CreateDepositPage.tsx   # /crear
+   │  ├─ DepositsPage.tsx        # /depositos
+   │  └─ DepositDetailPage.tsx   # /depositos/:id
    ├─ bloc/
    │  ├─ entity/                 # puro, con tests
    │  │  ├─ types.ts             # Deposit, DepositPlan, Role, Status
@@ -92,15 +106,17 @@ plazo/
    │  │  └─ deposits.ts          # ids de depósitos en localStorage
    │  └─ wallet/
    │     └─ varial.ts            # conectar, firmar
-   └─ shared/
-      ├─ ConnectWallet.tsx       # pantalla 1 (requisito de la tarea)
-      ├─ CreateDeposit.tsx       # pantalla 2
-      ├─ MyDeposits.tsx          # pantalla 3: lista, link y reclamo
-      ├─ DepositCard.tsx         # rol, estado, acción
-      └─ friendlyError.ts        # error en inglés → mensaje en español
+   └─ shared/                    # componentes reutilizables
+      ├─ primitives.tsx          # Button, Chip, Input, Alert, Spinner
+      ├─ ConnectWallet.tsx       # tarjeta de wallet (requisito de la tarea)
+      ├─ RequireWallet.tsx       # pide conectar antes de mostrar una pantalla
+      ├─ CreateDeposit.tsx       # formulario, vista previa y resultado
+      ├─ MyDeposits.tsx          # lista de depósitos
+      ├─ DepositDetail.tsx       # un depósito por su ID
+      └─ DepositCard.tsx         # rol, estado, cuenta regresiva y acción
 ```
 
-**Alias de imports:** uno por carpeta de `source/`, definidos en `tsconfig.app.json`, `vite.config.ts` y `vitest.config.ts`: `@config/*`, `@hooks/*`, `@shared/*` y `@bloc/*` (por ejemplo `@bloc/wallet/varial`).
+**Alias de imports:** uno por carpeta de `source/`, definidos en `tsconfig.app.json`, `vite.config.ts` y `vitest.config.ts`: `@config/*`, `@hooks/*`, `@helpers/*`, `@layouts/*`, `@pages/*`, `@shared/*` y `@bloc/*` (por ejemplo `@bloc/wallet/varial`).
 
 ## 5. Modelo de datos
 
@@ -196,7 +212,7 @@ sequenceDiagram
     UI->>S: submit(signedXdr)
     S->>N: envía la transacción
     N-->>S: resultado + balanceId
-    S-->>UI: link ?deposit=id (se guarda en localStorage)
+    S-->>UI: link /depositos/id (el id se guarda en localStorage)
 ```
 
 Validaciones previas: direcciones válidas, arrendador ≠ inquilino, `E < D`, `E` en el futuro, monto > 0, saldo suficiente (monto + reservas + comisión) y **el inquilino incluido como claimant**.
@@ -227,10 +243,12 @@ flowchart LR
 
 ## 8. Pantallas
 
-1. **Conectar wallet:** botón para conectar Varial; muestra dirección y saldo de XLM en testnet, con indicador claro de red.
-2. **Crear depósito:** arrendador (G...), monto, `E`, `D` (modo demo en minutos). **Vista previa en lenguaje natural:** "Si [arrendador] no reclama entre E y D, podrás recuperar X XLM después de D." Reto: control del tope de reparaciones.
-3. **Mis depósitos:** tarjetas con rol, monto, estado, cuenta regresiva y botón de reclamar.
-4. **Detalle por link (`?deposit=<id>`):** lectura de un balance concreto; permite al arrendador encontrarlo.
+Navegación fija arriba (Inicio, Mis depósitos, Crear) con el chip de la wallet siempre visible. Las pantallas que necesitan wallet piden conectarla antes de mostrarse.
+
+1. **Inicio (`/`):** conectar Varial; muestra dirección y saldo de XLM en testnet, con indicador claro de red, atajos y "cómo funciona". Es el requisito mínimo de la tarea.
+2. **Crear depósito (`/crear`):** arrendador (G...), monto, `E`, `D` (modo demo en minutos). **Vista previa en lenguaje natural:** "Si [arrendador] no reclama entre E y D, podrás recuperar X XLM después de D." Reto: control del tope de reparaciones.
+3. **Mis depósitos (`/depositos`):** tarjetas con rol, monto, estado, cuenta regresiva y botón de reclamar.
+4. **Detalle por link (`/depositos/:id`):** lectura de un balance concreto por RPC; permite al arrendador encontrarlo. El formato anterior `/?deposit=<id>` redirige aquí.
 
 ## 9. Plan de commits
 
@@ -260,7 +278,7 @@ Estimación aproximada.
 
 | # | Riesgo | Mitigación |
 |---|---|---|
-| 1 | **Horizon puede dejar de responder.** | Verificarlo en el commit 2 con una llamada simple; `getDepositById` por RPC y el link `?deposit=<id>` como camino alterno. Decidido: Horizon para listar y el link como respaldo. |
+| 1 | **Horizon puede dejar de responder.** | Verificarlo en el commit 2 con una llamada simple; `getDepositById` por RPC y el link `/depositos/<id>` como camino alterno. Decidido: Horizon para listar y el link como respaldo. |
 | 2 | **Dos cuentas para probar.** | Segunda cuenta en Varial (si permite varias) o segundo perfil de navegador. Fondear ambas con Friendbot. |
 | 3 | **Tiempo en los bordes.** | No prometer precisión al segundo; probar con ventanas de minutos. |
 | 4 | **Nombres del SDK de Varial.** | Confirmar con Raven antes de codificar, no después. |
