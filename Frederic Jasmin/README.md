@@ -1,16 +1,38 @@
-# React + Vite
+# Pura Vida Wallet
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Mi primera app sobre Stellar para el Pura Vida Bootcamp (Tarea 1). Autor: **Frederic Jasmin**.
 
-Currently, two official plugins are available:
+Funciona en la **testnet** de Stellar, así que no mueve dinero real.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## Qué hace
 
-## React Compiler
+- **Conectar wallet:** abre el modal de Stellar Wallets Kit para conectar Freighter, xBull, Albedo, Lobstr, Hana y otras wallets.
+- **Ver saldo:** lee el saldo de XLM de la cuenta conectada desde Horizon testnet.
+- **Cargar XLM de prueba:** pide 10.000 XLM a Friendbot para crear o fondear la cuenta.
+- **Enviar XLM:** arma la transacción, la firma la wallet del usuario y se envía a Horizon. Si la cuenta destino todavía no existe, usa `createAccount` (mínimo 1 XLM). Muestra el link a Stellar Expert.
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Stack
 
-## Expanding the Oxlint configuration
+- Vite + React
+- [`@stellar/stellar-sdk`](https://github.com/stellar/js-stellar-sdk) (Horizon, TransactionBuilder)
+- [`@creit.tech/stellar-wallets-kit`](https://stellarwalletskit.dev) (conexión y firma con la wallet)
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+## Cómo correrla
+
+```bash
+cd "Frederic Jasmin"
+npm install
+npm run dev
+```
+
+Abrí http://localhost:5173, poné tu wallet (por ejemplo Freighter) en **Testnet** y tocá **Conectar wallet**.
+
+## Estructura
+
+```text
+src/
+  lib/wallet.js           conexión, desconexión y firma con Stellar Wallets Kit
+  lib/stellar.js          Horizon: saldo, Friendbot y envío de pagos
+  components/SendForm.jsx formulario para enviar XLM
+  App.jsx                 pantalla principal
+```
