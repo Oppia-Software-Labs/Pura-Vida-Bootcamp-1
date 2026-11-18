@@ -19,6 +19,7 @@ Stellar, como asistente de desarrollo.
 - Sección **"¿No tienes una wallet?"** con 5 pasos ilustrados y animados para crear una.
 - **Avisos de seguridad** contra phishing y sobre el alcance de la conexión.
 - Tema oscuro responsive, con fondo estelar.
+- **Fondo animado** de cuadros con estela, desactivado si el sistema pide reducir movimiento.
 
 **Flujo completo:**
 
@@ -123,8 +124,8 @@ Elias Jose Castro Soto/
 
 ## Cómo usé Raven
 
-Conecté **Raven** (`https://raven.stellar.org/mcp`) como conector MCP en **Claude** y
-en **OpenCode**. Lo usé a lo largo del desarrollo para consultar la documentación oficial
+Conecté **Raven** (`https://raven.stellar.org/mcp`) como conector MCP en **Claude**.
+Lo usé a lo largo del desarrollo para consultar la documentación oficial
 de Stellar antes de escribir código. Estas fueron las consultas y lo que decidí gracias a ellas.
 
 ### 1. ¿Qué es una wallet, qué es Freighter y cómo conectarlo con Stellar Wallets Kit?
@@ -207,6 +208,8 @@ de Stellar antes de escribir código. Estas fueron las consultas y lo que decid�
   de la interfaz.
 - **Sin librerías de animación:** la entrada de los pasos usa `IntersectionObserver` y
   respeta `prefers-reduced-motion`.
+- **Canvas propio sin librerías** para el fondo animado de cuadros (`ShootingSquares`):
+  ~60 partículas máximo, respeta `prefers-reduced-motion` y usa `pointer-events: none`.
 - **Un commit por funcionalidad**, compilando en cada paso.
 
 ## Seguridad
