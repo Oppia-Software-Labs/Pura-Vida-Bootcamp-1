@@ -124,10 +124,10 @@ export const AssetLaunchpad: React.FC<AssetLaunchpadProps> = ({
             <span>Raffle-as-a-Service (RaaS) Protocol</span>
           </div>
           <h3 className="text-xl font-semibold text-white tracking-tight">
-            Sorteos físicos de alto valor con custodia en Stellar.
+            Sorteos con custodia en Stellar.
           </h3>
           <p className="text-xs sm:text-sm text-neutral-400 leading-relaxed">
-            Elimina la desconfianza en rifas de autos o propiedades. Los fondos se retienen en una bóveda de contrato inteligente: si se alcanza el <strong>Soft Cap</strong>, se entrega el premio; si no, el protocolo <strong>reembolsa el 100%</strong> a cada comprador.
+            Elimina la desconfianza en sorteos tradicionales. Los fondos se retienen en una bóveda de custodia: si se alcanza el <strong>Soft Cap</strong>, se adjudica el premio; si no, el protocolo <strong>reembolsa el 100%</strong> a cada comprador.
           </p>
         </div>
 

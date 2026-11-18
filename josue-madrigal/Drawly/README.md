@@ -6,7 +6,7 @@
 
 ## 🏛️ Las 2 Metodologías de Negocio de Drawly
 
-Para mantener una interfaz limpia estilo **Apple / iOS Web3**, la plataforma separa sus dos líneas de negocio en un selector minimalista:
+Para mantener una interfaz limpia y minimalista, la plataforma separa sus dos líneas de negocio en un selector:
 
 ### 1. 🟢 `Dynamic Pools (Pari-Mutuel)`
 * **Público objetivo**: Comunidad Web3 y usuarios cotidianos que participan con micropagos.
@@ -36,7 +36,7 @@ Para mantener una interfaz limpia estilo **Apple / iOS Web3**, la plataforma sep
 * **SDK**: `@stellar/stellar-sdk` v17.4.0
 * **Wallet Kit**: `@creit.tech/stellar-wallets-kit` v2.8.0 (Freighter, xBull, Albedo, LOBSTR, WalletConnect)
 * **Frontend**: React 19 + Vite + TypeScript + Tailwind CSS v4
-* **Diseño UI**: Minimalista Apple / iOS Web3 (OLED `#050505`, bordes finos `border-white/10`, popover flotante)
+* **Diseño UI**: Minimalista oscuro (OLED `#050505`, bordes finos `border-white/10`, popover flotante)
 
 ---
 

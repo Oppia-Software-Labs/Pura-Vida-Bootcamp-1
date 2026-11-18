@@ -54,7 +54,7 @@ Cualquier evaluador o participante puede verificar el sorteo sin confiar en la i
 
 ## 🏛️ Las 2 Líneas de Negocio
 
-La interfaz cuenta con un selector minimalista estilo **Apple iOS Web3** que divide la plataforma en dos metodologías:
+La interfaz cuenta con un selector minimalista que divide la plataforma en dos metodologías:
 
 ### 1. `Dynamic Pools (Pari-Mutuel)`
 * **Mecánica:** Pozos continuos para micropagos comunitarios. El pozo arranca en **0 XLM** y crece con cada boleto vendido (**riesgo financiero = 0 para Drawly**).
@@ -115,18 +115,6 @@ La interfaz cuenta con un selector minimalista estilo **Apple iOS Web3** que div
    ```bash
    npm run preview
    ```
-
----
-
-## 🌐 Despliegue en Vercel
-
-El proyecto incluye el archivo [`vercel.json`](file:///Volumes/JosueSSD/puravida-bootcamp/Pura-Vida-Bootcamp-1/josue-madrigal/Drawly/vercel.json) preconfigurado para aplicaciones SPA:
-
-```bash
-cd Drawly
-npx vercel
-```
-*(O vinculando el repositorio en el panel de Vercel y seleccionando `Drawly` como Root Directory).*
 
 ---
 

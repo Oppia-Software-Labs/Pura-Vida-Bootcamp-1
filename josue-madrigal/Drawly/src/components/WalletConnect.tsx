@@ -173,7 +173,7 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onAddressChange })
     }
   };
 
-  // ESTADO DESCONECTADO (Apple minimal button)
+  // ESTADO DESCONECTADO (Boton minimalista)
   if (!address) {
     return (
       <div className="relative flex flex-col items-end">
@@ -227,7 +227,7 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onAddressChange })
         />
       </button>
 
-      {/* Popover flotante estilo iOS/Apple Web3 */}
+      {/* Popover flotante minimalista */}
       {isOpen && (
         <div className="absolute right-0 mt-2.5 w-80 rounded-2xl bg-neutral-950/95 border border-white/10 p-4 shadow-2xl backdrop-blur-2xl z-50 flex flex-col gap-3.5 animate-in fade-in zoom-in-95 duration-150">
           {/* Header del popover */}

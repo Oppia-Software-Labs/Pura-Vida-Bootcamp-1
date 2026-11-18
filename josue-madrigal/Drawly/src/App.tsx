@@ -86,7 +86,7 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-[#050505] text-white flex flex-col font-sans selection:bg-white selection:text-black antialiased">
-      {/* Navbar Minimalista Apple Style */}
+      {/* Navbar Minimalista */}
       <header className="sticky top-0 z-40 w-full backdrop-blur-2xl bg-black/60 border-b border-white/5">
         <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
           {/* Logo Minimalista */}
@@ -130,7 +130,7 @@ export function App() {
             Elimina la desconfianza en sorteos tradicionales. Elige entre pozos acumulativos comunitarios o rifas de activos de alto valor con custodia inteligente en Stellar Testnet.
           </p>
 
-          {/* Selector de Metodologías Apple Style (Tabs) */}
+          {/* Selector de Metodologías (Tabs) */}
           <div className="mt-8 flex items-center p-1 rounded-full bg-neutral-900/90 border border-white/10 w-fit backdrop-blur-md">
             <button
               onClick={() => setActiveTab('dynamic-pools')}
