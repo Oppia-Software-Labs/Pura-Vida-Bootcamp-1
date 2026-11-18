@@ -16,6 +16,7 @@ import TicketPurchase from './components/TicketPurchase';
 import LiveParticipants from './components/LiveParticipants';
 import AssetLaunchpad from './components/AssetLaunchpad';
 import { openWalletModal } from './services/walletKit';
+import { ASSET_ESCROW_VAULT_ADDRESS } from './services/stellar';
 
 type TabMode = 'dynamic-pools' | 'asset-launchpad';
 
@@ -270,12 +271,21 @@ export function App() {
 
         {/* CONTENIDO TAB 2: ASSET LAUNCHPAD (RAFFLE-AS-A-SERVICE) */}
         {activeTab === 'asset-launchpad' && (
-          <div className="animate-in fade-in duration-200">
+          <div className="flex flex-col gap-14 animate-in fade-in duration-200">
             <AssetLaunchpad
               connectedAddress={connectedAddress}
               onAddressConnect={(addr) => setConnectedAddress(addr)}
               onBalanceRefreshNeeded={handleTriggerBalanceRefresh}
             />
+
+            {/* Lista de Participantes en Vivo para la Bóveda de Custodia Escrow (RaaS) */}
+            <section id="participantes-raas" className="scroll-mt-24">
+              <LiveParticipants
+                vaultAddress={ASSET_ESCROW_VAULT_ADDRESS}
+                title="Participantes en Custodia Escrow (RaaS)"
+                subtitle="Horizon Testnet Explorer • Bóveda de Activos"
+              />
+            </section>
           </div>
         )}
       </main>

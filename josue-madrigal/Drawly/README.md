@@ -17,12 +17,12 @@ Para mantener una interfaz limpia estilo **Apple / iOS Web3**, la plataforma sep
 * **Interacción On-Chain**: Compra directa de boletos de 1 XLM hacia la **Bóveda del Sorteo** (`GBCD...YVFI`) guardando el alias del usuario en el campo `Memo.text` inmutable del ledger.
 
 ### 2. 🏢 `Asset Launchpad (Raffle-as-a-Service - RaaS)`
-* **Público objetivo**: Concesionarios de autos, empresas, influencers y ONGs que sortean bienes físicos de alto valor (como vehículos, motos o causas benéficas).
-* **El Problema que Resuelve**: Elimina las dudas de si una rifa de auto está "arreglada" para amigos del organizador.
+* **Público objetivo**: Empresas, desarrolladores, comunidades y creadores que sortean hardware o activos de alto valor (como laptops workstation o kits de desarrollo).
+* **El Problema que Resuelve**: Elimina las dudas de si una rifa está "arreglada" para allegados del organizador.
 * **Mecánica Smart Escrow & Soft-Cap**:
-  * La organización define la meta mínima (*Soft Cap*, ej: 2,500 boletos para cubrir el auto).
+  * La organización define la meta mínima (*Soft Cap*, ej: 2,500 boletos para cubrir el activo).
   * Los fondos quedan en custodia en la bóveda de Stellar.
-  * **Si se alcanza la meta**: El contrato inteligente selecciona al ganador de forma imparcial y libera los fondos para entregar el vehículo.
+  * **Si se alcanza la meta**: El contrato inteligente selecciona al ganador de forma imparcial y libera los fondos para adjudicar el activo.
   * **Si NO se alcanza la meta**: El contrato **reembolsa automáticamente el 100% de los fondos** a cada comprador sin comisiones.
 * **Monetización RaaS**:
   * Tarifa plana de despliegue de bóveda (ej: 50 XLM / $50 USD).

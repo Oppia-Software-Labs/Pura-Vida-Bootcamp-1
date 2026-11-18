@@ -16,7 +16,7 @@ export const STELLAR_CONFIG = {
 // Bóveda oficial del Pozo Dinámico (Pari-Mutuel) en Testnet
 export const DYNAMIC_POOL_VAULT_ADDRESS = 'GBCDCSUZWND6IGDT6CGPQAN35QSDOPAIXVKJ47LMSGP4GYPLVYWJYVFI';
 
-// Bóveda oficial dedicada para Custodia de Activos Físicos (Toyota Hilux / Asset Escrow) en Testnet
+// Bóveda oficial dedicada para Custodia de Activos en Escrow (Asset Escrow / RaaS) en Testnet
 export const ASSET_ESCROW_VAULT_ADDRESS = 'GDZCRG36MYS3SRWJ6Z527R2C542MSCPEA6FX7AWK7GVJJA425JXDEU26';
 
 // Alias de retrocompatibilidad

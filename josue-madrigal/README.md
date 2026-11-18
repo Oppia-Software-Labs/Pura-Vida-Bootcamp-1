@@ -1,23 +1,24 @@
-# PuraRifa (Drawly) 🎟️ — Protocolo de Rifas Verificables en Stellar Testnet
+# Drawly 🎟️ — Protocolo de Rifas Verificables en Stellar Testnet
 
-**PuraRifa (Drawly)** es una plataforma descentralizada de rifas y sorteos auditables construida sobre **Stellar Testnet**, diseñada para erradicar el fraude y la desconfianza en sorteos tradicionales de Costa Rica y América Latina (como las rifas no reguladas de vehículos, motos o causas benéficas).
+**Drawly** es una plataforma descentralizada de rifas y sorteos auditables construida sobre **Stellar Testnet**, diseñada para erradicar el fraude y la desconfianza en sorteos tradicionales mediante criptografía y custodia transparente en el ledger de Stellar.
 
 ---
 
-## 🎯 ¿Qué es PuraRifa?
+## 🎯 ¿Qué es Drawly?
 
 En los sorteos tradicionales fuera de blockchain, los participantes sufren de incertidumbre constante: *¿quién garantiza que la tómbola no está arreglada? ¿los boletos vendidos son reales? ¿el ganador no es allegado del organizador?*
 
-**PuraRifa** soluciona esto reemplazando los intermediarios por **matemática y el ledger público de Stellar**:
+**Drawly** soluciona esto reemplazando los intermediarios por **matemática y el ledger público de Stellar**:
 * **Fondos bajo custodia transparente:** Cada pago de boleto entra a una cuenta Bóveda auditada en Testnet.
 * **Identidad inmutable en el ledger:** Cada entrada registra el alias del participante en el campo nativo `Memo.text` de la transacción.
 * **Aleatoriedad determinista y auditable:** La selección del ganador se realiza tomando la entropía pública del último ledger cerrado de Stellar, permitiendo que cualquier persona en el mundo verifique matemáticamente el resultado.
+* **Control de Ejecución de Sorteo:** Para evitar ejecuciones no autorizadas y permitir demostraciones controladas ante jurados o evaluadores, el motor de sorteo requiere el código de autorización **`stellar`** para ejecutar el snapshot del ledger.
 
 ---
 
 ## 📐 Verificabilidad Matemática On-Chain: ¿Cómo funciona?
 
-El motor de sorteo de PuraRifa opera bajo 4 pasos auditables:
+El motor de sorteo de Drawly opera bajo 4 pasos auditables:
 
 ```
 [Participante] ───► Envía 1 XLM a la Bóveda con Memo.text ("alias")
@@ -61,8 +62,8 @@ La interfaz cuenta con un selector minimalista estilo **Apple iOS Web3** que div
 * **Estado:** **100% Funcional On-Chain** en Stellar Testnet.
 
 ### 2. `Asset Launchpad (Raffle-as-a-Service - RaaS)`
-* **Mecánica:** Diseñado para empresas, concesionarios y ONGs que rifan premios físicos de alto valor (ej: **Toyota Hilux 4x4**).
-* **Garantía Smart Escrow & Soft-Cap:** Requiere una meta mínima de boletos (ej: 2,500 boletos). Si se alcanza, el contrato entrega el vehículo; si **no** se alcanza al vencer el plazo, **reembolsa automáticamente el 100% a cada comprador**.
+* **Mecánica:** Diseñado para empresas, desarrolladores y comunidades que rifan hardware o activos de alto valor (ej: **Workstation MacBook Pro M3 Max**).
+* **Garantía Smart Escrow & Soft-Cap:** Requiere una meta mínima de boletos (ej: 2,500 boletos). Si se alcanza, el contrato adjudica el activo; si **no** se alcanza al vencer el plazo, **reembolsa automáticamente el 100% a cada comprador**.
 * **Monetización:** Tarifa plana de despliegue de bóveda (50 XLM / $50 USD) + **3.5%** sobre el total recaudado.
 
 ---
