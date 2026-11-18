@@ -273,3 +273,43 @@ code { font-family: ui-monospace, Consolas, monospace; overflow-wrap: anywhere; 
   .topic-card p { font-size: .81rem; }
   .account-figures { grid-template-columns: 1fr; gap: 8px; }
 }
+
+/* Pago guiado */
+.payment-steps { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 5px; width: 100%; margin: 0; padding: 0; list-style: none; }
+.payment-steps li { display: flex; align-items: center; gap: 6px; border-bottom: 2px solid #344961; padding: 8px 5px; color: var(--muted); font-size: .8rem; font-weight: 650; }
+.payment-steps li[aria-current] { color: var(--mint); border-color: var(--teal); }
+.payment-steps li span { display: grid; flex-shrink: 0; place-items: center; width: 23px; height: 23px; border-radius: 50%; background: #1c3348; font-size: .72rem; }
+.payment-stage { gap: 11px; }
+.payment-stage h3 { font-size: 1.18rem; }
+.payment-stage h3:focus { outline: none; }
+.payment-form { display: grid; justify-items: start; gap: 10px; }
+.payment-form label { font-size: .88rem; font-weight: 700; }
+.payment-form input { width: min(100%, 220px); min-height: 42px; border: 1px solid #43617b; border-radius: 8px; padding: 8px 10px; color: var(--cream); background: #0a1627; }
+.payment-summary { display: grid; gap: 0; margin: 0; }
+.payment-summary div { display: grid; grid-template-columns: minmax(100px, 145px) minmax(0, 1fr); gap: 6px 12px; border-bottom: 1px solid #30435a; padding: 7px 0; }
+.payment-summary dt { font-weight: 720; color: var(--muted); font-size: .87rem; }
+.payment-summary dd { margin: 0; min-width: 0; overflow-wrap: anywhere; font-size: .87rem; }
+.testnet-check { display: flex; align-items: flex-start; gap: 10px; border: 1px solid #8a612d; border-radius: 9px; padding: 11px; background: #2b231e; color: #ffe0aa; font-size: .89rem; font-weight: 640; }
+.testnet-check input { accent-color: var(--amber); width: 18px; height: 18px; margin-top: 2px; flex-shrink: 0; }
+.celebration { position: relative; isolation: isolate; min-height: 258px; display: flex; align-items: center; overflow: hidden; border: 1px solid #3b666c; border-radius: 15px; background: #0b2130; }
+.celebration-copy { position: relative; z-index: 1; padding: 25px; max-width: 49ch; }
+.celebration-copy h3 { font: 540 clamp(2.15rem, 5.1vw, 4rem)/1.02 var(--heading); letter-spacing: -.065em; color: var(--mint); margin-block: 7px 11px; }
+.celebration-copy p + p { margin-top: 8px; }
+.celebration-art { position: absolute; inset: 0 0 0 42%; background: linear-gradient(90deg, #0b2130, transparent 52%), url("/playa-nocturna.svg") right 62% / cover; }
+.celebration-turtle { position: absolute; width: min(65%, 245px); top: 22%; right: 6%; filter: drop-shadow(0 0 22px #3fe4d4a8); animation: into-water 1.6s ease-out both; }
+@keyframes into-water { from { transform: translate(-15%, 30%) rotate(30deg); } to { transform: translate(0, 0) rotate(36deg); } }
+.plankton { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: #a9fff0; box-shadow: 0 0 13px 2px #22d3c5; animation: glimmer 3.1s ease-in-out infinite alternate; }
+.plankton-0 { left: 29%; top: 67%; } .plankton-1 { left: 44%; top: 29%; animation-delay: .25s; }
+.plankton-2 { left: 63%; top: 73%; animation-delay: .7s; } .plankton-3 { left: 73%; top: 61%; animation-delay: .6s; }
+.plankton-4 { left: 83%; top: 23%; animation-delay: .5s; } .plankton-5 { left: 92%; top: 47%; animation-delay: .2s; }
+.plankton-6 { left: 53%; top: 82%; animation-delay: .9s; }
+@keyframes glimmer { from { opacity: .32; } to { opacity: 1; } }
+@media (max-width: 600px) {
+  .payment-steps li { flex-direction: column; align-items: flex-start; gap: 3px; padding: 5px 2px; font-size: .65rem; overflow-wrap: anywhere; }
+  .payment-steps li span { width: 21px; height: 21px; }
+  .payment-summary div { grid-template-columns: 1fr; gap: 1px; }
+  .celebration { min-height: 330px; align-items: flex-start; }
+  .celebration-copy { padding: 16px; }
+  .celebration-art { inset: 30% 0 0; background-image: linear-gradient(180deg, #0b2130 6%, transparent 66%), url("/playa-nocturna.svg"); }
+  .celebration-turtle { width: min(52%, 174px); top: 38%; }
+}

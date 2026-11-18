@@ -2,17 +2,37 @@
 
 import { useEffect, useRef, useState } from "react";
 import { LEVELS, nextLevel, type Level } from "@/lib/journey";
+import type { PaymentReceipt } from "@/lib/stellar/payment";
+import { Celebration } from "./Celebration";
 import { Icon } from "./Icon";
 import { useJourney } from "./JourneyProvider";
 import { LevelAccount } from "./LevelAccount";
 import { LevelArt } from "./LevelArt";
 import { LevelNest } from "./LevelNest";
+import { LevelPayment } from "./LevelPayment";
 import { LevelWallet, WalletInstructions } from "./LevelWallet";
 import { ProgressPath } from "./ProgressPath";
+
+const RECEIPT_KEY = "baula-receipt-v1";
+
+function savedReceipt(): PaymentReceipt | null {
+  try {
+    const raw = localStorage.getItem(RECEIPT_KEY);
+    const data = raw ? JSON.parse(raw) as Partial<PaymentReceipt> : null;
+    if (data && typeof data.hash === "string" && /^[a-f0-9]{64}$/.test(data.hash) &&
+        typeof data.amount === "string" && /^\d{1,2}(?:\.\d{1,7})?$/.test(data.amount)) {
+      return { hash: data.hash, amount: data.amount };
+    }
+  } catch {
+    // El recorrido sigue disponible sin almacenamiento persistente.
+  }
+  return null;
+}
 
 export function JourneyView({ requested }: { requested?: Level }) {
   const { progress, ready, complete, wallet } = useJourney();
   const [selected, setSelected] = useState<Level>();
+  const [receipt, setReceipt] = useState<PaymentReceipt | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const current = Math.min(selected ?? requested ?? nextLevel(progress), nextLevel(progress)) as Level;
   const level = LEVELS[current - 1];
@@ -23,6 +43,17 @@ export function JourneyView({ requested }: { requested?: Level }) {
       heading.current?.focus({ preventScroll: true });
       heading.current?.scrollIntoView({ block: "start" });
     });
+  }
+
+  useEffect(() => {
+    setReceipt(savedReceipt());
+  }, []);
+
+  function finish(sent: PaymentReceipt) {
+    setReceipt(sent);
+    try { localStorage.setItem(RECEIPT_KEY, JSON.stringify(sent)); } catch { /* Sesión sin almacenamiento. */ }
+    complete(4);
+    goTo(4);
   }
 
   useEffect(() => {
@@ -54,7 +85,7 @@ export function JourneyView({ requested }: { requested?: Level }) {
           {!ready && <p role="status" className="muted">Cargando tu recorrido…</p>}
           {ready && current === 1 && <LevelNest onContinue={() => { complete(1); goTo(2); }}/>}
           {ready && current === 2 && <LevelWallet onContinue={() => { complete(2); goTo(3); }}/>}
-          {ready && current >= 3 && !wallet?.testnet && (
+          {ready && current >= 3 && !(current === 4 && progress === 4) && !wallet?.testnet && (
             <div className="level-flow">
               <WalletInstructions wrongNetwork={wallet?.testnet === false}/>
               <button className="button button-secondary" onClick={() => goTo(2)}><Icon name="back"/> Volver a la conexión</button>
@@ -63,7 +94,8 @@ export function JourneyView({ requested }: { requested?: Level }) {
           {ready && current === 3 && wallet?.testnet && (
             <LevelAccount key={wallet.address} address={wallet.address} onContinue={() => { complete(3); goTo(4); }}/>
           )}
-          {ready && current === 4 && wallet?.testnet && <p className="lead">Prepará tu primer pago de prueba.</p>}
+          {ready && current === 4 && progress === 4 && <Celebration receipt={receipt}/>}
+          {ready && current === 4 && progress < 4 && wallet?.testnet && <LevelPayment key={wallet.address} address={wallet.address} onSent={finish}/>}
         </div>
       </section>
     </main>
