@@ -3,7 +3,7 @@ import { getXlmBalance } from "@bloc/stellar/balance";
 
 type Result = { address: string; balance: bigint | null; error: Error | null };
 
-export function useBalance(address: string | null) {
+export function useBalance(address: string | null, refreshKey = 0) {
   const [result, setResult] = useState<Result | null>(null);
 
   useEffect(() => {
@@ -18,7 +18,7 @@ export function useBalance(address: string | null) {
     return () => {
       cancelled = true;
     };
-  }, [address]);
+  }, [address, refreshKey]);
 
   const current = result?.address === address ? result : null;
   return { balance: current?.balance ?? null, error: current?.error ?? null, loading: !current };

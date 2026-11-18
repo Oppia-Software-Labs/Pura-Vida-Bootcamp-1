@@ -13,8 +13,8 @@ type Wallet = {
   connect: () => void;
 };
 
-function Balance({ address }: { address: string }) {
-  const { balance, error, loading } = useBalance(address);
+function Balance({ address, refreshKey }: { address: string; refreshKey: number }) {
+  const { balance, error, loading } = useBalance(address, refreshKey);
 
   if (loading) return <div className="h-12 w-48 animate-pulse rounded-lg bg-raised motion-reduce:animate-none" />;
   if (error) return <Alert>{friendlyError(error)}</Alert>;
@@ -43,7 +43,7 @@ function Balance({ address }: { address: string }) {
   );
 }
 
-export default function ConnectWallet({ wallet }: { wallet: Wallet }) {
+export default function ConnectWallet({ wallet, refreshKey }: { wallet: Wallet; refreshKey: number }) {
   const { address, error, connecting, connect } = wallet;
 
   if (address) {
@@ -73,7 +73,7 @@ export default function ConnectWallet({ wallet }: { wallet: Wallet }) {
             <CopyButton text={address} label="Copiar dirección" />
           </div>
         </div>
-        <Balance address={address} />
+        <Balance address={address} refreshKey={refreshKey} />
       </section>
     );
   }

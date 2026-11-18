@@ -5,6 +5,7 @@ const rules: [pattern: string, message: string][] = [
   ["Wallet is not on testnet", "Cambia Varial a la red de prueba (testnet)."],
   ["Wallet signature failed", "La wallet no firmó. Verifica que esté en testnet."],
   ["Horizon request failed", "No se pudo conectar con la red. Intenta de nuevo en un momento."],
+  ["RPC request failed", "No se pudo leer el depósito en la red. Intenta de nuevo."],
   ["op_underfunded", "Te falta XLM para cubrir el depósito y la reserva."],
   ["op_low_reserve", "Te falta XLM para cubrir el depósito y la reserva."],
   ["op_malformed", "Los datos del depósito no son válidos."],

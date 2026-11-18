@@ -53,10 +53,12 @@ function Section({ step, title, children }: { step: number; title: string; child
   );
 }
 
-export default function CreateDeposit({ address }: { address: string }) {
+type CreateDepositProps = { address: string; refreshKey: number; onCreated: () => void };
+
+export default function CreateDeposit({ address, refreshKey, onCreated }: CreateDepositProps) {
   const now = useNow();
-  const { balance } = useBalance(address);
-  const { creating, error, depositId, createdPlan, create, reset } = useCreateDeposit(address);
+  const { balance } = useBalance(address, refreshKey);
+  const { creating, error, depositId, createdPlan, create, reset } = useCreateDeposit(address, onCreated);
 
   const [landlord, setLandlord] = useState("");
   const [amount, setAmount] = useState("");

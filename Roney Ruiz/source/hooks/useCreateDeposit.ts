@@ -5,7 +5,7 @@ import { saveDepositId } from "@bloc/storage/deposits";
 import { signXdr } from "@bloc/wallet/varial";
 import type { DepositPlan } from "@bloc/entity/types";
 
-export function useCreateDeposit(address: string) {
+export function useCreateDeposit(address: string, onCreated?: () => void) {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [depositId, setDepositId] = useState<string | null>(null);
@@ -22,13 +22,14 @@ export function useCreateDeposit(address: string) {
         saveDepositId(id);
         setDepositId(id);
         setCreatedPlan(plan);
+        onCreated?.();
       } catch (e) {
         setError(e instanceof Error ? e : new Error(String(e)));
       } finally {
         setCreating(false);
       }
     },
-    [address],
+    [address, onCreated],
   );
 
   const reset = useCallback(() => {

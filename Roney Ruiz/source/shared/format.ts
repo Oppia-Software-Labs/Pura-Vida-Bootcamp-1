@@ -26,6 +26,17 @@ export function formatDuration(seconds: number): string {
   return `${Math.round(hours / 24)} días`;
 }
 
+export function formatCountdown(seconds: number): string {
+  const total = Math.max(0, Math.floor(seconds));
+  const days = Math.floor(total / 86_400);
+  const hours = Math.floor((total % 86_400) / 3600);
+  const minutes = Math.floor((total % 3600) / 60);
+  const pad = (value: number) => String(value).padStart(2, "0");
+  if (days > 0) return `${days} d ${hours} h`;
+  if (hours > 0) return `${hours}:${pad(minutes)}:${pad(total % 60)}`;
+  return `${pad(minutes)}:${pad(total % 60)}`;
+}
+
 export function avatarGradient(address: string): string {
   const hue = [...address].reduce((sum, char) => sum + char.charCodeAt(0), 0) % 360;
   return `linear-gradient(135deg, hsl(${hue} 80% 65%), hsl(${(hue + 60) % 360} 80% 52%))`;

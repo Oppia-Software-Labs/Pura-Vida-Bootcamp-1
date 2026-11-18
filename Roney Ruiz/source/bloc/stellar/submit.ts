@@ -2,7 +2,7 @@ import { Transaction, TransactionBuilder, TransactionFailedError } from "@stella
 import { network } from "@config/network";
 import { horizon } from "./servers";
 
-export async function submitCreateDeposit(signedXdr: string): Promise<string> {
+export async function submitSigned(signedXdr: string): Promise<Transaction> {
   const transaction = TransactionBuilder.fromXdr(signedXdr, network.passphrase);
   if (!(transaction instanceof Transaction)) throw new Error("Unexpected fee bump transaction");
 
@@ -16,5 +16,10 @@ export async function submitCreateDeposit(signedXdr: string): Promise<string> {
     throw new Error("Horizon request failed");
   }
 
+  return transaction;
+}
+
+export async function submitCreateDeposit(signedXdr: string): Promise<string> {
+  const transaction = await submitSigned(signedXdr);
   return transaction.getClaimableBalanceId(0);
 }

@@ -1,4 +1,10 @@
 const KEY = "plazo.deposits";
+const BALANCE_ID = /^[0-9a-f]{72}$/i;
+
+export function readSharedDepositId(): string | null {
+  const id = new URLSearchParams(location.search).get("deposit");
+  return id && BALANCE_ID.test(id) ? id.toLowerCase() : null;
+}
 
 export function loadDepositIds(): string[] {
   try {
