@@ -10,8 +10,8 @@ Estado: ✅ hecho · 🔄 en curso · ⬜ pendiente
 | 1 | Conectar wallet (requisito mínimo) | ✅ |
 | 2 | Entity con tests | ✅ |
 | 3 | Crear depósito | ✅ |
-| 4 | Listar y reclamar | ⬜ siguiente |
-| 5 | Cierre y entrega | ⬜ |
+| 4 | Listar y reclamar | ✅ |
+| 5 | Cierre y entrega | ⬜ siguiente |
 | 6 | Reto: tope de reparaciones | ⬜ opcional |
 
 Los mensajes de commit sugeridos para cada fase están en [`context/structure.md`](context/structure.md#9-plan-de-commits).
@@ -58,16 +58,16 @@ Pantalla 2.
 - ✅ `friendlyError`: errores en inglés traducidos a mensajes en español.
 - ✅ Mostrar el link `?deposit=<id>` y guardar el id en `localStorage`.
 
-## Fase 4 · Listar y reclamar ⬜
+## Fase 4 · Listar y reclamar ✅
 
 Pantalla 3 y detalle por link.
 
-- ⬜ `listDepositsFor` con Horizon, por claimant.
-- ⬜ `getDepositById` con RPC, para el link `?deposit=<id>`.
-- ⬜ Hooks `useDeposits` y `useNow` (cuenta regresiva).
-- ⬜ `DepositCard`: rol, monto, estado y botón o cuenta regresiva.
-- ⬜ `buildClaim` y flujo de reclamo con firma.
-- ⬜ Manejo de `CANNOT_CLAIM` y `DOES_NOT_EXIST`.
+- ✅ `listDepositsFor` con Horizon, por claimant.
+- ✅ `getDepositById` con RPC, para el link `?deposit=<id>`.
+- ✅ Hooks `useDeposits` y `useNow` (cuenta regresiva).
+- ✅ `DepositCard`: rol, monto, estado y botón o cuenta regresiva.
+- ✅ `buildClaim` y flujo de reclamo con firma.
+- ✅ Manejo de `CANNOT_CLAIM` y `DOES_NOT_EXIST`.
 
 ## Fase 5 · Cierre y entrega ⬜
 

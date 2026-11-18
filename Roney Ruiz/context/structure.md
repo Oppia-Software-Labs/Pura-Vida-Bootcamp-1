@@ -69,12 +69,13 @@ plazo/
    ├─ index.css                  # @import "tailwindcss"
    ├─ config/
    │  └─ network.ts
-   ├─ hooks/                     # useWallet, useBalance, useCreateDeposit, useNow, useDeposits
+   ├─ hooks/                     # useWallet, useBalance, useCreateDeposit, useDeposits, useClaim, useNow
    ├─ bloc/
    │  ├─ entity/                 # puro, con tests
    │  │  ├─ types.ts             # Deposit, DepositPlan, Role, Status
    │  │  ├─ money.ts             # stroops, BigInt, tope de reparaciones
    │  │  ├─ plan.ts              # validar input → DepositPlan
+   │  │  ├─ deposits.ts          # balance reclamable → Deposit (solo forma Plazo)
    │  │  ├─ predicates.ts        # modelo propio de predicados
    │  │  ├─ evaluate.ts          # evalPred, nextChangeAt
    │  │  └─ status.ts            # estado y acción por rol
@@ -85,7 +86,8 @@ plazo/
    │  │  ├─ buildClaim.ts        # balanceId → XDR
    │  │  ├─ predicate.ts         # Predicate → ClaimPredicate del SDK
    │  │  ├─ submit.ts            # enviar XDR firmado, extraer IDs
-   │  │  └─ listDeposits.ts      # consulta por claimant → Deposit[]
+   │  │  ├─ listDeposits.ts      # Horizon, por claimant → Deposit[]
+   │  │  └─ getDeposit.ts        # RPC, por ID → Deposit
    │  ├─ storage/
    │  │  └─ deposits.ts          # ids de depósitos en localStorage
    │  └─ wallet/
@@ -93,7 +95,7 @@ plazo/
    └─ shared/
       ├─ ConnectWallet.tsx       # pantalla 1 (requisito de la tarea)
       ├─ CreateDeposit.tsx       # pantalla 2
-      ├─ MyDeposits.tsx          # pantalla 3
+      ├─ MyDeposits.tsx          # pantalla 3: lista, link y reclamo
       ├─ DepositCard.tsx         # rol, estado, acción
       └─ friendlyError.ts        # error en inglés → mensaje en español
 ```
@@ -133,6 +135,8 @@ type Deposit = {
   id: string;              // balance ID
   amountStroops: bigint;
   myRole: Role;
+  tenant: string;          // G...
+  landlord: string;        // G...
   landlordPredicate: Predicate;
   tenantPredicate: Predicate;
 };
@@ -162,8 +166,9 @@ Los identificadores van en inglés; la UI los muestra traducidos. El estado no s
 | stellar | `buildCreateDeposit(plan)` | arma la transacción (1 o 2 operaciones) y devuelve XDR |
 | stellar | `buildClaim(balanceId, claimant)` | arma el reclamo y devuelve XDR |
 | stellar | `submitCreateDeposit(signedXdr)` | envía y devuelve el ID del balance; los rechazos se lanzan como `Transaction rejected: <código>` |
-| stellar | `listDepositsFor(address)` | consulta por claimant y mapea a `Deposit[]` |
-| stellar | `getDepositById(id)` | lectura por ID (RPC; plan B de Horizon) |
+| entity | `toDeposit(raw, myAddress)` / `parsePredicate(json)` | mapea un balance reclamable a `Deposit`; descarta lo que no tenga la forma de Plazo |
+| stellar | `listDepositsFor(address)` | Horizon por claimant, mapeado a `Deposit[]` |
+| stellar | `getDepositById(id, address)` | lectura por ID con RPC (`getClaimableBalance`); `null` si no existe o no es de Plazo |
 | shared | `friendlyError(err)` | traduce un error en inglés a un mensaje en español |
 
 ## 7. Flujos
