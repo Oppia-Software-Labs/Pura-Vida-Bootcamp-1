@@ -128,3 +128,25 @@
     @apply font-sans;
     }
 }
+
+.dark {
+  --background: oklch(0.16 0.025 275);
+  --foreground: oklch(0.97 0.01 275);
+  --card: oklch(0.21 0.03 275);
+  --card-foreground: oklch(0.97 0.01 275);
+  --primary: oklch(0.88 0.16 95);
+  --primary-foreground: oklch(0.2 0.03 275);
+  --muted-foreground: oklch(0.72 0.03 275);
+  --border: oklch(1 0 0 / 12%);
+  --ring: oklch(0.88 0.16 95);
+}
+
+/* Fondo de "estrellas" suave, sin imágenes */
+.stars {
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, oklch(1 0 0 / 60%) 50%, transparent 51%),
+    radial-gradient(1px 1px at 70% 20%, oklch(1 0 0 / 45%) 50%, transparent 51%),
+    radial-gradient(1.5px 1.5px at 85% 70%, oklch(1 0 0 / 50%) 50%, transparent 51%),
+    radial-gradient(1px 1px at 35% 80%, oklch(1 0 0 / 40%) 50%, transparent 51%),
+    radial-gradient(60rem 30rem at 50% -10%, oklch(0.35 0.12 280 / 45%), transparent);
+}
