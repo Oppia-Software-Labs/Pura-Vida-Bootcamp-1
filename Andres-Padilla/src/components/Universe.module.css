@@ -1,0 +1,161 @@
+.root {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+  color: #fff;
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+.canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.canvas canvas {
+  display: block;
+}
+
+.loading {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #8fa8ff;
+  font-size: 14px;
+  letter-spacing: 0.3em;
+  background: #000;
+  transition: opacity 1.2s;
+  z-index: 10;
+}
+
+.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hero {
+  position: absolute;
+  top: 18%;
+  left: 0;
+  right: 0;
+  padding: 0 16px;
+  text-align: center;
+  pointer-events: none;
+  text-shadow: 0 0 24px rgba(120, 160, 255, 0.7);
+  animation: heroIn 2.5s ease 1s both;
+}
+
+@keyframes heroIn {
+  from {
+    opacity: 0;
+    letter-spacing: 0.15em;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.hero h1 {
+  margin: 0;
+  font-weight: 200;
+  font-size: clamp(36px, 7vw, 72px);
+  letter-spacing: 0.45em;
+  text-indent: 0.45em;
+  text-transform: uppercase;
+}
+
+.hero p {
+  margin: 10px 0 0;
+  font-size: 13px;
+  opacity: 0.65;
+  letter-spacing: 0.05em;
+}
+
+.mode {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 5;
+  padding: 10px 18px;
+  font: inherit;
+  font-size: 14px;
+  letter-spacing: 0.08em;
+  color: #fff;
+  cursor: pointer;
+  border-radius: 999px;
+  background: rgba(40, 70, 160, 0.35);
+  border: 1px solid rgba(140, 180, 255, 0.5);
+  backdrop-filter: blur(6px);
+  transition: background 0.2s;
+}
+
+.mode:hover {
+  background: rgba(60, 100, 220, 0.55);
+}
+
+/* Pilotar necesita teclado: en pantallas táctiles no se ofrece */
+@media (hover: none) and (pointer: coarse) {
+  .mode {
+    display: none;
+  }
+}
+
+.help {
+  position: absolute;
+  top: 64px;
+  left: 16px;
+  color: #cfe0ff;
+  font-size: 12.5px;
+  line-height: 1.7;
+  background: rgba(5, 10, 25, 0.55);
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid rgba(140, 180, 255, 0.2);
+  backdrop-filter: blur(6px);
+}
+
+.help b {
+  display: inline-block;
+  min-width: 64px;
+  color: #fff;
+}
+
+.hud {
+  position: absolute;
+  right: 28px;
+  bottom: 26px;
+  color: #9fd0ff;
+  text-align: right;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  text-shadow: 0 0 12px rgba(80, 170, 255, 0.8);
+  pointer-events: none;
+}
+
+.num {
+  font-size: 42px;
+  font-weight: 300;
+  color: #fff;
+}
+
+.lbl {
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  opacity: 0.7;
+}
+
+.turbo {
+  color: #ff8a3c;
+  font-size: 12px;
+  letter-spacing: 0.3em;
+}
+
+@media (max-width: 640px) {
+  .hero {
+    top: 14%;
+  }
+
+  .hero p {
+    display: none;
+  }
+}
