@@ -1,6 +1,11 @@
-import { connectWallet, getConnectedAddress, getWalletNetwork } from "./wallet.js";
-import { getXlmBalance, fundWithFriendbot } from "./stellar.js";
-import { NETWORK_PASSPHRASE, EXPLORER_ACCOUNT_URL } from "./config.js";
+import {
+  connectWallet,
+  getConnectedAddress,
+  getWalletNetwork,
+  signWithWallet,
+} from "./wallet.js";
+import { getXlmBalance, fundWithFriendbot, sendPayment } from "./stellar.js";
+import { NETWORK_PASSPHRASE, EXPLORER_ACCOUNT_URL, EXPLORER_TX_URL } from "./config.js";
 
 const app = document.querySelector("#app");
 
@@ -39,12 +44,60 @@ function render() {
       <p id="wallet-msg" class="msg"></p>
     </section>
     ${state.address ? renderBalance() : ""}
+    ${state.address && state.balance ? renderSend() : ""}
   `;
 
   document.querySelector("#connect")?.addEventListener("click", onConnect);
   document.querySelector("#disconnect")?.addEventListener("click", onDisconnect);
   document.querySelector("#refresh")?.addEventListener("click", loadBalance);
   document.querySelector("#fund")?.addEventListener("click", onFund);
+  document.querySelector("#send-form")?.addEventListener("submit", onSend);
+}
+
+function renderSend() {
+  return `
+    <section class="card">
+      <h2>3 · Enviar XLM</h2>
+      <form id="send-form">
+        <label>Destino
+          <input name="to" placeholder="G…" required autocomplete="off" />
+        </label>
+        <label>Monto (XLM)
+          <input name="amount" type="number" min="0.0000001" step="0.0000001" placeholder="10" required />
+        </label>
+        <label>Memo (opcional)
+          <input name="memo" maxlength="28" placeholder="¡Pura vida!" />
+        </label>
+        <button type="submit" id="send-btn">Firmar con Freighter y enviar</button>
+      </form>
+      <p id="send-msg" class="msg"></p>
+    </section>
+  `;
+}
+
+async function onSend(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const data = new FormData(form);
+  const btn = form.querySelector("#send-btn");
+  btn.disabled = true;
+  setMessage("send-msg", "Esperando tu firma en Freighter…");
+  try {
+    const result = await sendPayment({
+      from: state.address,
+      to: data.get("to").trim(),
+      amount: data.get("amount"),
+      memo: data.get("memo").trim(),
+      sign: (xdr) => signWithWallet(xdr, NETWORK_PASSPHRASE, state.address),
+    });
+    await loadBalance();
+    const msg = document.querySelector("#send-msg");
+    msg.className = "msg ok";
+    msg.innerHTML = `✅ ¡Enviado! <a href="${EXPLORER_TX_URL}${result.hash}" target="_blank" rel="noopener">Ver transacción ↗</a>`;
+  } catch (err) {
+    setMessage("send-msg", err.message, "error");
+    btn.disabled = false;
+  }
 }
 
 function renderBalance() {
