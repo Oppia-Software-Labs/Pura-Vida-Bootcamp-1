@@ -1,42 +1,47 @@
 # Plazo
 
-Depósito de garantía sin custodio sobre Stellar testnet: el dinero queda en un claimable balance con predicados de tiempo (`E` fin de contrato, `D` plazo, `E < D`) y la red decide quién puede reclamar. Práctica del Pura Vida Bootcamp; solo testnet, sin validez legal.
+A custodian-free security deposit on Stellar testnet: the money sits in a claimable balance with time predicates (`E` end of contract, `D` deadline, `E < D`), and the network decides who can claim. A Pura Vida Bootcamp exercise; testnet only, no legal validity.
 
-## Documentación
+## Documentation
 
-Lee antes de cambiar código:
+Read before changing code (the docs are written in Spanish):
 
-- `context/approach.md`: la idea, el alcance y las decisiones cerradas.
-- `context/structure.md`: stack, capas, carpetas, modelo de datos y flujos.
-- `context/expertise.md`: tecnicismos de Stellar (claimable balances, predicados, Horizon vs RPC).
+- `context/approach.md`: the idea, the scope and the closed decisions.
+- `context/structure.md`: stack, layers, folders, data model and flows.
+- `context/expertise.md`: Stellar concepts (claimable balances, predicates, Horizon vs RPC).
 
-Los nombres de archivos y funciones de esos docs son propuestas orientativas. Los nombres de paquetes y métodos de Stellar o Varial se confirman con Stellar Raven antes de codificar, no se asumen.
+File and function names in those docs are guiding proposals, not a contract. Confirm package and method names for Stellar or Varial with Stellar Raven before coding; do not assume them.
 
-## Comandos
+## Commands
 
-Gestor: Bun.
+Package manager: Bun.
 
-- `bun run dev`: servidor de desarrollo.
-- `bun run build`: `tsc -b` y build de Vite.
+- `bun run dev`: dev server.
+- `bun run build`: `tsc -b` plus the Vite build.
 - `bun run lint`: oxlint.
-- `bun run test`: Vitest (solo dominio).
+- `bun run test`: Vitest (domain only).
 
-## Arquitectura
+## Architecture
 
-SPA solo frontend, sin backend. El código vive en `source/`:
+Frontend-only SPA, no backend. Code lives in `source/`:
 
-- `domain/`: lógica pura. No importa React, wallet ni red. Se prueba con Vitest.
-- `stellar/` y `wallet/`: adaptadores a la red y a Varial (`@stellar/varial-sdk`, una sola wallet).
-- `ui/`: pantallas, hooks y `friendlyError`.
+- `domain/`: pure logic. It does not import React, the wallet or the network.
+- `stellar/` and `wallet/`: adapters to the network and to Varial (`@stellar/varial-sdk`, a single wallet).
+- `ui/`: screens, hooks and `friendlyError`.
 
-Red fija en testnet, definida en un solo lugar (`source/config/network.ts`).
+The network is fixed to testnet and defined in one place (`source/config/network.ts`).
 
-## Convenciones
+## Tests
 
-- Comillas dobles por defecto.
-- Identificadores y errores lanzados en inglés; solo el texto visible de la UI va en español. El código lanza errores en inglés y la UI los traduce.
-- Estilos con Tailwind.
-- Dinero siempre en stroops con `BigInt`; nunca `number` de JS.
-- Nunca pedir, guardar ni registrar llaves secretas o frases semilla.
+- Vitest, configured in `vitest.config.ts`; only pure domain logic is tested, with no network or wallet.
+- Tests live next to the code they cover, as `*.test.ts` files (for example `source/domain/evaluate.test.ts`).
 
-Las reglas detalladas están en `.claude/rules/` (idioma del código, cambios mínimos, mensajes de commit).
+## Conventions
+
+- Double quotes by default.
+- Identifiers and thrown errors are in English; only the visible UI text is Spanish. Code throws English errors and the UI translates them.
+- Styling with Tailwind.
+- Money is always stroops as `BigInt`; never a JS `number`.
+- Never ask for, store or log secret keys or seed phrases.
+
+Detailed rules are in `.claude/rules/` (code language, lean changes, commit messages).
