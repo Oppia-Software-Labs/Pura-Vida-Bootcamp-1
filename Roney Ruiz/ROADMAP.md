@@ -11,7 +11,7 @@ Estado: ✅ hecho · 🔄 en curso · ⬜ pendiente
 | 2 | Entity con tests | ✅ |
 | 3 | Crear depósito | ✅ |
 | 4 | Listar y reclamar | ✅ |
-| 5 | Cierre y entrega | ⬜ siguiente |
+| 5 | Cierre y entrega | 🔄 |
 | 6 | Reto: tope de reparaciones | ⬜ opcional |
 
 Los mensajes de commit sugeridos para cada fase están en [`context/structure.md`](context/structure.md#9-plan-de-commits).
@@ -69,11 +69,11 @@ Pantalla 3 y detalle por link.
 - ✅ `buildClaim` y flujo de reclamo con firma.
 - ✅ Manejo de `CANNOT_CLAIM` y `DOES_NOT_EXIST`.
 
-## Fase 5 · Cierre y entrega ⬜
+## Fase 5 · Cierre y entrega 🔄
 
-- ⬜ Prueba completa en testnet con dos cuentas fondeadas con Friendbot.
-- ⬜ Corrida A: `E` = +2 min, `D` = +5 min; reclama el arrendador en su ventana.
-- ⬜ Corrida B: nadie reclama; después de `D` recupera el inquilino.
+- ✅ Prueba completa en testnet con dos cuentas fondeadas con Friendbot.
+- ✅ Corrida A: `E` = +2 min, `D` = +5 min; reclama el arrendador en su ventana.
+- ✅ Corrida B: nadie reclama; después de `D` recupera el inquilino.
 - ⬜ Completar el `README.md`: nombre completo y sección de uso de Raven.
 - ⬜ Copiar el proyecto a la carpeta con el nombre completo en el fork.
 - ⬜ Rama `feature/<nombre>`, al menos 5 commits propios y PR a `main` del repo original.
