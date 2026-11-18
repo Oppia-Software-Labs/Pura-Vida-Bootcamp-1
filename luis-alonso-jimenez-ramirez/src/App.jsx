@@ -11,7 +11,7 @@ function App() {
           <div>
             <h1 className="topbar__title">Stellar Testnet dApp</h1>
             <p className="topbar__subtitle">
-              Pura Vida Bootcamp · Interfaz base
+              Pura Vida Bootcamp · Integración con Freighter / Varial y Horizon Testnet
             </p>
           </div>
         </div>
@@ -24,7 +24,7 @@ function App() {
 
       <footer className="footer">
         <span>
-          Preparado para <code>@stellar/stellar-sdk</code> y{" "}
+          Integrado con <code>@stellar/stellar-sdk</code> y{" "}
           <code>@stellar/varial-sdk</code>
         </span>
       </footer>
