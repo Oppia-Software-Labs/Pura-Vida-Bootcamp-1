@@ -4,6 +4,7 @@ import { StateMessage } from "@/components/feedback/state-message";
 import { Button } from "@/components/ui/button";
 import { BalanceCard } from "@/features/dashboard/components/balance-card";
 import { useAccount } from "@/features/dashboard/hooks/use-account";
+import { SendPaymentForm } from "@/features/payments/components/send-payment-form";
 import { TransactionList } from "@/features/transactions/components/transaction-list";
 import { useTransactions } from "@/features/transactions/hooks/use-transactions";
 import {
@@ -92,6 +93,25 @@ export function DashboardView() {
               />
             </div>
           </div>
+
+          {/*
+            Deliberately not gated on `funded`: a successful payment calls
+            refreshAll, which flips the account to `loading`, and a stricter gate
+            would unmount the form one frame after the receipt appeared — taking
+            the transaction hash away from the user who needs it. While loading,
+            `spendableXlm` is null and the form disables its own submit button.
+          */}
+          {address !== null &&
+          state.status === "connected" &&
+          account.status !== "unfunded" &&
+          account.status !== "error" ? (
+            <SendPaymentForm
+              address={address}
+              networkPassphrase={state.networkPassphrase}
+              spendableXlm={account.snapshot?.spendableXlm ?? null}
+              onSent={refreshAll}
+            />
+          ) : null}
         </div>
       )}
     </>

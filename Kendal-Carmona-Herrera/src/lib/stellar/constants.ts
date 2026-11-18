@@ -28,6 +28,12 @@ export const MEMO_TEXT_MAX_BYTES = 28;
 export const TRANSACTION_TIMEOUT_SECONDS = 180;
 export const TRANSACTIONS_PAGE_SIZE = 10;
 
+/**
+ * Protocol base fee in stroops (0.00001 XLM). It is enough for a classic Testnet
+ * payment, where surge pricing is not a practical concern.
+ */
+export const BASE_FEE_STROOPS = 100;
+
 export const STELLAR_ADDRESS_PREFIX = "G";
 export const STELLAR_ADDRESS_LENGTH = 56;
 

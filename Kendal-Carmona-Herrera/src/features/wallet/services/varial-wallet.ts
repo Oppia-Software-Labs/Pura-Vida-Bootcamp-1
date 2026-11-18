@@ -123,6 +123,45 @@ export async function readWalletNetwork(): Promise<{
 }
 
 /**
+ * Asks the extension to sign the prepared XDR and returns only what it signed.
+ * The SDK reports a refusal by resolving with an `error` field instead of throwing,
+ * so both channels are checked; a blank signature is rejected as well.
+ */
+export async function signPaymentTransaction(
+  xdr: string,
+  networkPassphrase: string,
+  address: string,
+): Promise<string> {
+  try {
+    const result = await varialSdk.signTransaction(xdr, {
+      networkPassphrase,
+      address,
+    });
+
+    if (result.error !== undefined) {
+      const mapped = mapSdkError(result.error);
+      throw new WalletAdapterError(mapped.code, mapped.message);
+    }
+
+    const signedXdr = result.signedTxXdr.trim();
+
+    if (signedXdr === "") {
+      throw new WalletAdapterError(
+        "unavailable",
+        "The wallet returned an empty signature.",
+      );
+    }
+
+    return signedXdr;
+  } catch (error) {
+    if (error instanceof WalletAdapterError) throw error;
+
+    const mapped = mapSdkError(error);
+    throw new WalletAdapterError(mapped.code, mapped.message);
+  }
+}
+
+/**
  * Polls the extension for account and network changes. Creation failures are
  * returned as a no-op handle instead of throwing, so a wallet that disappears
  * mid-session never breaks the calling component.
