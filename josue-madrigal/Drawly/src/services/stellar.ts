@@ -12,8 +12,14 @@ export const STELLAR_CONFIG = {
   explorerTxUrl: 'https://stellar.expert/explorer/testnet/tx',
 };
 
-// Dirección pública oficial preconfigurada como 'Bóveda del Sorteo' en Testnet (fondeada con Friendbot)
-export const RAFFLE_VAULT_ADDRESS = 'GBCDCSUZWND6IGDT6CGPQAN35QSDOPAIXVKJ47LMSGP4GYPLVYWJYVFI';
+// Bóveda oficial del Pozo Dinámico (Pari-Mutuel) en Testnet
+export const DYNAMIC_POOL_VAULT_ADDRESS = 'GBCDCSUZWND6IGDT6CGPQAN35QSDOPAIXVKJ47LMSGP4GYPLVYWJYVFI';
+
+// Bóveda oficial dedicada para Custodia de Activos Físicos (Toyota Hilux / Asset Escrow) en Testnet
+export const ASSET_ESCROW_VAULT_ADDRESS = 'GDZCRG36MYS3SRWJ6Z527R2C542MSCPEA6FX7AWK7GVJJA425JXDEU26';
+
+// Alias de retrocompatibilidad
+export const RAFFLE_VAULT_ADDRESS = DYNAMIC_POOL_VAULT_ADDRESS;
 
 // Instancia única del servidor Horizon para Testnet
 export const horizonServer = new StellarSdk.Horizon.Server(STELLAR_CONFIG.horizonUrl);
@@ -91,12 +97,68 @@ export async function requestFriendbotFunding(publicKey: string): Promise<{ succ
 export interface PurchaseTicketParams {
   userAddress: string;
   alias: string;
+  destinationVault?: string;
+  amount?: string;
   onStatusUpdate?: (status: string) => void;
 }
 
 export interface PurchaseTicketResult {
   hash: string;
   ledger: number;
+}
+
+export interface ParticipantEntry {
+  ticketNumber: number;
+  alias: string;
+  sourceAccount: string;
+  hash: string;
+  createdAt: string;
+}
+
+export interface LiveParticipantsResult {
+  entries: ParticipantEntry[];
+  totalPotXlm: number;
+}
+
+/**
+ * Consulta la API de Horizon Testnet (server.transactions().forAccount(POOL_ADDRESS))
+ * para listar todas las entradas válidas al sorteo filtrando transacciones exitosas con Memo.text
+ */
+export async function fetchLiveParticipants(
+  vaultAddress: string = RAFFLE_VAULT_ADDRESS
+): Promise<LiveParticipantsResult> {
+  try {
+    const response = await horizonServer
+      .transactions()
+      .forAccount(vaultAddress)
+      .order('asc')
+      .limit(200)
+      .call();
+
+    // Filtra las transacciones exitosas que tengan un Memo de tipo texto
+    const validTxs = response.records.filter(
+      (tx) => tx.successful && tx.memo_type === 'text' && !!tx.memo
+    );
+
+    const entries: ParticipantEntry[] = validTxs.map((tx, idx) => ({
+      ticketNumber: idx + 1,
+      alias: tx.memo || 'Anónimo',
+      sourceAccount: tx.source_account,
+      hash: tx.hash,
+      createdAt: tx.created_at,
+    }));
+
+    // Cada entrada equivale a 1 XLM en el pozo
+    const totalPotXlm = entries.length * 1;
+
+    return {
+      entries,
+      totalPotXlm,
+    };
+  } catch (error) {
+    console.error('Error al consultar participantes en Horizon:', error);
+    throw error;
+  }
 }
 
 /**
@@ -106,6 +168,8 @@ export interface PurchaseTicketResult {
 export async function buyRaffleTicket({
   userAddress,
   alias,
+  destinationVault = DYNAMIC_POOL_VAULT_ADDRESS,
+  amount = '1',
   onStatusUpdate,
 }: PurchaseTicketParams): Promise<PurchaseTicketResult> {
   const trimmedAlias = alias.trim();
@@ -131,23 +195,24 @@ export async function buyRaffleTicket({
     throw new Error('Error al cargar la cuenta desde Horizon.');
   }
 
-  // Verificar balance suficiente (al menos 1 XLM + comisión base)
+  // Verificar balance suficiente
   const nativeBalance = account.balances.find((b: { asset_type: string; balance: string }) => b.asset_type === 'native');
   const availableXlm = nativeBalance ? parseFloat(nativeBalance.balance) : 0;
-  if (availableXlm < 1.001) {
-    throw new Error(`Balance insuficiente (${availableXlm.toFixed(2)} XLM). Necesitas al menos 1 XLM más comisión.`);
+  const cost = parseFloat(amount);
+  if (availableXlm < cost + 0.001) {
+    throw new Error(`Balance insuficiente (${availableXlm.toFixed(2)} XLM). Necesitas al menos ${cost} XLM más comisión.`);
   }
 
-  onStatusUpdate?.('Construyendo transacción con 1 XLM y Memo.text...');
+  onStatusUpdate?.(`Construyendo transacción con ${amount} XLM y Memo.text...`);
   const transaction = new StellarSdk.TransactionBuilder(account, {
     fee: StellarSdk.BASE_FEE,
     networkPassphrase: STELLAR_CONFIG.networkPassphrase,
   })
     .addOperation(
       StellarSdk.Operation.payment({
-        destination: RAFFLE_VAULT_ADDRESS,
+        destination: destinationVault,
         asset: StellarSdk.Asset.native(),
-        amount: '1', // 1 XLM por boleto
+        amount: amount,
       })
     )
     .addMemo(StellarSdk.Memo.text(trimmedAlias))

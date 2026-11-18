@@ -100,8 +100,9 @@ export const TicketPurchase: React.FC<TicketPurchaseProps> = ({
         alias: alias.trim(),
       });
 
-      // Actualizar el balance del usuario
+      // Actualizar el balance del usuario y notificar compra para recarga automática
       onBalanceRefreshNeeded();
+      window.dispatchEvent(new Event('stellar:ticket-bought'));
       setAlias('');
     } catch (err: unknown) {
       const error = err as Error;

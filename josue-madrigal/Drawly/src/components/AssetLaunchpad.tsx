@@ -13,7 +13,7 @@ import {
   RotateCcw,
 } from 'lucide-react';
 import {
-  RAFFLE_VAULT_ADDRESS,
+  ASSET_ESCROW_VAULT_ADDRESS,
   STELLAR_CONFIG,
   buyRaffleTicket,
   formatAddress,
@@ -83,10 +83,12 @@ export const AssetLaunchpad: React.FC<AssetLaunchpadProps> = ({
 
     setIsBuying(true);
     try {
-      // Compra 1 boleto enviando los XLM a la bóveda con el alias en Memo.text
+      // Compra 1 boleto enviando los 10 XLM a la bóveda dedicada de escrow con el alias en Memo.text
       const result = await buyRaffleTicket({
         userAddress: connectedAddress,
         alias: `AUTO:${buyerAlias.trim().slice(0, 23)}`,
+        destinationVault: ASSET_ESCROW_VAULT_ADDRESS,
+        amount: '10',
       });
 
       setPurchaseTxHash(result.hash);
@@ -207,14 +209,14 @@ export const AssetLaunchpad: React.FC<AssetLaunchpadProps> = ({
             </div>
           </div>
 
-          {/* Bóveda de Custodia */}
+          {/* Bóveda de Custodia Dedicada para el Activo */}
           <div className="pt-4 border-t border-white/5 flex items-center justify-between text-xs font-mono text-neutral-500">
             <div className="flex items-center gap-2">
               <Lock className="w-3.5 h-3.5 text-neutral-400" />
-              <span>Bóveda Escrow: {formatAddress(RAFFLE_VAULT_ADDRESS, 6)}</span>
+              <span>Bóveda Escrow: {formatAddress(ASSET_ESCROW_VAULT_ADDRESS, 6)}</span>
             </div>
             <a
-              href={`${STELLAR_CONFIG.explorerAccountUrl}/${RAFFLE_VAULT_ADDRESS}`}
+              href={`${STELLAR_CONFIG.explorerAccountUrl}/${ASSET_ESCROW_VAULT_ADDRESS}`}
               target="_blank"
               rel="noreferrer"
               className="text-neutral-400 hover:text-white flex items-center gap-1 transition-colors"

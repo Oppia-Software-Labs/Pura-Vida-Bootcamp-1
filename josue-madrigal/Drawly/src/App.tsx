@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import WalletConnect from './components/WalletConnect';
 import TicketPurchase from './components/TicketPurchase';
+import LiveParticipants from './components/LiveParticipants';
 import AssetLaunchpad from './components/AssetLaunchpad';
 import { openWalletModal } from './services/walletKit';
 
@@ -165,6 +166,11 @@ export function App() {
                 onAddressConnect={(addr) => setConnectedAddress(addr)}
                 onBalanceRefreshNeeded={handleTriggerBalanceRefresh}
               />
+            </section>
+
+            {/* Lista de Participantes en Vivo (Horizon Testnet API) */}
+            <section id="participantes-en-vivo" className="scroll-mt-24">
+              <LiveParticipants />
             </section>
 
             {/* Próximos Pozos Comunitarios */}
