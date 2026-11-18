@@ -108,6 +108,14 @@ export default function App() {
             )}
 
             {error && <p className="text-sm text-destructive">{error}</p>}
+
+            {address && (
+              <SecurityNote>
+                Conectar solo comparte tu dirección pública. Esta app no puede mover tus
+                fondos ni ver tu llave secreta: cualquier transacción requeriría tu aprobación
+                en la wallet.
+              </SecurityNote>
+            )}
           </CardContent>
 
           <CardFooter className="flex-col gap-3">
