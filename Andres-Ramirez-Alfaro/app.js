@@ -1,24 +1,37 @@
-import { isConnected, requestAccess } from "https://esm.sh/@stellar/freighter-api";
+import * as mod from "https://esm.sh/@stellar/freighter-api";
+
+// esm.sh a veces envuelve las funciones dentro de "default"
+const freighter = mod.default ?? mod;
+console.log("Freighter exports:", Object.keys(freighter));
 
 const btn = document.getElementById("connect");
 const statusEl = document.getElementById("status");
 const addressEl = document.getElementById("address");
 
 btn.addEventListener("click", async () => {
-  const conn = await isConnected();
-  if (!conn.isConnected) {
-    statusEl.textContent = "Freighter no está instalada. Instálala en freighter.app";
-    return;
+  try {
+    const conn = await freighter.isConnected();
+    const connected = typeof conn === "boolean" ? conn : conn.isConnected;
+    if (!connected) {
+      statusEl.textContent = "Freighter no está instalada. Instálala en freighter.app";
+      return;
+    }
+
+    const access = await freighter.requestAccess();
+    if (access && access.error) {
+      statusEl.textContent = "Error: " + (access.error.message || access.error);
+      return;
+    }
+
+    const address = typeof access === "string" ? access : access.address;
+    statusEl.textContent = "Conectada ✅";
+    addressEl.textContent = address;
+    showBalance(address);
+  } catch (e) {
+    statusEl.textContent = "Error: " + e.message;
   }
-  const access = await requestAccess();
-  if (access.error) {
-    statusEl.textContent = "Error: " + access.error;
-    return;
-  }
-  statusEl.textContent = "Conectada ✅";
-  addressEl.textContent = access.address;
-  showBalance(access.address);
-  
+});
+
 async function showBalance(address) {
   const balanceEl = document.getElementById("balance");
   try {
@@ -31,5 +44,3 @@ async function showBalance(address) {
     balanceEl.textContent = "No se pudo leer el balance: " + e.message;
   }
 }
-
-});
