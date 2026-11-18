@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import localFont from "next/font/local";
+import { JourneyProvider } from "@/components/JourneyProvider";
 import { SiteFooter, SiteHeader, TestnetBanner } from "@/components/SiteChrome";
 import "./globals.css";
 
@@ -31,7 +32,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <a className="skip-link" href="#contenido">Saltar al contenido</a>
         <TestnetBanner/>
         <SiteHeader/>
-        {children}
+        <JourneyProvider>{children}</JourneyProvider>
         <SiteFooter/>
       </body>
     </html>
