@@ -21,7 +21,9 @@
 | SDK de Stellar | **`@stellar/stellar-sdk`** | transacciones, claimants, Horizon y RPC |
 | Wallet | **`@stellar/varial-sdk`** | SDK de Varial; una sola wallet, sin kit multi-wallet |
 | Tests | **Vitest** (solo dominio) | lógica pura, sin red ni wallet |
-| Estilos | CSS plano | no gastar tiempo en librerías de UI |
+| Estilos | **Tailwind CSS** (`@tailwindcss/vite`) | utilidades, sin librerías de UI |
+
+Convención de código: comillas dobles por defecto.
 
 Requiere Node 20+. Confirmar nombres de paquete e imports del SDK con Raven (ver `expertise.md`, sección 12).
 
