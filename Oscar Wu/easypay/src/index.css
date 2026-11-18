@@ -1,0 +1,76 @@
+:root {
+  --bg: #000000;
+  --card: #1a1a1a;
+  --border: #2a2a2a;
+  --text: #ffffff;
+  --text-2: #a3a3a3;
+  --accent: #7c3aed;
+  --ok: #34d399;
+  --warn: #fbbf24;
+  --radius: 12px;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.5;
+}
+
+.app { max-width: 520px; margin: 0 auto; padding: 32px 16px 64px; display: flex; flex-direction: column; gap: 16px; }
+
+.brand { display: flex; align-items: center; gap: 12px; justify-content: center; }
+.brand h1 { margin: 0; font-size: 28px; letter-spacing: -0.5px; }
+.logo { width: 40px; height: 40px; border-radius: 10px; background: var(--accent); display: grid; place-items: center; font-weight: 700; font-size: 22px; }
+.tagline { margin: 0; text-align: center; color: var(--text-2); }
+
+.landing { display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 24px; }
+.error { color: var(--warn); margin: 0; font-size: 14px; }
+
+.card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+.muted { color: var(--text-2); }
+.small { font-size: 13px; }
+
+button, input, select { font: inherit; border-radius: 10px; }
+button { cursor: pointer; border: 1px solid transparent; padding: 12px 20px; font-weight: 600; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn-primary { background: var(--accent); color: var(--text); }
+.btn-primary:not(:disabled):hover { filter: brightness(1.1); }
+.btn-ghost { background: transparent; color: var(--text-2); border-color: var(--border); padding: 8px 14px; }
+.btn-ghost:hover { color: var(--text); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.wallet { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.wallet > div { display: flex; flex-direction: column; }
+.address { color: var(--ok); font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 18px; }
+
+.demo-note { margin: 0; padding: 10px 14px; border: 1px dashed var(--border); border-radius: 10px; color: var(--text-2); font-size: 13px; }
+
+.syncbar { display: flex; flex-direction: column; gap: 12px; }
+.syncbar .btn-primary { width: 100%; }
+.counters { display: flex; gap: 8px; }
+.counter { flex: 1; text-align: center; padding: 10px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); font-size: 14px; font-weight: 600; }
+.counter.pending { color: var(--warn); }
+.counter.synced { color: var(--ok); }
+.syncing { display: flex; align-items: center; justify-content: center; gap: 10px; color: var(--text-2); }
+.spinner { width: 16px; height: 16px; border: 2px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.charge { display: flex; flex-direction: column; gap: 16px; }
+.charge-form { display: flex; flex-direction: column; gap: 12px; }
+.charge-form label { color: var(--text-2); font-size: 14px; }
+.charge-row { display: flex; gap: 8px; }
+.charge-row input { flex: 1; min-width: 0; font-size: 20px; }
+input, select { background: var(--bg); color: var(--text); border: 1px solid var(--border); padding: 12px; }
+
+.payments { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.empty { color: var(--text-2); text-align: center; padding: 16px; }
+.payment { display: flex; justify-content: space-between; align-items: center; }
+.payment-amount { font-weight: 600; font-size: 18px; }
+.payment.pending .payment-status { color: var(--warn); }
+.payment.synced .payment-status { color: var(--ok); }
+.payment-status { font-size: 14px; font-weight: 600; }

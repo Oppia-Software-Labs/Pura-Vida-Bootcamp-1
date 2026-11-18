@@ -52,23 +52,42 @@ export default function App() {
   }
 
   return (
-    <main>
-      <h1>EasyPay</h1>
-      <p>Cobra aunque no tengas internet</p>
+    <main className="app">
+      <header className="brand">
+        <div className="logo" aria-hidden="true">✓</div>
+        <h1>EasyPay</h1>
+      </header>
+      <p className="tagline">Cobra aunque no tengas internet</p>
+
       {address ? (
-        <div>
-          <p>Wallet conectada (testnet): <strong title={address}>{shortAddress(address)}</strong></p>
-          <p>Saldo: {balance === null ? 'cuenta no fondeada en testnet' : `${balance} XLM`}</p>
-          <button onClick={() => disconnectWallet().then(() => setAddress(null))}>Desconectar</button>
+        <>
+          <div className="card wallet">
+            <div>
+              <span className="muted">Wallet conectada · testnet</span>
+              <strong className="address" title={address}>{shortAddress(address)}</strong>
+              <span className="muted small">
+                {balance === null ? 'Cuenta no fondeada en testnet' : `${balance} XLM`}
+              </span>
+            </div>
+            <button className="btn-ghost" onClick={() => disconnectWallet().then(() => setAddress(null))}>
+              Desconectar
+            </button>
+          </div>
+
+          <p className="demo-note">
+            DEMO: los cobros y la sincronización son simulados. No se guarda nada offline ni se envía nada a Stellar.
+          </p>
           <SyncBar pending={pending} synced={synced} syncing={syncing} onSync={simulateReconnect} />
           <ChargeScreen payments={payments} onCharge={(p) => setPayments((prev) => [p, ...prev])} />
-        </div>
+        </>
       ) : (
-        <button onClick={handleConnect} disabled={connecting}>
-          {connecting ? 'Conectando…' : 'Conectar wallet'}
-        </button>
+        <div className="landing">
+          <button className="btn-primary" onClick={handleConnect} disabled={connecting}>
+            {connecting ? 'Conectando…' : 'Conectar wallet'}
+          </button>
+          {error && <p className="error" role="alert">{error}</p>}
+        </div>
       )}
-      {error && <p role="alert">{error}</p>}
     </main>
   )
 }
