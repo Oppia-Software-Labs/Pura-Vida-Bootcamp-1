@@ -95,6 +95,10 @@ export default function App() {
                     <Button size="sm" onClick={fund} disabled={funding}>
                       {funding ? "Fondeando…" : "Fondear con Friendbot"}
                     </Button>
+                    <SecurityNote>
+                      Friendbot entrega XLM de prueba sin valor real. Usa una cuenta de
+                      prueba y no envíes fondos reales a esta dirección.
+                    </SecurityNote>
                   </div>
                 ) : (
                   <p className="text-2xl font-semibold">
