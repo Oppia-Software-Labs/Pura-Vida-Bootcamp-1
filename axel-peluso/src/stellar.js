@@ -10,6 +10,7 @@ import {
 } from "@stellar/stellar-sdk";
 import { StellarWalletsKit, Networks as KitNetworks } from "@creit-tech/stellar-wallets-kit";
 import { VarialModule, VARIAL_ID } from "@creit-tech/stellar-wallets-kit/modules/varial";
+import { AppError } from "./errors.js";
 
 export const HORIZON_URL = "https://horizon-testnet.stellar.org";
 export const NETWORK_PASSPHRASE = Networks.TESTNET;
@@ -22,17 +23,24 @@ export const horizon = new Horizon.Server(HORIZON_URL);
 
 // Stellar Wallets Kit v2 es un singleton estático: se inicializa una sola vez.
 // Freighter ahora se llama Varial; su módulo en el kit es VarialModule.
+const varial = new VarialModule();
+
 StellarWalletsKit.init({
-  modules: [new VarialModule()],
+  modules: [varial],
   network: KitNetworks.TESTNET,
   selectedWalletId: VARIAL_ID,
 });
 
 export async function connectFreighter() {
+  if (!(await varial.isAvailable())) {
+    throw new AppError(
+      "No se encontró la wallet Freighter. Instala la extensión desde freighter.app, recarga la página y vuelve a intentarlo."
+    );
+  }
   StellarWalletsKit.setWallet(VARIAL_ID);
   // fetchAddress pide permiso a la extensión y devuelve la dirección.
   const { address } = await StellarWalletsKit.fetchAddress();
-  if (!address) throw new Error("Freighter no devolvió ninguna dirección");
+  if (!address) throw new AppError("Freighter no devolvió ninguna dirección. Desbloquea la wallet e inténtalo de nuevo.");
   return address;
 }
 
@@ -109,7 +117,11 @@ async function signAndSubmit(tx, address) {
     return res.hash;
   } catch (err) {
     const codes = err?.response?.data?.extras?.result_codes;
-    if (codes) throw new Error(`Transacción rechazada: ${JSON.stringify(codes)}`);
+    if (codes) {
+      const e = new Error(`Transacción rechazada: ${JSON.stringify(codes)}`);
+      e.resultCodes = codes;
+      throw e;
+    }
     throw err;
   }
 }
@@ -127,11 +139,26 @@ export async function addUsdcTrustline(address) {
   return signAndSubmit(tx, address);
 }
 
+// Reserva base de Stellar: cada cuenta debe mantener 1 XLM (2 × 0,5) más 0,5 por subentrada.
+const BASE_RESERVE = 0.5;
+
 export async function sendXlm(source, destination, amount) {
   if (!StrKey.isValidEd25519PublicKey(destination)) {
-    throw new Error("Dirección de destino inválida");
+    throw new AppError("Dirección de destino inválida: debe ser una clave pública de Stellar que empiece por «G» y tenga 56 caracteres.");
+  }
+  if (destination === source) {
+    throw new AppError("La dirección de destino es tu propia cuenta.");
   }
   const account = await horizon.loadAccount(source);
+
+  const xlm = Number(account.balances.find((b) => b.asset_type === "native")?.balance ?? 0);
+  const minBalance = (2 + account.subentry_count) * BASE_RESERVE;
+  const available = xlm - minBalance - Number(BASE_FEE) / 1e7;
+  if (Number(amount) > available) {
+    throw new AppError(
+      `Saldo insuficiente: puedes enviar como máximo ${Math.max(available, 0).toFixed(7).replace(/\.?0+$/, "")} XLM (debes mantener ${minBalance} XLM de reserva mínima).`
+    );
+  }
 
   // Si el destino no existe en testnet hay que crearlo (createAccount, mínimo 1 XLM).
   let destExists = true;
@@ -140,6 +167,10 @@ export async function sendXlm(source, destination, amount) {
   } catch (err) {
     if (err instanceof NotFoundError) destExists = false;
     else throw err;
+  }
+
+  if (!destExists && Number(amount) < 1) {
+    throw new AppError("La cuenta de destino no existe todavía: para crearla debes enviar al menos 1 XLM.");
   }
 
   const op = destExists

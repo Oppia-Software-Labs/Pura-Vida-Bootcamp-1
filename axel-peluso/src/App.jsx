@@ -8,6 +8,7 @@ import {
   isWalletOnTestnet,
   sendXlm,
 } from "./stellar.js";
+import { friendlyError } from "./errors.js";
 
 const short = (a) => `${a.slice(0, 6)}…${a.slice(-6)}`;
 
@@ -54,11 +55,11 @@ export default function App() {
     setHistoryError(null);
     getRecentPayments(addr)
       .then(setPayments)
-      .catch((e) => setHistoryError(`No se pudo leer el historial: ${e.message}`));
+      .catch((e) => setHistoryError(`No se pudo leer el historial: ${friendlyError(e)}`));
     try {
       setBalances(await getBalances(addr));
     } catch (e) {
-      setError(`No se pudo leer el saldo: ${e.message}`);
+      setError(`No se pudo leer el saldo: ${friendlyError(e)}`);
     }
   }, [checkNetwork]);
 
@@ -79,7 +80,7 @@ export default function App() {
     try {
       setAddress(await connectFreighter());
     } catch (e) {
-      setError(e?.message || "No se pudo conectar Freighter. ¿Está instalada la extensión?");
+      setError(friendlyError(e));
     } finally {
       setConnecting(false);
     }
@@ -102,7 +103,7 @@ export default function App() {
       setTrustStatus({ ok: true, msg: "Trustline de USDC agregada.", hash });
       refresh(address);
     } catch (e) {
-      setTrustStatus({ ok: false, msg: e?.message || String(e) });
+      setTrustStatus({ ok: false, msg: friendlyError(e) });
     } finally {
       setTrusting(false);
     }
@@ -113,7 +114,7 @@ export default function App() {
     setStatus(null);
     const n = Number(amount);
     if (!(n > 0)) {
-      setStatus({ ok: false, msg: "Monto inválido" });
+      setStatus({ ok: false, msg: "Monto inválido: escribe una cantidad mayor que 0." });
       return;
     }
     setSending(true);
@@ -127,7 +128,7 @@ export default function App() {
       setAmount("");
       refresh(address);
     } catch (e) {
-      setStatus({ ok: false, msg: e?.message || String(e) });
+      setStatus({ ok: false, msg: friendlyError(e) });
     } finally {
       setSending(false);
     }
