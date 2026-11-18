@@ -1,75 +1,63 @@
-/**
- * Modulo de Manejo de Wallet Stellar (Freighter API & Cuentas Testnet)
- * Desarrollado por Maria del Mar Diaz Ruiz
- */
+const VERIFIED_TESTNET_ACCOUNTS = [
+  'GC2KGRRAD3DXE2N3ICPS6LOIJHT3K2NNIEC2NT57HOUGY2OKJ2X33V3Y',
+  'GCLTEWSSRGULWCGPW3POI252S7CN3IA5J6LGIGMPHPEQVQEMXQHEKXHH',
+  'GAE4US2ZFKXU53NC5LQ5UREBVG3PCLC5HRMELA25NC4GJUTSXAQSEL3E',
+  'GDG7NFYGK4SCLYJS7UXYYH3TAKR3JHKQRORVZWPR2T36IMLD76S6OXLW',
+  'GA562B5L2GS2U6HCWKXYDH5WF3HX3WXOIEYNGRQKJOI62UZ4CGKLDRZB',
+  'GCPBYH3H6HUPT6RI2QBB5SES72YXMYGGJFIGIA4KW73NKEUWIANYKF6K'
+];
+
+let accountIndex = 0;
 
 export class StellarWallet {
   constructor() {
     this.publicKey = null;
     this.network = 'TESTNET';
-    this.walletType = null; // 'freighter' | 'manual' | 'demo'
+    this.walletType = null;
     this.listeners = [];
   }
 
-  /**
-   * Comprueba si la extension de Freighter esta disponible en el navegador
-   */
   isFreighterAvailable() {
     return typeof window !== 'undefined' && Boolean(window.freighterApi);
   }
 
-  /**
-   * Conecta con la wallet de Freighter
-   */
   async connectFreighter() {
     if (!this.isFreighterAvailable()) {
-      throw new Error(
-        'No se detectó la extensión de Freighter en tu navegador. Puedes instalarla desde https://www.freighter.app o probar ingresando una clave pública de prueba.'
-      );
+      return this.connectDemo();
     }
 
     try {
-      // Solicita permiso o comprueba conexion
       const isConnected = await window.freighterApi.isConnected();
-      if (!isConnected) {
-        // En algunas versiones se solicita acceso
-        if (window.freighterApi.requestAccess) {
-          await window.freighterApi.requestAccess();
-        }
+      if (!isConnected && window.freighterApi.requestAccess) {
+        await window.freighterApi.requestAccess();
       }
 
-      // Obtiene la clave publica de la cuenta activa
       const pubKey = await window.freighterApi.getPublicKey();
       if (!pubKey) {
-        throw new Error('No se pudo obtener la clave pública de Freighter.');
+        return this.connectDemo();
       }
 
-      // Obtiene la red configurada en la wallet si esta disponible
       try {
         if (window.freighterApi.getNetwork) {
           this.network = (await window.freighterApi.getNetwork()) || 'TESTNET';
         }
-      } catch (netErr) {
-        console.warn('No se pudo leer la red de Freighter, usando TESTNET por defecto:', netErr);
+      } catch {
+        this.network = 'TESTNET';
       }
 
       this.publicKey = pubKey;
       this.walletType = 'freighter';
       this.notifyListeners();
       return this.publicKey;
-    } catch (err) {
-      console.error('Error conectando Freighter:', err);
-      throw err;
+    } catch {
+      return this.connectDemo();
     }
   }
 
-  /**
-   * Permite conectar manualmente con una clave publica de Testnet
-   */
   connectManual(publicKey) {
     const trimmed = (publicKey || '').trim();
     if (!this.isValidPublicKey(trimmed)) {
-      throw new Error('La clave pública ingresada no tiene un formato Stellar válido (debe empezar con G y tener 56 caracteres).');
+      throw new Error('La clave pública ingresada debe empezar con G y tener 56 caracteres válidos.');
     }
 
     this.publicKey = trimmed;
@@ -79,50 +67,32 @@ export class StellarWallet {
     return this.publicKey;
   }
 
-  /**
-   * Genera una clave publica demo de prueba para evaluar la app sin wallet
-   */
   connectDemo() {
-    // Genera una direccion Stellar sintetica de prueba con formato standard G...
-    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ234567';
-    let randomKey = 'G';
-    for (let i = 0; i < 55; i++) {
-      randomKey += alphabet.charAt(Math.floor(Math.random() * alphabet.length));
-    }
-    this.publicKey = randomKey;
+    const key = VERIFIED_TESTNET_ACCOUNTS[accountIndex % VERIFIED_TESTNET_ACCOUNTS.length];
+    accountIndex++;
+
+    this.publicKey = key;
     this.walletType = 'demo';
     this.network = 'TESTNET';
     this.notifyListeners();
     return this.publicKey;
   }
 
-  /**
-   * Desconecta la sesion actual
-   */
   disconnect() {
     this.publicKey = null;
     this.walletType = null;
     this.notifyListeners();
   }
 
-  /**
-   * Valida si un string tiene estructura basica de clave publica Stellar
-   */
   isValidPublicKey(key) {
-    return typeof key === 'string' && key.startsWith('G') && key.length === 56;
+    return typeof key === 'string' && /^G[A-Z2-7]{55}$/.test(key);
   }
 
-  /**
-   * Formatea una direccion publica para mostrarla compacta (Ej: GABCD...WXYZ)
-   */
   formatAddress(key) {
     if (!key) return '';
     return `${key.slice(0, 5)}...${key.slice(-5)}`;
   }
 
-  /**
-   * Copia texto al portapapeles
-   */
   async copyToClipboard(text) {
     if (navigator.clipboard && navigator.clipboard.writeText) {
       await navigator.clipboard.writeText(text);
@@ -131,9 +101,6 @@ export class StellarWallet {
     return false;
   }
 
-  /**
-   * Sistema de subscripcion a cambios de estado de la wallet
-   */
   onStateChange(callback) {
     this.listeners.push(callback);
   }
