@@ -56,7 +56,8 @@ function unpackTool(result: unknown) {
   for (const item of tool.content ?? []) {
     if (!item.text) continue;
     try {
-      parsed.push(JSON.parse(item.text.trim().replace(/^```(?:json)?\s*|\s*```$/g, "")));
+      const result = item.text.split("\n\n--- ", 1)[0].trim();
+      parsed.push(JSON.parse(result.replace(/^```(?:json)?\s*|\s*```$/g, "")));
     } catch {
       // Solo usamos evidencia estructurada y con enlaces verificables.
     }
@@ -77,13 +78,16 @@ async function lookup(question: RavenQuestion, config: Configuration) {
   try {
     await client.connect(transport);
     const query = `${LEVELS[question.nivel - 1].subject} Stellar Testnet: ${question.pregunta}`;
-    await client.callTool({ name: "search", arguments: { query, limit: 4 } }, undefined, { timeout: 7500 });
+    const discovery = await client.callTool({ name: "search", arguments: { query, limit: 4 } }, undefined, { timeout: 7500 });
 
     // El script es fijo y solo lee documentación. La pregunta entra como dato JSON.
-    const code = `const docs = await stellarDocs.search_docs({ query: ${JSON.stringify(query)}, hitsPerPage: 5 });
-return docs.ok ? docs.data.hits : [];`;
+    const code = `async () => {
+  const docs = await stellarDocs.search_docs({ query: ${JSON.stringify(query)}, hitsPerPage: 5 });
+  return docs.ok ? docs.data.hits : [];
+}`;
     const result = await client.callTool({ name: "execute", arguments: { code } }, undefined, { timeout: 9500 });
-    return [...evidenceFrom(unpackTool(result)).values()].filter((source) => source.fragmento.length > 0);
+    return [...evidenceFrom([...unpackTool(result), ...unpackTool(discovery)]).values()]
+      .filter((source) => source.fragmento.length > 0);
   } finally {
     await client.close().catch(() => undefined);
   }

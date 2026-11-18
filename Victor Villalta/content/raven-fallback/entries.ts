@@ -13,6 +13,7 @@ const accounts = { titulo: "Stellar Docs · Cuentas", url: "https://developers.s
 const transactions = { titulo: "Stellar Docs · Transacciones", url: "https://developers.stellar.org/docs/learn/fundamentals/transactions" };
 const fees = { titulo: "Stellar Docs · Comisiones", url: "https://developers.stellar.org/docs/learn/fundamentals/fees-resource-limits-metering" };
 const horizon = { titulo: "Stellar Docs · Horizon", url: "https://developers.stellar.org/docs/data/apis/horizon" };
+const horizonPlaybook = { titulo: "Guía Stellar Dev incluida en Raven · Horizon", url: "https://github.com/stellar/stellar-dev-skill/blob/main/skills/data/horizon.md" };
 const freighter = { titulo: "Freighter · Guía para conectar la extensión", url: "https://github.com/stellar/freighter-developer-docs/blob/main/extension/connecting.md" };
 const signing = { titulo: "Freighter · Firma de transacciones", url: "https://github.com/stellar/freighter-developer-docs/blob/main/extension/signing.md" };
 export const ravenDocs = { titulo: "Stellar Raven · Documentación", url: "https://raven.stellar.org/docs" };
@@ -69,7 +70,7 @@ export const helpByLevel: Record<Level, Help[]> = {
       pregunta: "¿Qué es Horizon?",
       palabras: ["horizon", "historial", "hash", "movimientos", "explorador"],
       respuesta: "Horizon es la puerta para consultar datos de Stellar. Baula Stellar lo usa para ver el saldo y las últimas cinco transacciones. El hash identifica un movimiento y el explorador te muestra sus detalles.",
-      fuentes: [horizon, transactions],
+      fuentes: [horizon, horizonPlaybook, transactions],
     },
     {
       pregunta: "¿Cuánto saldo puedo utilizar?",

@@ -23,7 +23,9 @@ export function testnetConfig() {
   return TESTNET;
 }
 
-export const DESTINATION_ADDRESS = process.env.NEXT_PUBLIC_DESTINATION_ADDRESS?.trim() ?? "";
+export const DESTINATION_ADDRESS =
+  process.env.NEXT_PUBLIC_DESTINATION_ADDRESS?.trim() ||
+  "GB6UCXBV743SOFAVSCUQEJME2COUQEBRYJZRGZFW6CW3PL6TYQGJXWLY";
 
 export function explorerLink(kind: "account" | "tx", id: string) {
   return `${testnetConfig().explorerUrl}/${kind}/${encodeURIComponent(id)}`;

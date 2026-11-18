@@ -1,4 +1,4 @@
-import type { Level } from "../../lib/journey.ts";
+import type { Level } from "../journey.ts";
 
 export const MAX_QUESTION_LENGTH = 400;
 export const TESTNET_REMINDER = "Recordá que estás en Testnet, una red para practicar sin dinero real.";

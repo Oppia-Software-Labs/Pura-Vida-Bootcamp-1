@@ -24,5 +24,5 @@ export async function verifiedTestnetServer() {
     throw new StellarError("wrong-network", "Horizon respondió desde otra red o no pudo confirmar Testnet. La operación se detuvo.");
   }
 
-  return new Horizon.Server(horizonUrl, { timeout: 15000 });
+  return new Horizon.Server(horizonUrl);
 }

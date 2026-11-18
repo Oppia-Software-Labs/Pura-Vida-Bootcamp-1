@@ -319,7 +319,7 @@ code { font-family: ui-monospace, Consolas, monospace; overflow-wrap: anywhere; 
 .raven-launch:hover { background: #1c5660; }
 .raven-panel { position: fixed; inset: auto clamp(12px, 3vw, 34px) max(13px, env(safe-area-inset-bottom)) auto; width: min(calc(100% - 24px), 458px); max-width: none; max-height: calc(100dvh - var(--banner-height) - 30px); margin: 0; padding: 0; border: 1px solid #416779; border-radius: 17px; color: var(--cream); background: #0c182b; box-shadow: 0 16px 70px #02060edb; }
 .raven-panel[open] { display: flex; flex-direction: column; }
-.raven-panel::backdrop { background: #030b16ab; }
+.raven-panel::backdrop { background: linear-gradient(transparent 0 var(--banner-height), #030b16ab var(--banner-height)); }
 .raven-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 13px; background: #122638; border-bottom: 1px solid #304959; }
 .raven-avatar { display: grid; place-items: center; width: 43px; height: 43px; border-radius: 11px; background: #173d49; color: var(--mint); }
 .raven-head h2 { font-family: var(--heading); font-size: 1.35rem; font-weight: 630; line-height: 1.15; }

@@ -37,7 +37,7 @@ export async function loadAccountSummary(address: string): Promise<AccountSummar
   if (!account) return null;
 
   const native = account.balances.find((asset) => asset.asset_type === "native");
-  const assets = account.balances.flatMap((asset) => {
+  const assets = account.balances.flatMap<AccountSummary["assets"][number]>((asset) => {
     if (asset.asset_type === "native") return [];
     if (asset.asset_type === "liquidity_pool_shares") {
       return [{ id: asset.liquidity_pool_id, name: "Participación en piscina de liquidez", balance: asset.balance, issuer: null }];

@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type FormEvent } from "react";
 import { displayDecimal, paymentAmount } from "@/lib/stellar/amount";
 import { DESTINATION_ADDRESS, explorerLink, testnetConfig } from "@/lib/stellar/config";
 import { StellarError, errorMessage } from "@/lib/stellar/errors";
+import { assertPublicAddress } from "@/lib/stellar/server";
 import { buildPayment, checkDestination, sendPayment, signPayment, type PaymentDraft, type PaymentReceipt } from "@/lib/stellar/payment";
 import { Icon } from "./Icon";
 import { TestnetBadge } from "./SiteChrome";
@@ -74,7 +75,12 @@ export function LevelPayment({ address, onSent }: { address: string; onSent: (re
     go(1);
   }
 
-  const readyDestination = /^G[A-Z2-7]{55}$/.test(DESTINATION_ADDRESS);
+  let readyDestination = true;
+  try {
+    assertPublicAddress(DESTINATION_ADDRESS);
+  } catch {
+    readyDestination = false;
+  }
   let testnetReady = true;
   try {
     testnetConfig();

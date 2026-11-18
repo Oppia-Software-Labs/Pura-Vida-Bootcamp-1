@@ -20,13 +20,15 @@ export function errorMessage(error: unknown) {
 }
 
 export function horizonFailure(error: unknown) {
-  const response = (error as { response?: {
+  type Problem = {
     status?: number;
-    data?: { extras?: { result_codes?: { transaction?: string; operations?: string[] } } };
-  } } | null)?.response;
-  const codes = response?.data?.extras?.result_codes;
+    extras?: { result_codes?: { transaction?: string; operations?: string[] } };
+  };
+  const failure = error as { name?: string; response?: Problem & { data?: Problem } } | null;
+  const response = failure?.response;
+  const codes = (response?.data ?? response)?.extras?.result_codes;
   return {
-    status: response?.status,
+    status: response?.status ?? response?.data?.status ?? (failure?.name === "NotFoundError" ? 404 : undefined),
     transaction: codes?.transaction,
     operations: codes?.operations ?? [],
   };
