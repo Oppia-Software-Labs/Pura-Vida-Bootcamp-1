@@ -4,6 +4,22 @@ UpTeam es el panel de administración del programa de embajadores de la comunida
 
 > Los StellarPoints **no se transfieren** como tokens a las billeteras de los embajadores. La blockchain se usa como un **libro de registro inmutable**: cada movimiento deja una huella pública que cualquiera puede auditar en Stellar Explorer.
 
+## Entrega Pura Vida Bootcamp
+
+- **Autor:** Roberto Fernando Bascuñan Garello
+- **Conectar wallet:** sección **Wallet Stellar** (`/wallet`), construida con [Stellar Wallets Kit](https://stellarwalletskit.dev/). Soporta Freighter, Varial, xBull, Albedo, LOBSTR y más. Muestra la dirección pública y el saldo en Testnet. Solo lee la cuenta: nunca pide la frase secreta.
+- **Stellar Raven:** se usó [Raven](https://raven.stellar.org/), el MCP oficial de Stellar, como asistente para consultar la documentación de Stellar SDK, Horizon Testnet y Stellar Wallets Kit, y para diseñar el registro de StellarPoints con operaciones `manageData` + memo.
+
+### Ejecutar localmente
+
+```bash
+cd Roberto-Fernando-Bascunan-Garello
+pnpm install
+pnpm dev
+```
+
+Variables necesarias: `DATABASE_URL` (Postgres/Neon). Opcional: `STELLAR_SECRET_KEY` para firmar los registros en Testnet.
+
 ---
 
 ## Índice
