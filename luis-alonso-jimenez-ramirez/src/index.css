@@ -183,22 +183,57 @@ body {
   transition: background-color 0.15s ease, transform 0.1s ease;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   background: var(--accent-hover);
 }
 
-.btn-primary:active {
+.btn-primary:active:not(:disabled) {
   transform: translateY(1px);
 }
 
-.wallet-notice {
+.btn-primary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  appearance: none;
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  border-radius: 10px;
+  padding: 0.75rem 1.35rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.14);
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.btn-secondary:hover {
+  background: rgba(239, 68, 68, 0.24);
+}
+
+.btn-secondary:active {
+  transform: translateY(1px);
+}
+
+.wallet-alert {
   margin-bottom: 1.25rem;
   padding: 0.85rem 1rem;
   border-radius: 10px;
-  background: var(--warning-bg);
-  border: 1px solid var(--warning-border);
-  color: #e0e7ff;
   font-size: 0.88rem;
+}
+
+.wallet-alert--error {
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.35);
+  color: #fecaca;
+}
+
+.wallet-alert--warning {
+  background: rgba(245, 158, 11, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  color: #fde68a;
 }
 
 .wallet-grid {
@@ -252,6 +287,10 @@ body {
   display: inline-block;
   font-size: 0.88rem;
   color: var(--testnet);
+}
+
+.network-badge--warning {
+  color: #fbbf24;
 }
 
 .footer {

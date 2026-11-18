@@ -1,19 +1,30 @@
-import { useState } from "react";
+import { useVarial } from "../hooks/useVarial.js";
+
+function formatNetworkName(network) {
+  if (!network) return "Sin detectar";
+  const normalized = network.toUpperCase();
+  if (normalized === "TESTNET") return "Stellar Testnet";
+  if (normalized === "PUBLIC" || normalized === "MAINNET") {
+    return "Stellar Mainnet";
+  }
+  if (normalized === "FUTURENET") return "Stellar Futurenet";
+  return network;
+}
 
 export function WalletSection() {
-  const [notice, setNotice] = useState("");
+  const {
+    connected,
+    address,
+    network,
+    isTestnet,
+    connecting,
+    error,
+    connect,
+    disconnect,
+  } = useVarial();
 
-  // Estado base (sin conexión real con Freighter / Varial todavía)
-  const isConnected = false;
-  const publicKey = null;
-  const activeNetwork = "Stellar Testnet";
+  // El balance real en Horizon se integrará en el siguiente paso
   const xlmBalance = null;
-
-  const handleConnectClick = () => {
-    setNotice(
-      "Interfaz base lista. La conexión real con Freighter (@stellar/varial-sdk) se integrará en el siguiente paso."
-    );
-  };
 
   return (
     <section className="wallet-card" aria-labelledby="wallet-section-title">
@@ -27,33 +38,51 @@ export function WalletSection() {
 
         <span
           className={`status-pill ${
-            isConnected ? "status-pill--connected" : "status-pill--disconnected"
+            connected ? "status-pill--connected" : "status-pill--disconnected"
           }`}
         >
           <span className="status-pill__dot" aria-hidden="true" />
-          {isConnected ? "Conectada" : "Desconectada"}
+          {connected ? "Conectada" : "Desconectada"}
         </span>
       </div>
 
       <p className="wallet-card__description">
-        Conecta tu wallet de navegador en <strong>Testnet</strong> para
-        consultar tu cuenta y firmar transacciones en la red de pruebas de
-        Stellar.
+        Conecta tu wallet de navegador en <strong>Testnet</strong> para ver tu
+        llave pública y la red activa mediante <code>@stellar/varial-sdk</code>.
       </p>
 
       <div className="wallet-card__actions">
-        <button
-          type="button"
-          className="btn-primary"
-          onClick={handleConnectClick}
-        >
-          Conectar wallet
-        </button>
+        {!connected ? (
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={connect}
+            disabled={connecting}
+          >
+            {connecting ? "Conectando..." : "Conectar wallet"}
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="btn-secondary"
+            onClick={disconnect}
+          >
+            Desconectar wallet
+          </button>
+        )}
       </div>
 
-      {notice && (
-        <div className="wallet-notice" role="status" aria-live="polite">
-          {notice}
+      {error && (
+        <div className="wallet-alert wallet-alert--error" role="alert">
+          {error}
+        </div>
+      )}
+
+      {connected && !isTestnet && (
+        <div className="wallet-alert wallet-alert--warning" role="status">
+          Tu wallet está en <strong>{formatNetworkName(network)}</strong>.
+          Cambia a <strong>Test Net</strong> en la configuración de Freighter /
+          Varial para trabajar en Stellar Testnet.
         </div>
       )}
 
@@ -61,14 +90,20 @@ export function WalletSection() {
         <div className="info-tile info-tile--wide">
           <span className="info-tile__label">Llave pública</span>
           <p className="info-tile__value info-tile__value--mono">
-            {publicKey ?? "Sin conectar (G...)"}
+            {address ?? "Sin conectar (G...)"}
           </p>
         </div>
 
         <div className="info-tile">
           <span className="info-tile__label">Red activa</span>
           <p className="info-tile__value">
-            <span className="network-badge">{activeNetwork}</span>
+            <span
+              className={`network-badge ${
+                connected && !isTestnet ? "network-badge--warning" : ""
+              }`}
+            >
+              {connected ? formatNetworkName(network) : "Sin conectar"}
+            </span>
           </p>
         </div>
 
