@@ -57,6 +57,12 @@ describe("planDeposit", () => {
     expect(errorsOf({ deadline: now + 121 })).toEqual([]);
   });
 
+  it("requires the balance to cover the amount plus the reserve margin", () => {
+    expect(errorsOf({ balanceStroops: 1_020_000_000n })).toEqual([]);
+    expect(errorsOf({ balanceStroops: 1_019_999_999n })).toEqual(["insufficient_balance"]);
+    expect(errorsOf({ balanceStroops: null })).toEqual([]);
+  });
+
   it("validates the optional repair cap", () => {
     expect(errorsOf({ repairCapBps: 3000 })).toEqual([]);
     expect(errorsOf({ repairCapBps: 10_001 })).toEqual(["invalid_repair_cap"]);

@@ -2,6 +2,8 @@ import { StrKey } from "@stellar/stellar-sdk";
 import { splitWithCap, xlmToStroops } from "./money";
 import type { DepositPlan } from "./types";
 
+export const RESERVE_MARGIN_STROOPS = 20_000_000n;
+
 export type PlanInput = {
   tenant: string;
   landlord: string;
@@ -9,6 +11,7 @@ export type PlanInput = {
   endOfContract: number;
   deadline: number;
   nowSec: number;
+  balanceStroops?: bigint | null;
   repairCapBps?: number;
 };
 
@@ -19,6 +22,7 @@ export type PlanError =
   | "invalid_amount"
   | "end_not_in_future"
   | "deadline_not_after_end"
+  | "insufficient_balance"
   | "invalid_repair_cap";
 
 export type PlanResult =
@@ -55,6 +59,13 @@ export function planDeposit(input: PlanInput): PlanResult {
   if (totalStroops === null) errors.push("invalid_amount");
   if (!(input.endOfContract > input.nowSec)) errors.push("end_not_in_future");
   if (!(input.endOfContract < input.deadline)) errors.push("deadline_not_after_end");
+  if (
+    totalStroops !== null &&
+    input.balanceStroops != null &&
+    totalStroops + RESERVE_MARGIN_STROOPS > input.balanceStroops
+  ) {
+    errors.push("insufficient_balance");
+  }
   if (
     input.repairCapBps !== undefined &&
     totalStroops !== null &&
