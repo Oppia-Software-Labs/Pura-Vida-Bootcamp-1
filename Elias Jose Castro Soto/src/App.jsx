@@ -14,6 +14,7 @@ import { useStellarWallet } from "@/hooks/useStellarWallet";
 import { useXlmBalance } from "@/hooks/useXlmBalance";
 import NoWalletGuide from "@/components/NoWalletGuide";
 import Footer from "@/components/Footer";
+import SecurityNote from "@/components/SecurityNote";
 
 const shorten = (a) => `${a.slice(0, 6)}…${a.slice(-6)}`;
 
@@ -109,7 +110,7 @@ export default function App() {
             {error && <p className="text-sm text-destructive">{error}</p>}
           </CardContent>
 
-          <CardFooter>
+          <CardFooter className="flex-col gap-3">
             {address ? (
               <Button variant="outline" className="w-full" onClick={disconnect}>
                 <LogOut className="size-4" /> Desconectar
@@ -119,6 +120,12 @@ export default function App() {
                 {loading ? "Conectando…" : "Conectar wallet"}
               </Button>
             )}
+            <SecurityNote>
+              Estás en{" "}
+              <strong className="text-foreground">{window.location.host}</strong>. Verifica
+              que sea el dominio correcto antes de conectar. Esta app funciona solo en
+              testnet y nunca te pedirá tu frase de recuperación ni tu llave secreta.
+            </SecurityNote>
           </CardFooter>
         </Card>
       </main>

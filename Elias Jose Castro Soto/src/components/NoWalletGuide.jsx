@@ -1,5 +1,5 @@
-import { ShieldAlert } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
+import SecurityNote from "@/components/SecurityNote";
 import {
   Card,
   CardHeader,
@@ -58,11 +58,10 @@ export default function NoWalletGuide() {
             ))}
           </ol>
 
-          <p className="mt-5 flex items-start gap-2 text-xs text-muted-foreground">
-            <ShieldAlert className="mt-0.5 size-4 shrink-0 text-primary" />
+          <SecurityNote className="mt-5">
             Descarga la extensión solo desde el sitio oficial y verifica la dirección
             antes de instalar. Ninguna app legítima te pedirá tu frase de recuperación.
-          </p>
+          </SecurityNote>
         </CardContent>
 
         <CardFooter>
