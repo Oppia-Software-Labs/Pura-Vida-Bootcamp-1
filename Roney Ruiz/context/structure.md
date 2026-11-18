@@ -20,7 +20,7 @@
 | Estilos | **Tailwind CSS** (`@tailwindcss/vite`) | utilidades, sin librerías de UI |
 | Stellar | **`@stellar/stellar-sdk`** | transacciones, claimants, Horizon y RPC |
 | Wallet | **`@stellar/varial-sdk`** | una sola wallet, sin kit multi-wallet |
-| Tests | **Vitest** (solo dominio) | lógica pura, sin red ni wallet |
+| Tests | **Vitest** (solo entity) | lógica pura, sin red ni wallet |
 | Gestor | **Bun** | scripts: `dev`, `build`, `lint`, `test` |
 
 **Convenciones de código:** comillas dobles por defecto; identificadores y errores en inglés; solo el texto visible de la UI va en español (el código lanza errores en inglés y la UI los traduce).
@@ -54,7 +54,7 @@ flowchart LR
     A -. firma .-> W[["Varial"]]
 ```
 
-**Regla:** `bloc/entity/` no importa React, ni la wallet, ni la red. Toda regla de negocio vive ahí y se prueba con Vitest. Los adaptadores traducen entre el dominio y el mundo exterior.
+**Regla:** `bloc/entity/` no importa React, ni la wallet, ni la red. Toda regla de negocio vive ahí y se prueba con Vitest. Los adaptadores traducen entre `bloc/entity/` y el mundo exterior.
 
 ### Carpetas
 
@@ -69,7 +69,7 @@ plazo/
    ├─ index.css                  # @import "tailwindcss"
    ├─ config/
    │  └─ network.ts
-   ├─ hooks/                     # useWallet, useDeposits, useNow
+   ├─ hooks/                     # useWallet, useBalance, useDeposits, useNow
    ├─ bloc/
    │  ├─ entity/                 # puro, con tests
    │  │  ├─ types.ts             # Deposit, DepositPlan, Role, Status
@@ -80,6 +80,7 @@ plazo/
    │  │  └─ status.ts            # estado y acción por rol
    │  ├─ stellar/                # adaptadores a la red
    │  │  ├─ servers.ts           # Horizon.Server (y RPC)
+   │  │  ├─ balance.ts           # saldo de XLM de una cuenta
    │  │  ├─ buildCreateDeposit.ts # DepositPlan → XDR
    │  │  ├─ buildClaim.ts        # balanceId → XDR
    │  │  ├─ submit.ts            # enviar XDR firmado, extraer IDs
@@ -118,17 +119,29 @@ type Status =
   | "tenant_claimable"     // t ≥ D
   | "claimed";
 
+type Predicate =           // forma JSON de Horizon
+  | { unconditional: true }
+  | { and: [Predicate, Predicate] }
+  | { or: [Predicate, Predicate] }
+  | { not: Predicate }
+  | { abs_before_epoch: string };
+
 type Deposit = {
   id: string;              // balance ID
   amountStroops: bigint;
   myRole: Role;
+  landlordPredicate: Predicate;
+  tenantPredicate: Predicate;
+};
+
+type DepositState = {      // lo devuelve deriveStatus
   status: Status;
   canClaimNow: boolean;
   nextChangeAt?: number;   // para la cuenta regresiva
 };
 ```
 
-Los identificadores van en inglés; la UI los muestra traducidos.
+Los identificadores van en inglés; la UI los muestra traducidos. El estado no se guarda: se deriva de los predicados y la hora con `deriveStatus`. `claimed` no sale de los predicados (un balance reclamado ya no existe): se pasa como tercer parámetro.
 
 ## 6. Funciones clave
 
@@ -136,11 +149,13 @@ Los identificadores van en inglés; la UI los muestra traducidos.
 |---|---|---|
 | wallet | `connectWallet()` | pide acceso a Varial y devuelve la dirección |
 | wallet | `signXdr(xdr, address)` | pide a la wallet firmar (testnet) |
-| entity | `planDeposit(input)` | valida y devuelve `DepositPlan` o errores |
+| entity | `planDeposit(input)` | valida y devuelve `{ ok, plan }` o `{ ok: false, errors }` con códigos en inglés (`invalid_tenant`, `deadline_not_after_end`...) |
+| entity | `xlmToStroops(xlm)` / `formatStroops(stroops)` | convierte texto de XLM a stroops `BigInt` y viceversa |
 | entity | `splitWithCap(total, bps)` | calcula reparaciones y resto con BigInt |
 | entity | `landlordPredicate(E, D)` / `tenantPredicate(D)` | construye los predicados |
-| entity | `evalPred(pred, nowSec)` | ¿se cumple el predicado ahora? |
-| entity | `deriveStatus(deposit, nowSec)` | estado y acción por rol |
+| entity | `evalPred(pred, nowSec)` / `nextChangeAt(pred, nowSec)` | ¿se cumple ahora? y ¿cuándo cambia? |
+| entity | `deriveStatus(deposit, nowSec, claimed?)` | devuelve `DepositState`: estado, `canClaimNow` y `nextChangeAt` |
+| stellar | `getXlmBalance(address)` | saldo en stroops por Horizon; `null` si la cuenta no existe |
 | stellar | `buildCreateDeposit(plan)` | arma la transacción (1 o 2 operaciones) y devuelve XDR |
 | stellar | `buildClaim(balanceId, claimant)` | arma el reclamo y devuelve XDR |
 | stellar | `submit(signedXdr)` | envía y devuelve resultado e IDs de balance |

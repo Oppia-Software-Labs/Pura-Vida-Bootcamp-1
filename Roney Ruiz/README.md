@@ -58,7 +58,7 @@ Requiere [Bun](https://bun.sh) y la extensión de [Varial](https://developers.st
 ```sh
 bun install
 bun run dev      # servidor local
-bun run test     # tests del dominio
+bun run test     # tests de entity
 bun run build    # compilación de producción
 ```
 

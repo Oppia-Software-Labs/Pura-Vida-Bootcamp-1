@@ -8,7 +8,7 @@ Estado: ✅ hecho · 🔄 en curso · ⬜ pendiente
 |---|---|---|
 | 0 | Base del proyecto y documentación | ✅ |
 | 1 | Conectar wallet (requisito mínimo) | ✅ |
-| 2 | Dominio con tests | ✅ |
+| 2 | Entity con tests | ✅ |
 | 3 | Crear depósito | ⬜ siguiente |
 | 4 | Listar y reclamar | ⬜ |
 | 5 | Cierre y entrega | ⬜ |
@@ -36,7 +36,7 @@ Pantalla 1. Cumple el requisito mínimo de la tarea.
 - ✅ Mostrar dirección, saldo de XLM e indicador de red.
 - ✅ Verificar que Horizon responde en testnet con una llamada simple.
 
-## Fase 2 · Dominio con tests ✅
+## Fase 2 · Entity con tests ✅
 
 Lógica pura en `source/bloc/entity/`, sin React, wallet ni red. Cada archivo con su `*.test.ts` al lado.
 
