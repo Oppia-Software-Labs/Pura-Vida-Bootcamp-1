@@ -4,6 +4,7 @@ export const translations = {
   es: {
     skipToContent: "Saltar al contenido",
     testnet: "Solo Testnet",
+    viewOnStellar: "Ver en Stellar",
     languageLabel: "Cambiar idioma a inglés",
     connectWallet: "Conectar wallet",
     connectedWallet: "Wallet conectada",
@@ -94,6 +95,7 @@ export const translations = {
   en: {
     skipToContent: "Skip to content",
     testnet: "Testnet only",
+    viewOnStellar: "View on Stellar",
     languageLabel: "Cambiar idioma a español",
     connectWallet: "Connect wallet",
     connectedWallet: "Wallet connected",

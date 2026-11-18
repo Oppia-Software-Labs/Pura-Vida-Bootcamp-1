@@ -1,6 +1,7 @@
 import { useMemo, useState, type FormEvent } from "react";
 import {
   CircleCheck,
+  ExternalLink,
   Languages,
   Search,
   ShieldCheck,
@@ -13,6 +14,7 @@ import { WalletBanner } from "./components/wallet-banner";
 import { ProfileView } from "./components/profile-view";
 import { RecognitionSheet } from "./components/recognition-sheet";
 import { translations, type Locale } from "./lib/i18n";
+import { PROOFOLIO_CONTRACT_ID } from "./lib/proofolio";
 import { isValidAccountAddress, truncateAddress } from "./lib/stellar";
 import { useWallet } from "./hooks/use-wallet";
 
@@ -68,6 +70,15 @@ export function App() {
           </a>
 
           <div className="flex items-center gap-2">
+            <a
+              href={`https://stellar.expert/explorer/testnet/contract/${PROOFOLIO_CONTRACT_ID}`}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex h-9 items-center gap-2 rounded-[10px] border border-border px-3 text-sm font-medium transition-colors hover:bg-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+            >
+              <ExternalLink aria-hidden="true" className="size-4" />
+              <span>{copy.viewOnStellar}</span>
+            </a>
             <Badge className="hidden sm:inline-flex">
               <span className="mr-1.5 size-1.5 rounded-full bg-primary" aria-hidden="true" />
               {copy.testnet}
