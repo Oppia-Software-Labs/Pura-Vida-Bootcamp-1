@@ -12,6 +12,9 @@ export default defineConfig({
       "@hooks": fileURLToPath(new URL("./source/hooks", import.meta.url)),
       "@shared": fileURLToPath(new URL("./source/shared", import.meta.url)),
       "@bloc": fileURLToPath(new URL("./source/bloc", import.meta.url)),
+      "@helpers": fileURLToPath(new URL("./source/helpers", import.meta.url)),
+      "@layouts": fileURLToPath(new URL("./source/layouts", import.meta.url)),
+      "@pages": fileURLToPath(new URL("./source/pages", import.meta.url)),
     },
   },
 });

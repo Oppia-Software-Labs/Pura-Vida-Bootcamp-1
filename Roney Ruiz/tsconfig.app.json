@@ -27,6 +27,9 @@
       "@config/*": ["./source/config/*"],
       "@hooks/*": ["./source/hooks/*"],
       "@bloc/*": ["./source/bloc/*"],
+      "@helpers/*": ["./source/helpers/*"],
+      "@layouts/*": ["./source/layouts/*"],
+      "@pages/*": ["./source/pages/*"],
     },
   },
   "include": ["source"]
