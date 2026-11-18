@@ -44,7 +44,7 @@ export default function PayModal({ amount, currency, ref_, address, demo, onPaid
   useEffect(() => {
     if (demo || paid || left === 0) return
     const t = setInterval(async () => {
-      if (await hasPaymentWithMemo(address, ref_)) markPaid()
+      if (await hasPaymentWithMemo(address, ref_, xlm)) markPaid()
     }, 4000)
     return () => clearInterval(t)
     // eslint-disable-next-line react-hooks/exhaustive-deps

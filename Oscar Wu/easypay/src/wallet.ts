@@ -73,16 +73,29 @@ export function shortAddress(address: string) {
   return `${address.slice(0, 5)}…${address.slice(-5)}`
 }
 
-/** REAL (testnet): ¿llegó a esta cuenta una transacción con este memo? Se usa para confirmar el cobro por QR. */
-export async function hasPaymentWithMemo(address: string, memo: string): Promise<boolean> {
+/**
+ * REAL (testnet): ¿llegó a esta cuenta un pago con este memo?
+ * Un memo igual no basta (los memos no son únicos): se revisan las operaciones de la transacción
+ * y se exige un pago en XLM nativo a esta cuenta por al menos el monto pedido (con 1 % de tolerancia).
+ * Esta verificación surgió de una consulta a Stellar Raven.
+ */
+export async function hasPaymentWithMemo(address: string, memo: string, minXlm: number): Promise<boolean> {
   try {
-    const res = await new Horizon.Server(HORIZON_TESTNET)
-      .transactions()
-      .forAccount(address)
-      .order('desc')
-      .limit(15)
-      .call()
-    return res.records.some((t) => t.memo === memo)
+    const server = new Horizon.Server(HORIZON_TESTNET)
+    const txs = await server.transactions().forAccount(address).order('desc').limit(50).call()
+    for (const tx of txs.records) {
+      if (tx.memo_type !== 'text' || tx.memo !== memo || !tx.successful) continue
+      const ops = await server.operations().forTransaction(tx.id).call()
+      const paid = ops.records.some(
+        (op) =>
+          op.type === 'payment' &&
+          op.to === address &&
+          op.asset_type === 'native' &&
+          Number(op.amount) >= minXlm * 0.99,
+      )
+      if (paid) return true
+    }
+    return false
   } catch {
     return false
   }
