@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Laptop,
+  Car,
   ShieldCheck,
   Lock,
   ExternalLink,
@@ -45,9 +45,9 @@ export const AssetLaunchpad: React.FC<AssetLaunchpadProps> = ({
   const [deploySuccess, setDeploySuccess] = useState(false);
 
   const featuredAssetRaffle = {
-    title: 'MacBook Pro M3 Max Workstation',
-    organizer: 'Stellar Tech Lab & Builders Collective',
-    totalPrizeValue: '15,000 XLM',
+    title: 'Auto',
+    organizer: 'Concesionaria Oficial & Fundación',
+    totalPrizeValue: '25,000 XLM',
     ticketPrice: 10,
     soldTickets: 1840,
     softCap: 2500,
@@ -140,15 +140,15 @@ export const AssetLaunchpad: React.FC<AssetLaunchpadProps> = ({
         </button>
       </div>
 
-      {/* Tarjeta de Rifa de Alto Valor (Ejemplo de Activo Simbólico) */}
+      {/* Tarjeta de Rifa de Alto Valor (Premio: Auto) */}
       <div className="rounded-3xl bg-neutral-900/40 border border-white/10 overflow-hidden backdrop-blur-2xl grid grid-cols-1 lg:grid-cols-12 gap-0">
         {/* Columna Izquierda: Información del Premio y Escrow */}
         <div className="lg:col-span-7 p-6 sm:p-8 flex flex-col justify-between border-b lg:border-b-0 lg:border-r border-white/5 gap-8">
           <div>
             <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
               <span className="text-[10px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-white/5 text-neutral-300 border border-white/10 flex items-center gap-1.5">
-                <Laptop className="w-3 h-3 text-neutral-400" />
-                Sorteo de Activo Simbólico (Tech Workstation)
+                <Car className="w-3 h-3 text-neutral-400" />
+                Sorteo de Auto
               </span>
               <span className="text-xs font-mono text-neutral-400">
                 Termina en: <strong className="text-white">{featuredAssetRaffle.endsIn}</strong>
@@ -165,7 +165,7 @@ export const AssetLaunchpad: React.FC<AssetLaunchpadProps> = ({
             {/* Cuadrícula de Métricas de Custodia */}
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-6">
               <div className="p-3 rounded-2xl bg-black/60 border border-white/5 flex flex-col">
-                <span className="text-[10px] text-neutral-500 font-mono uppercase">Valor del Activo</span>
+                <span className="text-[10px] text-neutral-500 font-mono uppercase">Valor del Auto</span>
                 <span className="text-base font-bold font-mono text-white mt-0.5">
                   {featuredAssetRaffle.totalPrizeValue}
                 </span>
@@ -188,7 +188,7 @@ export const AssetLaunchpad: React.FC<AssetLaunchpadProps> = ({
             <div className="mt-6 flex flex-col gap-2">
               <div className="flex justify-between items-center text-xs font-mono">
                 <span className="text-neutral-400">
-                  Progreso para adjudicar el activo: <strong className="text-white">{featuredAssetRaffle.soldTickets}</strong> / {featuredAssetRaffle.softCap} boletos
+                  Progreso para adjudicar el auto: <strong className="text-white">{featuredAssetRaffle.soldTickets}</strong> / {featuredAssetRaffle.softCap} boletos
                 </span>
                 <span className="text-emerald-400 font-semibold">{progressPercent}%</span>
               </div>
@@ -234,7 +234,7 @@ export const AssetLaunchpad: React.FC<AssetLaunchpadProps> = ({
               Adquirir Boleto Oficial
             </span>
             <h4 className="text-lg font-semibold text-white mt-1">
-              Participar por el Activo Simbólico
+              Participar por el Auto
             </h4>
             <p className="text-xs text-neutral-400 mt-1">
               El boleto se registra a tu nombre con tu firma de wallet en Testnet.
@@ -376,7 +376,7 @@ export const AssetLaunchpad: React.FC<AssetLaunchpadProps> = ({
                     required
                     value={assetName}
                     onChange={(e) => setAssetName(e.target.value)}
-                    placeholder="Ej: Workstation M3 Max / Setup de Desarrollo"
+                    placeholder="Ej: Auto"
                     className="w-full px-3.5 py-2.5 rounded-xl bg-black border border-white/10 focus:border-white/40 focus:outline-none text-white text-xs font-sans placeholder:text-neutral-600"
                   />
                 </div>

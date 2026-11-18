@@ -62,8 +62,8 @@ La interfaz cuenta con un selector minimalista estilo **Apple iOS Web3** que div
 * **Estado:** **100% Funcional On-Chain** en Stellar Testnet.
 
 ### 2. `Asset Launchpad (Raffle-as-a-Service - RaaS)`
-* **Mecánica:** Diseñado para empresas, desarrolladores y comunidades que rifan hardware o activos de alto valor (ej: **Workstation MacBook Pro M3 Max**).
-* **Garantía Smart Escrow & Soft-Cap:** Requiere una meta mínima de boletos (ej: 2,500 boletos). Si se alcanza, el contrato adjudica el activo; si **no** se alcanza al vencer el plazo, **reembolsa automáticamente el 100% a cada comprador**.
+* **Mecánica:** Diseñado para empresas, marcas y organizaciones que rifan activos de alto valor bajo custodia en escrow (ej: **Auto**).
+* **Garantía Smart Escrow & Soft-Cap:** Requiere una meta mínima de boletos (ej: 2,500 boletos). Si se alcanza, el contrato adjudica el premio; si **no** se alcanza al vencer el plazo, **reembolsa automáticamente el 100% a cada comprador**.
 * **Monetización:** Tarifa plana de despliegue de bóveda (50 XLM / $50 USD) + **3.5%** sobre el total recaudado.
 
 ---

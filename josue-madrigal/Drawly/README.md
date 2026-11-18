@@ -17,7 +17,7 @@ Para mantener una interfaz limpia estilo **Apple / iOS Web3**, la plataforma sep
 * **Interacción On-Chain**: Compra directa de boletos de 1 XLM hacia la **Bóveda del Sorteo** (`GBCD...YVFI`) guardando el alias del usuario en el campo `Memo.text` inmutable del ledger.
 
 ### 2. 🏢 `Asset Launchpad (Raffle-as-a-Service - RaaS)`
-* **Público objetivo**: Empresas, desarrolladores, comunidades y creadores que sortean hardware o activos de alto valor (como laptops workstation o kits de desarrollo).
+* **Público objetivo**: Empresas, marcas y organizaciones que sortean activos de alto valor bajo custodia en escrow (como un Auto o bienes tangibles).
 * **El Problema que Resuelve**: Elimina las dudas de si una rifa está "arreglada" para allegados del organizador.
 * **Mecánica Smart Escrow & Soft-Cap**:
   * La organización define la meta mínima (*Soft Cap*, ej: 2,500 boletos para cubrir el activo).
