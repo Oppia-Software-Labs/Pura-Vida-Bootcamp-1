@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SplitXLM · Divisor de Cuentas y Links de Pago en Stellar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+
+    <header class="topbar">
+      <div class="brand">
+        <div class="brand-logo">⚡</div>
+        <div>
+          <span class="brand-title">SplitXLM</span>
+          <span class="brand-badge">Pura Vida Bootcamp · Stellar Testnet</span>
+        </div>
+      </div>
+
+      <!-- SECCION DE CONEXION DE WALLET STELLAR (Requisito principal) -->
+      <div class="wallet-bar" id="wallet-section">
+        <div id="wallet-disconnected" class="wallet-actions">
+          <button id="btn-connect-freighter" class="btn btn-primary">
+            <span>🔗 Conectar Freighter Wallet</span>
+          </button>
+          <button
+            id="btn-connect-instant"
+            class="btn btn-secondary"
+            title="Crea una Wallet real en Stellar Testnet al instante si no tienes Freighter instalado"
+          >
+            <span>⚡ Wallet Testnet Instantánea</span>
+          </button>
+        </div>
+
+        <div id="wallet-connected" class="wallet-connected hidden">
+          <div class="wallet-pill">
+            <span class="status-dot"></span>
+            <span id="wallet-mode-label" class="wallet-mode">Freighter</span>
+            <code id="wallet-address-short" class="wallet-addr">G...</code>
+            <button id="btn-copy-address" class="icon-btn" title="Copiar dirección pública">
+              📋
+            </button>
+          </div>
+          <div class="balance-pill">
+            <span id="wallet-balance">0.00 XLM</span>
+            <button
+              id="btn-fund-friendbot"
+              class="btn btn-xs btn-accent"
+              title="Recibir +10,000 XLM de prueba con Friendbot"
+            >
+              + Friendbot
+            </button>
+            <button id="btn-refresh-balance" class="icon-btn" title="Actualizar balance">
+              🔄
+            </button>
+          </div>
+          <button id="btn-disconnect-wallet" class="btn btn-ghost btn-xs">
+            Salir
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- BANNER INFORMATIVO DE MODO -->
+      <section class="hero-card">
+        <div class="hero-content">
+          <span class="eyebrow">Construido con Stellar SDK + Stellar Raven MCP</span>
+          <h1>Paga la cuenta, manda el link a tus amigos y recibe XLM al instante</h1>
+          <p>
+            Olvídate de pedir números de cuenta bancaria o SINPE. Crea una cuenta compartida,
+            genera un <strong>Link Mágico de Cobro</strong> para cada amigo y deja que paguen su
+            parte en 1 clic directamente en la blockchain de <strong>Stellar</strong>.
+          </p>
+        </div>
+        <div class="mode-switcher">
+          <button id="tab-host-mode" class="tab-btn active">
+            🧾 1. Dividir Cuenta (Crear Links)
+          </button>
+          <button id="tab-payer-mode" class="tab-btn">
+            💸 2. Vista de Amigo (Pagar por Link)
+          </button>
+        </div>
+      </section>
+
+      <!-- ALERTA / NOTIFICACIONES -->
+      <div id="status-banner" class="status-banner hidden"></div>
+
+      <!-- VISTA 1: CREADOR DE LA CUENTA (HOST) -->
+      <section id="view-host" class="grid-layout">
+        <!-- Columna Izquierda: Formulario de Division -->
+        <div class="card">
+          <div class="card-header">
+            <h2>🧾 Nueva Cuenta Compartida</h2>
+            <div class="preset-group">
+              <span class="preset-label">Ejemplos rápidos:</span>
+              <button class="chip" data-preset="0">🍕 Pizza Squad</button>
+              <button class="chip" data-preset="1">☕ Café Hackathon</button>
+              <button class="chip" data-preset="2">🏔️ Bus Chirripó</button>
+            </div>
+          </div>
+
+          <form id="form-create-split" class="split-form">
+            <div class="form-group">
+              <label for="input-bill-title">Concepto o lugar</label>
+              <input
+                type="text"
+                id="input-bill-title"
+                placeholder="Ej. Pizza & Birras con el Squad"
+                value="Pizza & Birras con el Squad"
+                required
+              />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="input-bill-total">Total pagado (XLM)</label>
+                <input
+                  type="number"
+                  id="input-bill-total"
+                  step="0.01"
+                  min="1"
+                  value="100"
+                  required
+                />
+              </div>
+
+              <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="input-include-me" checked />
+                  <span>Incluirme a mí en la división</span>
+                </label>
+                <small class="hint" id="live-math-preview">
+                  4 personas → 25.00 XLM c/u
+                </small>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="input-friend-name">Amigos que deben su parte</label>
+              <div class="add-friend-row">
+                <input
+                  type="text"
+                  id="input-friend-name"
+                  placeholder="Nombre del amigo (ej. Kevin)"
+                />
+                <button type="button" id="btn-add-friend" class="btn btn-secondary">
+                  + Agregar Amigo
+                </button>
+              </div>
+              <div id="friends-tags-list" class="tags-container"></div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg">
+              ✨ Generar Links Automáticos de Cobro
+            </button>
+          </form>
+        </div>
+
+        <!-- Columna Derecha: Links Generados y Estado On-Chain -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <h2>🔗 Links de Pago & Verificación On-Chain</h2>
+              <p class="subtitle">
+                Comparte cada link o pruébalo aquí mismo. Horizon detecta en vivo quién ya pagó.
+              </p>
+            </div>
+            <button id="btn-verify-onchain" class="btn btn-secondary btn-sm">
+              🔄 Verificar Pagos en Stellar
+            </button>
+          </div>
+
+          <div id="split-results-empty" class="empty-state">
+            <p>
+              Conecta tu wallet arriba y presiona
+              <strong>"Generar Links Automáticos de Cobro"</strong> para crear los enlaces de tus
+              amigos.
+            </p>
+          </div>
+
+          <div id="split-results-content" class="hidden">
+            <div class="split-summary-box">
+              <div>
+                <span class="summary-label">Cuenta activa</span>
+                <strong id="summary-bill-title">-</strong>
+              </div>
+              <div>
+                <span class="summary-label">Recibe (Tu Wallet)</span>
+                <code id="summary-host-wallet">G...</code>
+              </div>
+              <div>
+                <span class="summary-label">Cuota por persona</span>
+                <strong id="summary-share-amount" class="highlight-xlm">0.00 XLM</strong>
+              </div>
+            </div>
+
+            <div id="friend-links-list" class="friend-links-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VISTA 2: AMIGO QUE ABRE EL LINK Y PAGA EN 1 CLIC (PAYER) -->
+      <section id="view-payer" class="payer-container hidden">
+        <div class="card payer-card">
+          <div class="payer-badge">⚡ LINK DE COBRO AUTOMÁTICO STELLAR</div>
+          <h2 id="payer-greeting">¡Hola! Tienes una cuenta dividida pendiente</h2>
+          <p class="payer-subtitle">
+            Revisa el detalle y firma con tu Wallet de Stellar para liquidar tu parte al instante
+            sin bancos intermediarios.
+          </p>
+
+          <div class="invoice-box">
+            <div class="invoice-row">
+              <span>Concepto</span>
+              <strong id="payer-bill-title">Pizza & Birras con el Squad</strong>
+            </div>
+            <div class="invoice-row">
+              <span>Participante</span>
+              <strong id="payer-friend-name">Kevin</strong>
+            </div>
+            <div class="invoice-row">
+              <span>Wallet destino (quien pagó la cuenta)</span>
+              <code id="payer-destination">G...</code>
+            </div>
+            <div class="invoice-row">
+              <span>Memo On-Chain (verificación automática)</span>
+              <code id="payer-memo">SPLIT:101:Kevin</code>
+            </div>
+            <div class="invoice-divider"></div>
+            <div class="invoice-row invoice-total">
+              <span>Tu parte a pagar</span>
+              <strong id="payer-amount-display">25.00 XLM</strong>
+            </div>
+          </div>
+
+          <div class="payer-actions">
+            <button id="btn-execute-split-payment" class="btn btn-primary btn-lg btn-block">
+              🚀 Firmar y Pagar Ahora en Stellar Testnet
+            </button>
+            <a
+              id="btn-sep7-wallet-uri"
+              href="#"
+              class="btn btn-secondary btn-block"
+              title="Estándar SEP-0007 web+stellar:pay"
+            >
+              📱 Abrir en Wallet Externa (SEP-0007 URI)
+            </a>
+          </div>
+
+          <div id="payment-receipt-box" class="receipt-box hidden">
+            <h3>✅ ¡Pago confirmado en la Blockchain de Stellar!</h3>
+            <p>Tu parte quedó liquidada y registrada con el Memo del Split.</p>
+            <div class="receipt-details">
+              <div>
+                <span>Hash de Transacción:</span>
+                <code id="receipt-tx-hash">-</code>
+              </div>
+              <a
+                id="receipt-explorer-link"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn-accent btn-sm"
+              >
+                🔍 Ver transacción en Stellar.expert ↗
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>
+        Desarrollado por <strong>JohannFonseca</strong> · Entregable Campamento 01 (Pura Vida
+        Bootcamp & Grantfox) · Asistido con <a href="https://raven.stellar.org/" target="_blank">Stellar Raven MCP</a>
+      </p>
+    </footer>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
