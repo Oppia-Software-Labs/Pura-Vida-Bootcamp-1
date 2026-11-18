@@ -29,7 +29,7 @@ function Balance({ address, refreshKey }: { address: string; refreshKey: number 
   }
   return (
     <div>
-      <p className="text-xs text-faint">Saldo disponible</p>
+      <p className="text-xs text-faint">Saldo</p>
       <p className="text-4xl font-semibold tracking-tight">
         {formatXlm(balance)} <span className="text-lg font-medium text-muted">XLM</span>
       </p>

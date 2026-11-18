@@ -171,7 +171,7 @@ export default function CreateDeposit({ address, refreshKey, onCreated }: Create
         <Field
           id="amount"
           label="Monto"
-          hint={balance !== null ? `Disponible: ${formatXlm(balance)} XLM` : undefined}
+          hint={balance !== null ? `Saldo: ${formatXlm(balance)} XLM` : undefined}
           error={errorFor("amount")}
         >
           <div className="relative">
