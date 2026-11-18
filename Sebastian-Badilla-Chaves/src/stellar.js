@@ -60,7 +60,12 @@ export async function sendPayment({ from, to, amount, memo, sign }) {
   })
     .addOperation(op)
     .setTimeout(180);
-  if (memo) builder = builder.addMemo(Memo.text(memo.slice(0, 28)));
+  if (memo) {
+    if (new TextEncoder().encode(memo).length > 28) {
+      throw new Error("El memo puede tener máximo 28 bytes.");
+    }
+    builder = builder.addMemo(Memo.text(memo));
+  }
 
   const tx = builder.build();
   const signedXdr = await sign(tx.toXDR());
