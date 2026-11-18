@@ -34,6 +34,8 @@ Cada libro tiene un asset code propio, por ejemplo `FOLIOBFE51C`. Después de qu
 
 El trustline se limita a 1 unidad para que cada sello funcione como una credencial única de esa lectura.
 
+El acceso al lector se guarda en el navegador donde se hizo la compra. El sello, en cambio, vive en la wallet y puede verificarse on-chain desde cualquier dispositivo.
+
 ## Stack
 
 - React 19 + TypeScript + Vite
