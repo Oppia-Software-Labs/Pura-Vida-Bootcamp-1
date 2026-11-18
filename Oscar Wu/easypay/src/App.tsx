@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import ChargeScreen from './ChargeScreen'
+import SyncBar from './SyncBar'
 import type { Payment } from './payments'
 import {
   connectWallet,
@@ -15,6 +16,20 @@ export default function App() {
   const [error, setError] = useState<string | null>(null)
   const [connecting, setConnecting] = useState(false)
   const [payments, setPayments] = useState<Payment[]>([])
+  const [syncing, setSyncing] = useState(false)
+
+  const pending = payments.filter((p) => p.status === 'pending').length
+  const synced = payments.length - pending
+
+  // MOCK: simula la reconexión. No se envía ninguna transacción a Stellar.
+  function simulateReconnect() {
+    if (syncing || pending === 0) return
+    setSyncing(true)
+    setTimeout(() => {
+      setPayments((prev) => prev.map((p) => ({ ...p, status: 'synced' as const })))
+      setSyncing(false)
+    }, 1500)
+  }
 
   useEffect(() => onWalletDisconnect(() => setAddress(null)), [])
 
@@ -45,6 +60,7 @@ export default function App() {
           <p>Wallet conectada (testnet): <strong title={address}>{shortAddress(address)}</strong></p>
           <p>Saldo: {balance === null ? 'cuenta no fondeada en testnet' : `${balance} XLM`}</p>
           <button onClick={() => disconnectWallet().then(() => setAddress(null))}>Desconectar</button>
+          <SyncBar pending={pending} synced={synced} syncing={syncing} onSync={simulateReconnect} />
           <ChargeScreen payments={payments} onCharge={(p) => setPayments((prev) => [p, ...prev])} />
         </div>
       ) : (
