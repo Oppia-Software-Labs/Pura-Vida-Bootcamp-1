@@ -4,8 +4,11 @@ export type StellarErrorKind =
   | "expired" | "rebuild" | "pending";
 
 export class StellarError extends Error {
-  constructor(readonly kind: StellarErrorKind, message: string) {
+  readonly kind: StellarErrorKind;
+
+  constructor(kind: StellarErrorKind, message: string) {
     super(message);
+    this.kind = kind;
     this.name = "StellarError";
   }
 }
