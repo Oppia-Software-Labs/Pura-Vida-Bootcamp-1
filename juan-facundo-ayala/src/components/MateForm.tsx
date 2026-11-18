@@ -45,7 +45,11 @@ import {
 } from '@/lib/mate'
 import { signWithWallet, walletErrorMessage } from '@/lib/wallet'
 
-const QUICK_AMOUNTS = [1, 5, 10]
+// Tres montos por activo: uno bajo, uno intermedio y uno alto.
+const QUICK_AMOUNTS: Record<AssetCode, number[]> = {
+  XLM: [10, 100, 1000],
+  USDC: [5, 100, 500],
+}
 
 type Step = 'idle' | 'building' | 'signing' | 'submitting'
 
@@ -99,7 +103,9 @@ export function MateForm({
   const [link] = useState(() => parseMateLink(window.location.search))
   const [to, setTo] = useState(link?.to ?? '')
   const [assetCode, setAssetCode] = useState<AssetCode>(link?.asset ?? 'XLM')
-  const [amountText, setAmountText] = useState(link?.amount || '1')
+  const [amountText, setAmountText] = useState(
+    link?.amount || String(QUICK_AMOUNTS[link?.asset ?? 'XLM'][0]),
+  )
   const [message, setMessage] = useState(link?.message ?? '')
   const [withYerba, setWithYerba] = useState(true)
   const [showErrors, setShowErrors] = useState(false)
@@ -349,7 +355,7 @@ export function MateForm({
                 </AlertDescription>
               </Alert>
             )}
-            <fieldset className="grid gap-5" disabled={!ready || busy}>
+            <fieldset className="grid gap-5" disabled={busy}>
               <div className="grid gap-2">
                 <div className="flex items-center justify-between gap-2">
                   <Label htmlFor={`${id}-to`}>Para</Label>
@@ -405,7 +411,18 @@ export function MateForm({
                         variant={selected ? 'default' : 'outline'}
                         className="h-auto flex-col gap-0 py-2"
                         aria-pressed={selected}
-                        onClick={() => setAssetCode(option.code)}
+                        onClick={() => {
+                          const tier =
+                            amount === null
+                              ? -1
+                              : QUICK_AMOUNTS[assetCode].indexOf(amount)
+                          if (tier >= 0) {
+                            setAmountText(
+                              String(QUICK_AMOUNTS[option.code][tier]),
+                            )
+                          }
+                          setAssetCode(option.code)
+                        }}
                       >
                         <span className="font-semibold">{option.code}</span>
                         <span className="text-xs font-normal opacity-80">
@@ -420,7 +437,7 @@ export function MateForm({
               <div className="grid gap-2">
                 <Label htmlFor={`${id}-amount`}>Cuánto ({asset.code})</Label>
                 <div className="flex flex-wrap gap-2">
-                  {QUICK_AMOUNTS.map((value) => (
+                  {QUICK_AMOUNTS[assetCode].map((value) => (
                     <Button
                       key={value}
                       type="button"

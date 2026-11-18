@@ -14,13 +14,22 @@ const REPO_URL =
   'https://github.com/jfacundoayala/Pura-Vida-Bootcamp-1/tree/feature/juan-facundo-ayala/juan-facundo-ayala'
 
 const FOOTER_LINK =
-  'rounded-sm underline underline-offset-4 outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50'
+  'rounded-sm py-1.5 underline underline-offset-4 outline-none sm:py-0 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50'
 
 function App() {
   const wallet = useWallet()
   const account = useAccount(wallet.address)
   // Sube cada vez que puede haber movimientos nuevos, para recargar el historial.
   const [historyVersion, setHistoryVersion] = useState(0)
+
+  // El formulario se reinicia al cambiar o desconectar la cuenta, pero no al
+  // conectar: así se conserva lo que se haya cargado antes.
+  const [formKey, setFormKey] = useState(0)
+  const [lastAddress, setLastAddress] = useState(wallet.address)
+  if (lastAddress !== wallet.address) {
+    setLastAddress(wallet.address)
+    if (lastAddress !== null) setFormKey((key) => key + 1)
+  }
   const reloadHistory = () => setHistoryVersion((version) => version + 1)
 
   const refreshAll = () => {
@@ -38,11 +47,27 @@ function App() {
   return (
     <div className="mx-auto grid w-full max-w-5xl gap-x-16 gap-y-8 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:grid-rows-[auto_1fr] lg:gap-y-10 lg:py-16">
       <header className="grid gap-8">
-        <div className="flex items-center gap-3">
-          <span className="font-heading text-xl font-semibold tracking-tight">
-            Mate Stellar
-          </span>
-          <Badge variant="outline">Testnet</Badge>
+        <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
+          <div className="flex items-center gap-3">
+            <span className="font-heading text-xl font-semibold tracking-tight">
+              Mate Stellar
+            </span>
+            <Badge variant="outline">Testnet</Badge>
+          </div>
+          <a
+            className="flex items-center gap-2 rounded-sm py-1.5 text-xs text-muted-foreground outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50"
+            href="https://stellar.org/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Construido sobre
+            <img
+              src={`${import.meta.env.BASE_URL}stellar-logo.png`}
+              width={88}
+              height={22}
+              alt="Stellar"
+            />
+          </a>
         </div>
 
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 sm:gap-8">
@@ -84,9 +109,8 @@ function App() {
             onEnable={account.enable}
           />
         </WalletSection>
-        {/* La key reinicia el formulario al cambiar o desconectar la cuenta. */}
         <MateForm
-          key={wallet.address ?? 'sin-wallet'}
+          key={formKey}
           address={wallet.address}
           account={account.info}
           accountLoading={account.loading}
@@ -116,7 +140,7 @@ function App() {
           De dónde viene la yerba
         </h2>
         <MisionesSection />
-        <footer className="grid gap-1 pt-4 text-xs text-muted-foreground">
+        <footer className="grid gap-1 pt-4 text-sm leading-8 text-muted-foreground sm:text-xs sm:leading-normal">
           <p>
             Construido sobre{' '}
             <a
@@ -161,6 +185,15 @@ function App() {
             >
               Pura Vida Bootcamp
             </a>{' '}
+            de{' '}
+            <a
+              className={FOOTER_LINK}
+              href="https://www.oppialabs.com/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Oppia Software Labs
+            </a>{' '}
             ·{' '}
             <a
               className={FOOTER_LINK}
@@ -170,6 +203,11 @@ function App() {
             >
               Ver el código
             </a>
+          </p>
+          <p>
+            Proyecto independiente, sin afiliación, patrocinio ni aval de la
+            Stellar Development Foundation. «Stellar» es una marca de la Stellar
+            Development Foundation.
           </p>
         </footer>
       </section>

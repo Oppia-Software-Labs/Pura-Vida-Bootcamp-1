@@ -5,6 +5,7 @@ import {
   Link2,
   LoaderCircle,
   LogOut,
+  QrCode,
   TriangleAlert,
   Wallet,
 } from 'lucide-react'
@@ -19,6 +20,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { explorerAccountUrl, NETWORK_NAME, shortAddress } from '@/lib/config'
+import { MateQr } from '@/components/MateQr'
 import { buildMateLink } from '@/lib/link'
 
 const SUPPORTED_WALLETS = [
@@ -53,6 +55,7 @@ export function WalletSection({
   children,
 }: Props) {
   const [copied, setCopied] = useState<Copied>(null)
+  const [showQr, setShowQr] = useState(false)
 
   const copy = async (what: Exclude<Copied, null>, text: string) => {
     try {
@@ -168,6 +171,15 @@ export function WalletSection({
                   : 'Link para que me conviden'}
               </Button>
               <Button
+                variant="outline"
+                size="lg"
+                aria-expanded={showQr}
+                onClick={() => setShowQr((value) => !value)}
+              >
+                <QrCode />
+                {showQr ? 'Ocultar QR' : 'QR para cobrar'}
+              </Button>
+              <Button
                 variant="ghost"
                 size="lg"
                 className="text-muted-foreground"
@@ -177,6 +189,14 @@ export function WalletSection({
                 Desconectar
               </Button>
             </div>
+            {showQr && (
+              <MateQr
+                link={buildMateLink(
+                  window.location.origin + window.location.pathname,
+                  address,
+                )}
+              />
+            )}
           </>
         )}
 

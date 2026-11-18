@@ -27,7 +27,8 @@ pagás con XLM y la red lo convierte en el camino. No usa fondos reales.
    del fondo es una cuenta de prueba en Testnet y no hay una cooperativa real
    detrás.
 6. **Link para pedir un mate.** Copiás un link con tu dirección; quien lo abre
-   encuentra el formulario ya cargado. El link admite `?para=`, `monto=`,
+   encuentra el formulario ya cargado. También se muestra como código QR, para
+   cobrar desde el celular o impreso. El link admite `?para=`, `monto=`,
    `activo=` y `mensaje=`, y descarta cualquier dato inválido.
 7. **Últimos mates.** Lista pagos, conversiones, activaciones de cuenta y
    aportes, con mensaje, fecha y link al comprobante en el explorador.

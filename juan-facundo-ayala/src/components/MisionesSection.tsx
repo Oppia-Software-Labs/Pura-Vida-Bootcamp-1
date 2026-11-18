@@ -52,7 +52,7 @@ const MATE: Photo = {
 const PHOTOS = [YERBAL, TAREFEROS, MATE]
 
 const LINK =
-  'rounded-sm underline underline-offset-4 outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50'
+  'rounded-sm py-1.5 underline underline-offset-4 outline-none sm:py-0 hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50'
 
 function Figure({ photo, className }: { photo: Photo; className?: string }) {
   return (
@@ -100,7 +100,7 @@ export function MisionesSection() {
         <Figure photo={MATE} />
       </div>
 
-      <p className="text-xs text-muted-foreground">
+      <p className="text-sm leading-8 text-muted-foreground sm:text-xs sm:leading-normal">
         Fotos vía Wikimedia Commons:{' '}
         {PHOTOS.map((photo, index) => (
           <span key={photo.src}>
