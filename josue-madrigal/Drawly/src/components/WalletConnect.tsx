@@ -83,6 +83,17 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onAddressChange })
     checkActive();
   }, [onAddressChange, refreshBalance]);
 
+  // Escuchar eventos globales de actualización de balance (por ejemplo tras comprar un boleto)
+  useEffect(() => {
+    const handleGlobalRefresh = () => {
+      if (address) {
+        refreshBalance(address);
+      }
+    };
+    window.addEventListener('stellar:refresh-balance', handleGlobalRefresh);
+    return () => window.removeEventListener('stellar:refresh-balance', handleGlobalRefresh);
+  }, [address, refreshBalance]);
+
   // Conectar wallet
   const handleConnect = async () => {
     setIsConnecting(true);

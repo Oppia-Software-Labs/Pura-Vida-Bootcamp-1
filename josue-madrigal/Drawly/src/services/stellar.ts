@@ -1,4 +1,5 @@
 import * as StellarSdk from '@stellar/stellar-sdk';
+import { signTransactionWithKit } from './walletKit';
 
 export const STELLAR_CONFIG = {
   network: 'TESTNET',
@@ -7,7 +8,12 @@ export const STELLAR_CONFIG = {
   sorobanRpcUrl: 'https://soroban-testnet.stellar.org',
   friendbotUrl: 'https://friendbot.stellar.org',
   explorerUrl: 'https://stellar.expert/explorer/testnet/account',
+  explorerAccountUrl: 'https://stellar.expert/explorer/testnet/account',
+  explorerTxUrl: 'https://stellar.expert/explorer/testnet/tx',
 };
+
+// Dirección pública oficial preconfigurada como 'Bóveda del Sorteo' en Testnet (fondeada con Friendbot)
+export const RAFFLE_VAULT_ADDRESS = 'GBCDCSUZWND6IGDT6CGPQAN35QSDOPAIXVKJ47LMSGP4GYPLVYWJYVFI';
 
 // Instancia única del servidor Horizon para Testnet
 export const horizonServer = new StellarSdk.Horizon.Server(STELLAR_CONFIG.horizonUrl);
@@ -16,6 +22,13 @@ export interface AccountBalanceInfo {
   balance: string;
   exists: boolean;
   error?: string;
+}
+
+/**
+ * Calcula el tamaño en bytes UTF-8 de una cadena de texto (para validar Memo.text <= 28 bytes)
+ */
+export function getUtf8ByteLength(str: string): number {
+  return new TextEncoder().encode(str).length;
 }
 
 /**
@@ -73,6 +86,91 @@ export async function requestFriendbotFunding(publicKey: string): Promise<{ succ
       message: `Error al conectar con Friendbot: ${err.message}`,
     };
   }
+}
+
+export interface PurchaseTicketParams {
+  userAddress: string;
+  alias: string;
+  onStatusUpdate?: (status: string) => void;
+}
+
+export interface PurchaseTicketResult {
+  hash: string;
+  ledger: number;
+}
+
+/**
+ * Construye, firma y envía la transacción de compra de 1 boleto (1 XLM)
+ * guardando el alias del usuario en el Memo.text (máx 28 bytes)
+ */
+export async function buyRaffleTicket({
+  userAddress,
+  alias,
+  onStatusUpdate,
+}: PurchaseTicketParams): Promise<PurchaseTicketResult> {
+  const trimmedAlias = alias.trim();
+  const byteLength = getUtf8ByteLength(trimmedAlias);
+
+  if (byteLength === 0) {
+    throw new Error('Debes ingresar un nombre o alias para tu boleto.');
+  }
+
+  if (byteLength > 28) {
+    throw new Error(`El alias excede el límite de 28 bytes de Stellar (${byteLength} bytes).`);
+  }
+
+  onStatusUpdate?.('Cargando cuenta desde Horizon Testnet...');
+  let account: Awaited<ReturnType<typeof horizonServer.loadAccount>>;
+  try {
+    account = await horizonServer.loadAccount(userAddress);
+  } catch (error: unknown) {
+    const err = error as { response?: { status?: number }; name?: string };
+    if (err?.response?.status === 404 || err?.name === 'NotFoundError') {
+      throw new Error('Tu cuenta no está fondeada en Testnet. Usa el botón de Fondear 10,000 XLM primero.');
+    }
+    throw new Error('Error al cargar la cuenta desde Horizon.');
+  }
+
+  // Verificar balance suficiente (al menos 1 XLM + comisión base)
+  const nativeBalance = account.balances.find((b: { asset_type: string; balance: string }) => b.asset_type === 'native');
+  const availableXlm = nativeBalance ? parseFloat(nativeBalance.balance) : 0;
+  if (availableXlm < 1.001) {
+    throw new Error(`Balance insuficiente (${availableXlm.toFixed(2)} XLM). Necesitas al menos 1 XLM más comisión.`);
+  }
+
+  onStatusUpdate?.('Construyendo transacción con 1 XLM y Memo.text...');
+  const transaction = new StellarSdk.TransactionBuilder(account, {
+    fee: StellarSdk.BASE_FEE,
+    networkPassphrase: STELLAR_CONFIG.networkPassphrase,
+  })
+    .addOperation(
+      StellarSdk.Operation.payment({
+        destination: RAFFLE_VAULT_ADDRESS,
+        asset: StellarSdk.Asset.native(),
+        amount: '1', // 1 XLM por boleto
+      })
+    )
+    .addMemo(StellarSdk.Memo.text(trimmedAlias))
+    .setTimeout(180)
+    .build();
+
+  const xdr = transaction.toXDR();
+
+  onStatusUpdate?.('Solicitando firma en tu wallet conectada...');
+  const signedTxXdr = await signTransactionWithKit(xdr);
+
+  onStatusUpdate?.('Enviando transacción a Stellar Testnet...');
+  const signedTx = StellarSdk.TransactionBuilder.fromXDR(
+    signedTxXdr,
+    STELLAR_CONFIG.networkPassphrase
+  ) as StellarSdk.Transaction;
+
+  const response = await horizonServer.submitTransaction(signedTx);
+
+  return {
+    hash: response.hash,
+    ledger: response.ledger,
+  };
 }
 
 /**

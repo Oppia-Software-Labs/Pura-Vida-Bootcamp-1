@@ -15,7 +15,7 @@ import {
 let isInitialized = false;
 
 /**
- * Inicializa el Stellar Wallets Kit configurado con Freighter, xBull, Albedo, LOBSTR y WalletConnect (para Decaf y wallets móviles) en TESTNET
+ * Inicializa el Stellar Wallets Kit configurado con Freighter, xBull, Albedo, LOBSTR y WalletConnect
  */
 export function initWalletKit(): void {
   if (isInitialized) return;
@@ -24,11 +24,9 @@ export function initWalletKit(): void {
     new FreighterModule(),
     new xBullModule(),
     new AlbedoModule(),
-    new LobstrModule(), // Soporte directo para extensión LOBSTR
+    new LobstrModule(),
   ];
 
-  // Decaf y LOBSTR Mobile se conectan mediante el estándar WalletConnect
-  // Si existe un Project ID de WalletConnect (Reown), lo inicializamos
   const walletConnectProjectId = import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID;
 
   if (walletConnectProjectId) {
@@ -55,7 +53,7 @@ export function initWalletKit(): void {
 }
 
 /**
- * Abre el modal oficial para seleccionar wallet (Freighter, xBull, Albedo, LOBSTR, WalletConnect/Decaf) y obtener la dirección
+ * Abre el modal oficial para seleccionar wallet y obtener la dirección
  */
 export async function openWalletModal(): Promise<string> {
   initWalletKit();
@@ -82,4 +80,15 @@ export async function getActiveAddress(): Promise<string | null> {
   } catch {
     return null;
   }
+}
+
+/**
+ * Solicita la firma de una transacción XDR a la wallet conectada
+ */
+export async function signTransactionWithKit(xdr: string): Promise<string> {
+  initWalletKit();
+  const response = await StellarWalletsKit.signTransaction(xdr, {
+    networkPassphrase: Networks.TESTNET,
+  });
+  return response.signedTxXdr;
 }

@@ -7,11 +7,18 @@ import {
   CheckCircle2,
   X,
   ArrowRight,
+  Sparkles,
+  Layers,
+  Building2,
 } from 'lucide-react';
 import WalletConnect from './components/WalletConnect';
+import TicketPurchase from './components/TicketPurchase';
+import AssetLaunchpad from './components/AssetLaunchpad';
 import { openWalletModal } from './services/walletKit';
 
-interface Raffle {
+type TabMode = 'dynamic-pools' | 'asset-launchpad';
+
+interface DynamicRaffle {
   id: number;
   title: string;
   prize: string;
@@ -23,37 +30,28 @@ interface Raffle {
 }
 
 export function App() {
+  const [activeTab, setActiveTab] = useState<TabMode>('dynamic-pools');
   const [connectedAddress, setConnectedAddress] = useState<string | null>(null);
-  const [selectedRaffle, setSelectedRaffle] = useState<Raffle | null>(null);
+  const [selectedRaffle, setSelectedRaffle] = useState<DynamicRaffle | null>(null);
   const [ticketQuantity, setTicketQuantity] = useState<number>(1);
   const [purchaseStatus, setPurchaseStatus] = useState<'idle' | 'processing' | 'success'>('idle');
 
-  const raffles: Raffle[] = [
+  const upcomingPools: DynamicRaffle[] = [
     {
       id: 1,
-      title: 'Rifa Génesis Drawly',
-      prize: '1,500 XLM',
-      ticketPriceXlm: 10,
-      soldTickets: 84,
-      totalTickets: 150,
-      endsIn: '2d 14h',
-      status: 'active',
-    },
-    {
-      id: 2,
       title: 'Soroban Alpha Pool',
       prize: '5,000 XLM',
-      ticketPriceXlm: 25,
+      ticketPriceXlm: 5,
       soldTickets: 142,
       totalTickets: 200,
       endsIn: '4d 08h',
       status: 'active',
     },
     {
-      id: 3,
-      title: 'Sorteo Relámpago Testnet',
+      id: 2,
+      title: 'Lightning Draw Testnet',
       prize: '500 XLM',
-      ticketPriceXlm: 5,
+      ticketPriceXlm: 1,
       soldTickets: 78,
       totalTickets: 100,
       endsIn: '6 horas',
@@ -61,7 +59,7 @@ export function App() {
     },
   ];
 
-  const handleOpenPurchase = (raffle: Raffle) => {
+  const handleOpenPurchase = (raffle: DynamicRaffle) => {
     if (!connectedAddress) {
       openWalletModal().then((addr) => {
         if (addr) setConnectedAddress(addr);
@@ -78,6 +76,10 @@ export function App() {
     setTimeout(() => {
       setPurchaseStatus('success');
     }, 1500);
+  };
+
+  const handleTriggerBalanceRefresh = () => {
+    window.dispatchEvent(new Event('stellar:refresh-balance'));
   };
 
   return (
@@ -108,138 +110,171 @@ export function App() {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-16 flex flex-col gap-20">
-        {/* Hero Section Minimalista */}
-        <section className="flex flex-col items-start max-w-2xl pt-4">
-          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-400 text-xs font-mono mb-6">
-            <span>Stellar Soroban</span>
+      <main className="flex-1 max-w-6xl mx-auto w-full px-6 py-12 flex flex-col gap-12">
+        {/* Hero Section */}
+        <section className="flex flex-col items-start max-w-2xl pt-2">
+          <div className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-white/5 border border-white/10 text-neutral-400 text-xs font-mono mb-5">
+            <Sparkles className="w-3.5 h-3.5 text-neutral-300" />
+            <span>Drawly Engine</span>
             <span className="text-neutral-600">•</span>
-            <span className="text-neutral-300">Aleatoriedad Verificable</span>
+            <span className="text-neutral-300">Verifiable On-Chain Raffles</span>
           </div>
 
           <h1 className="text-4xl sm:text-5xl md:text-6xl font-semibold tracking-tight text-white leading-[1.08]">
-            Rifas descentralizadas en Stellar.
+            Rifas descentralizadas y verificables.
           </h1>
 
-          <p className="mt-5 text-base sm:text-lg text-neutral-400 font-normal leading-relaxed">
-            Sorteos on-chain matemáticamente verificables. Adquiere boletos directamente con tu wallet y comprueba cada resultado en el ledger público de Stellar Testnet.
+          <p className="mt-4 text-base sm:text-lg text-neutral-400 font-normal leading-relaxed">
+            Elimina la desconfianza en sorteos tradicionales. Elige entre pozos acumulativos comunitarios o rifas de activos de alto valor con custodia inteligente en Stellar Testnet.
           </p>
 
-          <div className="mt-8 flex items-center gap-3">
-            <a
-              href="#raffles"
-              className="px-5 py-2.5 rounded-full bg-white text-black hover:bg-neutral-200 active:scale-95 text-xs font-semibold tracking-tight transition-all duration-150 flex items-center gap-2"
+          {/* Selector de Metodologías Apple Style (Tabs) */}
+          <div className="mt-8 flex items-center p-1 rounded-full bg-neutral-900/90 border border-white/10 w-fit backdrop-blur-md">
+            <button
+              onClick={() => setActiveTab('dynamic-pools')}
+              className={`px-4 py-2 rounded-full text-xs font-semibold transition-all duration-150 flex items-center gap-2 cursor-pointer ${
+                activeTab === 'dynamic-pools'
+                  ? 'bg-white text-black shadow-sm'
+                  : 'text-neutral-400 hover:text-white'
+              }`}
             >
-              <span>Ver rifas activas</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </a>
+              <Layers className="w-3.5 h-3.5" />
+              <span>Dynamic Pools (Pari-Mutuel)</span>
+            </button>
+            <button
+              onClick={() => setActiveTab('asset-launchpad')}
+              className={`px-4 py-2 rounded-full text-xs font-semibold transition-all duration-150 flex items-center gap-2 cursor-pointer ${
+                activeTab === 'asset-launchpad'
+                  ? 'bg-white text-black shadow-sm'
+                  : 'text-neutral-400 hover:text-white'
+              }`}
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              <span>Asset Launchpad (RaaS)</span>
+            </button>
           </div>
         </section>
 
-        {/* Sección de Rifas (El Producto Principal) */}
-        <section id="raffles" className="flex flex-col gap-6 scroll-mt-24">
-          <div className="flex items-baseline justify-between border-b border-white/5 pb-4">
-            <div>
-              <h2 className="text-xl font-semibold tracking-tight text-white">
-                Rifas activas
-              </h2>
-              <p className="text-xs text-neutral-500 font-mono mt-0.5">
-                Participa con XLM en Stellar Testnet
-              </p>
-            </div>
-            <span className="text-xs font-mono text-neutral-400">
-              {raffles.length} disponibles
-            </span>
-          </div>
+        {/* CONTENIDO TAB 1: DYNAMIC POOLS (PARI-MUTUEL) */}
+        {activeTab === 'dynamic-pools' && (
+          <div className="flex flex-col gap-14 animate-in fade-in duration-200">
+            {/* Módulo Principal de Compra de Boletos On-Chain */}
+            <section id="comprar-boleto" className="scroll-mt-24">
+              <TicketPurchase
+                connectedAddress={connectedAddress}
+                onAddressConnect={(addr) => setConnectedAddress(addr)}
+                onBalanceRefreshNeeded={handleTriggerBalanceRefresh}
+              />
+            </section>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {raffles.map((raffle) => {
-              const progress = Math.round(
-                (raffle.soldTickets / raffle.totalTickets) * 100
-              );
-
-              return (
-                <div
-                  key={raffle.id}
-                  className="rounded-3xl bg-neutral-900/40 border border-white/5 hover:border-white/15 transition-all duration-200 p-6 flex flex-col justify-between backdrop-blur-sm group"
-                >
-                  <div>
-                    {/* Top Status */}
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md bg-white/5 text-neutral-400 border border-white/5">
-                        {raffle.status === 'ending_soon'
-                          ? 'Por finalizar'
-                          : 'Abierta'}
-                      </span>
-                      <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-400">
-                        <Clock className="w-3 h-3 text-neutral-500" />
-                        <span>{raffle.endsIn}</span>
-                      </div>
-                    </div>
-
-                    {/* Título */}
-                    <h3 className="text-lg font-semibold tracking-tight text-white">
-                      {raffle.title}
-                    </h3>
-
-                    {/* Ficha de Premio y Costo */}
-                    <div className="mt-5 p-4 rounded-2xl bg-black/50 border border-white/5 flex items-center justify-between">
-                      <div>
-                        <span className="text-[10px] text-neutral-500 uppercase font-mono tracking-tight">
-                          Premio total
-                        </span>
-                        <div className="text-xl font-bold font-mono tracking-tight text-white">
-                          {raffle.prize}
-                        </div>
-                      </div>
-                      <div className="text-right">
-                        <span className="text-[10px] text-neutral-500 uppercase font-mono tracking-tight">
-                          Precio boleto
-                        </span>
-                        <div className="text-sm font-semibold font-mono text-neutral-300">
-                          {raffle.ticketPriceXlm} XLM
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Barra de Progreso Monocromática Apple */}
-                    <div className="mt-5">
-                      <div className="flex justify-between text-xs font-mono text-neutral-400 mb-2">
-                        <span className="flex items-center gap-1.5">
-                          <Users className="w-3 h-3 text-neutral-500" />
-                          {raffle.soldTickets} / {raffle.totalTickets} boletos
-                        </span>
-                        <span className="text-neutral-300">{progress}%</span>
-                      </div>
-                      <div className="w-full bg-neutral-800/80 rounded-full h-1.5 overflow-hidden">
-                        <div
-                          className="bg-white h-1.5 rounded-full transition-all duration-300"
-                          style={{ width: `${progress}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Botón de Acción */}
-                  <div className="mt-6 pt-4 border-t border-white/5">
-                    <button
-                      onClick={() => handleOpenPurchase(raffle)}
-                      className="w-full py-2.5 px-4 rounded-xl font-medium text-xs transition-all duration-150 flex items-center justify-center gap-2 cursor-pointer bg-white text-black hover:bg-neutral-200 active:scale-98 shadow-sm"
-                    >
-                      <Ticket className="w-3.5 h-3.5" />
-                      <span>
-                        {connectedAddress ? 'Comprar boleto' : 'Conectar wallet'}
-                      </span>
-                    </button>
-                  </div>
+            {/* Próximos Pozos Comunitarios */}
+            <section className="flex flex-col gap-5">
+              <div className="flex items-baseline justify-between border-b border-white/5 pb-3">
+                <div>
+                  <h3 className="text-lg font-semibold tracking-tight text-white">
+                    Próximos pozos programados
+                  </h3>
+                  <p className="text-xs text-neutral-500 font-mono mt-0.5">
+                    Pozos Pari-Mutuel en desarrollo para Stellar Testnet
+                  </p>
                 </div>
-              );
-            })}
+                <span className="text-xs font-mono text-neutral-400">
+                  {upcomingPools.length} en espera
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                {upcomingPools.map((raffle) => {
+                  const progress = Math.round(
+                    (raffle.soldTickets / raffle.totalTickets) * 100
+                  );
+
+                  return (
+                    <div
+                      key={raffle.id}
+                      className="rounded-3xl bg-neutral-900/30 border border-white/5 hover:border-white/10 transition-all p-6 flex flex-col justify-between"
+                    >
+                      <div>
+                        <div className="flex items-center justify-between mb-4">
+                          <span className="text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-md bg-white/5 text-neutral-400 border border-white/5">
+                            {raffle.status === 'ending_soon' ? 'Próximo' : 'Abierto'}
+                          </span>
+                          <div className="flex items-center gap-1.5 text-xs font-mono text-neutral-400">
+                            <Clock className="w-3 h-3 text-neutral-500" />
+                            <span>{raffle.endsIn}</span>
+                          </div>
+                        </div>
+
+                        <h4 className="text-base font-semibold text-white">
+                          {raffle.title}
+                        </h4>
+
+                        <div className="mt-4 p-3.5 rounded-2xl bg-black/40 border border-white/5 flex items-center justify-between">
+                          <div>
+                            <span className="text-[10px] text-neutral-500 uppercase font-mono">
+                              Premio acumulado
+                            </span>
+                            <div className="text-lg font-bold font-mono text-white">
+                              {raffle.prize}
+                            </div>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-[10px] text-neutral-500 uppercase font-mono">
+                              Precio boleto
+                            </span>
+                            <div className="text-sm font-semibold font-mono text-neutral-300">
+                              {raffle.ticketPriceXlm} XLM
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-4">
+                          <div className="flex justify-between text-xs font-mono text-neutral-400 mb-1.5">
+                            <span className="flex items-center gap-1">
+                              <Users className="w-3 h-3 text-neutral-500" />
+                              {raffle.soldTickets} / {raffle.totalTickets} boletos
+                            </span>
+                            <span className="text-neutral-300">{progress}%</span>
+                          </div>
+                          <div className="w-full bg-neutral-800 rounded-full h-1.5 overflow-hidden">
+                            <div
+                              className="bg-white h-1.5 rounded-full"
+                              style={{ width: `${progress}%` }}
+                            ></div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-5 pt-3 border-t border-white/5">
+                        <button
+                          onClick={() => handleOpenPurchase(raffle)}
+                          className="w-full py-2 px-3 rounded-xl font-medium text-xs bg-white text-black hover:bg-neutral-200 transition-colors flex items-center justify-center gap-2 cursor-pointer"
+                        >
+                          <span>Participar en este pozo</span>
+                          <ArrowRight className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
           </div>
-        </section>
+        )}
+
+        {/* CONTENIDO TAB 2: ASSET LAUNCHPAD (RAFFLE-AS-A-SERVICE) */}
+        {activeTab === 'asset-launchpad' && (
+          <div className="animate-in fade-in duration-200">
+            <AssetLaunchpad
+              connectedAddress={connectedAddress}
+              onAddressConnect={(addr) => setConnectedAddress(addr)}
+              onBalanceRefreshNeeded={handleTriggerBalanceRefresh}
+            />
+          </div>
+        )}
       </main>
 
-      {/* Modal Minimalista de Compra de Boletos (Apple Sheet) */}
+      {/* Modal Minimalista de Compra para Pozos Secundarios */}
       {selectedRaffle && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-150">
           <div className="w-full max-w-sm rounded-3xl bg-neutral-950 border border-white/10 p-6 shadow-2xl flex flex-col gap-5">
@@ -254,7 +289,7 @@ export function App() {
               </div>
               <button
                 onClick={() => setSelectedRaffle(null)}
-                className="p-1 rounded-full text-neutral-400 hover:text-white hover:bg-white/10 transition-colors"
+                className="p-1 rounded-full text-neutral-400 hover:text-white hover:bg-white/10 transition-colors cursor-pointer"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -264,14 +299,14 @@ export function App() {
               <div className="py-6 flex flex-col items-center text-center gap-3">
                 <CheckCircle2 className="w-10 h-10 text-emerald-400" />
                 <h4 className="text-base font-semibold text-white">
-                  ¡Boleto adquirido!
+                  ¡Boleto confirmado!
                 </h4>
                 <p className="text-xs text-neutral-400 max-w-xs">
-                  Tu participación ha sido registrada en el ledger de Stellar Testnet.
+                  Tu participación ha quedado registrada en Stellar Testnet.
                 </p>
                 <button
                   onClick={() => setSelectedRaffle(null)}
-                  className="mt-4 w-full py-2 rounded-xl bg-white text-black text-xs font-semibold hover:bg-neutral-200 transition-colors"
+                  className="mt-4 w-full py-2 rounded-xl bg-white text-black text-xs font-semibold hover:bg-neutral-200 transition-colors cursor-pointer"
                 >
                   Cerrar
                 </button>
@@ -280,7 +315,7 @@ export function App() {
               <>
                 <div className="p-4 rounded-2xl bg-neutral-900/60 border border-white/5 flex flex-col gap-3">
                   <div className="flex justify-between items-center text-xs">
-                    <span className="text-neutral-400">Premio</span>
+                    <span className="text-neutral-400">Premio acumulado</span>
                     <span className="font-mono font-semibold text-white">
                       {selectedRaffle.prize}
                     </span>
@@ -292,7 +327,6 @@ export function App() {
                     </span>
                   </div>
 
-                  {/* Selector de Cantidad */}
                   <div className="pt-2 border-t border-white/5 flex justify-between items-center">
                     <span className="text-xs text-neutral-400">Cantidad</span>
                     <div className="flex items-center gap-3 bg-black px-2.5 py-1 rounded-lg border border-white/10">
@@ -300,7 +334,7 @@ export function App() {
                         onClick={() =>
                           setTicketQuantity(Math.max(1, ticketQuantity - 1))
                         }
-                        className="text-neutral-400 hover:text-white font-mono text-sm"
+                        className="text-neutral-400 hover:text-white font-mono text-sm cursor-pointer"
                       >
                         -
                       </button>
@@ -309,7 +343,7 @@ export function App() {
                       </span>
                       <button
                         onClick={() => setTicketQuantity(ticketQuantity + 1)}
-                        className="text-neutral-400 hover:text-white font-mono text-sm"
+                        className="text-neutral-400 hover:text-white font-mono text-sm cursor-pointer"
                       >
                         +
                       </button>
@@ -317,7 +351,6 @@ export function App() {
                   </div>
                 </div>
 
-                {/* Total */}
                 <div className="flex justify-between items-baseline px-1">
                   <span className="text-xs text-neutral-400">Total a pagar</span>
                   <div className="text-lg font-bold font-mono text-white">
@@ -340,12 +373,12 @@ export function App() {
         </div>
       )}
 
-      {/* Footer Minimalista (Aquí se ubica la documentación de Stellar) */}
+      {/* Footer Minimalista */}
       <footer className="border-t border-white/5 bg-black py-10 px-6 mt-auto">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-6 text-xs text-neutral-500 font-mono">
           <div className="flex items-center gap-2">
             <span className="text-neutral-300 font-semibold">Drawly</span>
-            <span>• Protocolo de rifas en Stellar Testnet</span>
+            <span>• Protocolo de rifas verificables en Stellar Testnet</span>
           </div>
 
           <div className="flex items-center gap-6">
