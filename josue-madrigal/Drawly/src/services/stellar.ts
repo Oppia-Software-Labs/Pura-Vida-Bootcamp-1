@@ -10,6 +10,7 @@ export const STELLAR_CONFIG = {
   explorerUrl: 'https://stellar.expert/explorer/testnet/account',
   explorerAccountUrl: 'https://stellar.expert/explorer/testnet/account',
   explorerTxUrl: 'https://stellar.expert/explorer/testnet/tx',
+  explorerLedgerUrl: 'https://stellar.expert/explorer/testnet/ledger',
 };
 
 // Bóveda oficial del Pozo Dinámico (Pari-Mutuel) en Testnet
@@ -159,6 +160,61 @@ export async function fetchLiveParticipants(
     console.error('Error al consultar participantes en Horizon:', error);
     throw error;
   }
+}
+
+export interface DrawWinnerResult {
+  winner: ParticipantEntry;
+  winnerIndex: number;
+  ledgerSequence: number;
+  ledgerHash: string;
+  seedHex: string;
+  seedDecimal: number;
+  participantsCount: number;
+  closedAt: string;
+}
+
+/**
+ * Ejecuta el sorteo verificable on-chain consultando el último ledger en Horizon Testnet
+ * y derivando el índice ganador de forma determinista mediante hash.slice(-8) % participants.length
+ */
+export async function executeVerifiableDraw(
+  participants: ParticipantEntry[]
+): Promise<DrawWinnerResult> {
+  if (participants.length === 0) {
+    throw new Error('Se requiere al menos 1 participante para realizar el sorteo.');
+  }
+
+  // 1. Consulta el último ledger cerrado en Horizon Testnet
+  const response = await horizonServer.ledgers().order('desc').limit(1).call();
+  const latestLedger = response.records[0];
+
+  if (!latestLedger || !latestLedger.hash) {
+    throw new Error('No se pudo obtener el último ledger cerrado en Horizon Testnet.');
+  }
+
+  // 2. Toma el hash criptográfico del ledger como semilla pública
+  const ledgerHash = latestLedger.hash;
+  const ledgerSequence = latestLedger.sequence;
+  const closedAt = latestLedger.closed_at;
+
+  // 3. Convierte los últimos 8 caracteres hexadecimales a entero
+  const seedHex = ledgerHash.slice(-8);
+  const seedDecimal = parseInt(seedHex, 16);
+
+  // 4. Aplica módulo con el total de participantes (% participants.length)
+  const winnerIndex = seedDecimal % participants.length;
+  const winner = participants[winnerIndex];
+
+  return {
+    winner,
+    winnerIndex,
+    ledgerSequence,
+    ledgerHash,
+    seedHex,
+    seedDecimal,
+    participantsCount: participants.length,
+    closedAt,
+  };
 }
 
 /**
