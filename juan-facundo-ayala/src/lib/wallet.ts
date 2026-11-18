@@ -3,15 +3,27 @@ import {
   Networks,
   StellarWalletsKit,
 } from '@creit.tech/stellar-wallets-kit'
-import { defaultModules } from '@creit.tech/stellar-wallets-kit/modules/utils'
+import { AlbedoModule } from '@creit.tech/stellar-wallets-kit/modules/albedo'
+import { HanaModule } from '@creit.tech/stellar-wallets-kit/modules/hana'
+import { LobstrModule } from '@creit.tech/stellar-wallets-kit/modules/lobstr'
+import { RabetModule } from '@creit.tech/stellar-wallets-kit/modules/rabet'
+import { VarialModule } from '@creit.tech/stellar-wallets-kit/modules/varial'
+import { xBullModule } from '@creit.tech/stellar-wallets-kit/modules/xbull'
 import { NETWORK_PASSPHRASE } from '@/lib/config'
 
 // Stellar Wallets Kit v2 es un singleton estático: se inicializa una sola vez
 // y después se usan sus métodos estáticos (patrón sacado de Stellar Raven).
-// defaultModules() carga las wallets que no necesitan configuración extra
-// (Varial -ex Freighter-, xBull, Albedo, Lobstr, Rabet, Hana, entre otras).
+// En vez de cargar todas las wallets que trae el kit, se eligen seis de las
+// que la documentación oficial de Stellar lista como compatibles. Varial es el nuevo nombre de Freighter, la wallet de SDF.
 StellarWalletsKit.init({
-  modules: defaultModules(),
+  modules: [
+    new VarialModule(),
+    new xBullModule(),
+    new AlbedoModule(),
+    new LobstrModule(),
+    new HanaModule(),
+    new RabetModule(),
+  ],
   network: Networks.TESTNET,
 })
 
@@ -82,6 +94,9 @@ export function walletErrorMessage(error: unknown): string {
   // La sesión se restauró pero la wallet ya no está disponible para firmar.
   if (/set the wallet first|no active address/i.test(message)) {
     return 'Se perdió la conexión con tu wallet. Desconectá y volvé a conectarla.'
+  }
+  if (/network error|failed to fetch|load failed|timeout/i.test(message)) {
+    return 'No hay conexión con la red de Stellar. Revisá tu internet y probá de nuevo.'
   }
   return message || 'La wallet no respondió. Probá de nuevo.'
 }

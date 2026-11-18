@@ -19,11 +19,16 @@ export function useWallet() {
   useEffect(() => {
     if (!address) return
     let cancelled = false
-    isWalletOnTestnet().then((onTestnet) => {
-      if (!cancelled) setWrongNetwork(onTestnet === false)
-    })
+    const check = () =>
+      isWalletOnTestnet().then((onTestnet) => {
+        if (!cancelled) setWrongNetwork(onTestnet === false)
+      })
+    void check()
+    // Al volver a la pestaña se chequea de nuevo, por si cambió de red.
+    window.addEventListener('focus', check)
     return () => {
       cancelled = true
+      window.removeEventListener('focus', check)
       setWrongNetwork(false)
     }
   }, [address])

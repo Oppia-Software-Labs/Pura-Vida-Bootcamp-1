@@ -2,6 +2,7 @@ import { type ReactNode, useState } from 'react'
 import {
   Check,
   Copy,
+  Link2,
   LoaderCircle,
   LogOut,
   TriangleAlert,
@@ -17,9 +18,19 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { NETWORK_NAME, shortAddress } from '@/lib/config'
+import { explorerAccountUrl, NETWORK_NAME, shortAddress } from '@/lib/config'
+import { buildMateLink } from '@/lib/link'
 
-const SUPPORTED_WALLETS = ['Varial', 'xBull', 'Albedo', 'Lobstr', 'y más']
+const SUPPORTED_WALLETS = [
+  'Varial (ex Freighter)',
+  'xBull',
+  'Albedo',
+  'Lobstr',
+  'Hana',
+  'Rabet',
+]
+
+type Copied = 'address' | 'link' | null
 
 type Props = {
   address: string | null
@@ -41,13 +52,17 @@ export function WalletSection({
   onDisconnect,
   children,
 }: Props) {
-  const [copied, setCopied] = useState(false)
+  const [copied, setCopied] = useState<Copied>(null)
 
-  const copyAddress = async () => {
-    if (!address) return
-    await navigator.clipboard.writeText(address)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 1500)
+  const copy = async (what: Exclude<Copied, null>, text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch {
+      // Sin permiso para el portapapeles no se confirma nada.
+      return
+    }
+    setCopied(what)
+    setTimeout(() => setCopied(null), 1500)
   }
 
   return (
@@ -102,32 +117,66 @@ export function WalletSection({
                     className="size-2 rounded-full bg-primary"
                     aria-hidden="true"
                   />
-                  Conectada · {NETWORK_NAME}
+                  Conectada · {wrongNetwork ? 'otra red' : NETWORK_NAME}
                 </p>
-                <p className="font-mono text-sm" title={address}>
+                <a
+                  className="rounded-sm font-mono text-sm underline-offset-4 outline-none hover:underline focus-visible:ring-3 focus-visible:ring-ring/50"
+                  href={explorerAccountUrl(address)}
+                  target="_blank"
+                  rel="noreferrer"
+                  title={address}
+                >
                   {shortAddress(address)}
-                </p>
+                  <span className="sr-only">
+                    {' '}
+                    (ver tu cuenta en el explorador)
+                  </span>
+                </a>
               </div>
               <Button
                 variant="outline"
-                size="sm"
-                onClick={copyAddress}
-                aria-label="Copiar dirección completa"
+                size="lg"
+                onClick={() => copy('address', address)}
+                aria-label={
+                  copied === 'address'
+                    ? 'Dirección copiada'
+                    : 'Copiar dirección completa'
+                }
               >
-                {copied ? <Check /> : <Copy />}
-                {copied ? 'Copiada' : 'Copiar'}
+                {copied === 'address' ? <Check /> : <Copy />}
+                {copied === 'address' ? 'Copiada' : 'Copiar'}
               </Button>
             </div>
             {children}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="justify-self-start text-muted-foreground"
-              onClick={onDisconnect}
-            >
-              <LogOut />
-              Desconectar
-            </Button>
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() =>
+                  copy(
+                    'link',
+                    buildMateLink(
+                      window.location.origin + window.location.pathname,
+                      address,
+                    ),
+                  )
+                }
+              >
+                {copied === 'link' ? <Check /> : <Link2 />}
+                {copied === 'link'
+                  ? 'Link copiado'
+                  : 'Link para que me conviden'}
+              </Button>
+              <Button
+                variant="ghost"
+                size="lg"
+                className="text-muted-foreground"
+                onClick={onDisconnect}
+              >
+                <LogOut />
+                Desconectar
+              </Button>
+            </div>
           </>
         )}
 

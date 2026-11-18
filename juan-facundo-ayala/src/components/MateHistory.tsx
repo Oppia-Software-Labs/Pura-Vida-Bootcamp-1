@@ -8,9 +8,10 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { formatXlm } from '@/lib/account'
+import { formatXlmExact } from '@/lib/account'
 import { explorerTxUrl, shortAddress } from '@/lib/config'
 import { getRecentMates, type MateRecord } from '@/lib/history'
+import { YERBA_FUND } from '@/lib/mate'
 
 const dateFormatter = new Intl.DateTimeFormat('es-AR', {
   day: 'numeric',
@@ -28,7 +29,7 @@ type State = {
 
 type Props = {
   address: string
-  /** Cambia después de cada envío para volver a cargar la lista. */
+  /** Cambia cuando puede haber movimientos nuevos, para recargar la lista. */
   version: number
 }
 
@@ -48,7 +49,12 @@ export function MateHistory({ address, version }: Props) {
       })
       .catch(() => {
         if (!cancelled) {
-          setState((prev) => ({ key, records: prev.records, failed: true }))
+          setState((prev) => ({
+            key,
+            // Solo se conserva la lista si es de esta misma cuenta.
+            records: prev.key.startsWith(`${address}:`) ? prev.records : null,
+            failed: true,
+          }))
         }
       })
     return () => {
@@ -66,7 +72,7 @@ export function MateHistory({ address, version }: Props) {
       <CardHeader>
         <CardTitle className="text-xl">Últimos mates</CardTitle>
         <CardDescription>
-          Los movimientos en XLM más recientes de tu cuenta.
+          Los movimientos más recientes de tu cuenta.
         </CardDescription>
       </CardHeader>
 
@@ -98,6 +104,18 @@ export function MateHistory({ address, version }: Props) {
           <ul className="divide-y">
             {records.map((record) => {
               const sent = record.direction === 'sent'
+              // El aporte se muestra sin dirección: va siempre al fondo.
+              const toFund = sent && record.counterparty === YERBA_FUND
+              // Crear una cuenta (Friendbot o un primer envío) no es un mate.
+              const label = toFund
+                ? 'Aporte al fondo yerbatero'
+                : record.kind === 'activation'
+                  ? sent
+                    ? 'Activaste la cuenta de '
+                    : 'Cuenta activada por '
+                  : sent
+                    ? 'Convidaste a '
+                    : 'Te convidó '
               return (
                 <li
                   key={record.id}
@@ -118,27 +136,35 @@ export function MateHistory({ address, version }: Props) {
                     )}
                   </span>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium">
-                      {sent ? 'Convidaste a ' : 'Te convidó '}
-                      <span className="font-mono font-normal">
-                        {shortAddress(record.counterparty)}
-                      </span>
+                    <p className="text-sm font-medium">
+                      {label}
+                      {!toFund && (
+                        <span className="font-mono font-normal whitespace-nowrap">
+                          {shortAddress(record.counterparty)}
+                        </span>
+                      )}
                     </p>
                     <p className="truncate text-sm text-muted-foreground">
-                      {record.message ? `“${record.message}” · ` : ''}
+                      {record.message && !toFund
+                        ? `“${record.message}” · `
+                        : ''}
                       {dateFormatter.format(record.date)}
                     </p>
                   </div>
                   <div className="shrink-0 text-right">
                     <p className="text-sm font-semibold tabular-nums">
                       {sent ? '−' : '+'}
-                      {formatXlm(record.amount)}
+                      {formatXlmExact(record.amount)}
+                      <span className="font-normal text-muted-foreground">
+                        {' '}
+                        {record.asset}
+                      </span>
                     </p>
                     <a
                       href={explorerTxUrl(record.hash)}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-primary underline-offset-4 hover:underline"
+                      className="-my-2 inline-flex items-center gap-1 py-2 text-xs text-primary underline-offset-4 hover:underline"
                       aria-label="Ver comprobante en el explorador"
                     >
                       Ver

@@ -11,5 +11,8 @@ export const horizon = new Horizon.Server(HORIZON_URL)
 
 export const explorerTxUrl = (hash: string) => `${EXPLORER_URL}/tx/${hash}`
 
+export const explorerAccountUrl = (address: string) =>
+  `${EXPLORER_URL}/account/${address}`
+
 export const shortAddress = (address: string) =>
   `${address.slice(0, 5)}…${address.slice(-5)}`
