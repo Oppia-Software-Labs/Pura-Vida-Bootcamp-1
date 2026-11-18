@@ -33,6 +33,23 @@ pagás con XLM y la red lo convierte en el camino. No usa fondos reales.
 7. **Últimos mates.** Lista pagos, conversiones, activaciones de cuenta y
    aportes, con mensaje, fecha y link al comprobante en el explorador.
 
+## Cómo funciona el dinero
+
+Al convidar un mate, la app arma una sola transacción de Stellar:
+
+1. **El mate.** El monto elegido va completo y directo a la persona que lo
+   recibe.
+2. **El aporte (opcional).** Si está marcado, se suma un 5 % aparte, que va a
+   la cuenta del fondo yerbatero. No se descuenta del mate.
+3. **La conversión (si hace falta).** Si quien envía no tiene USDC, paga con
+   XLM y la red lo convierte en el camino. La app muestra antes cuánto XLM
+   cuesta y fija un tope.
+4. **La firma.** Todo se aprueba una sola vez, desde la wallet de quien envía.
+
+La app nunca recibe ni guarda el dinero ni las claves: solo prepara la
+transacción y la wallet la firma. Cada envío queda con su comprobante público
+en StellarExpert. Hoy corre en Testnet y el fondo es una cuenta de prueba.
+
 ## Decisiones sobre Stellar
 
 - **Un activo es código y emisor.** Cualquiera puede emitir algo llamado
@@ -94,6 +111,9 @@ Otros comandos:
 | `npm run format` | Ordena el código con Prettier      |
 
 ## Cómo se usó Stellar Raven
+
+Desarrollada con asistentes de IA de programación (Claude Code y Devin), con
+Stellar Raven como fuente sobre Stellar.
 
 Raven es el MCP oficial de Stellar: una herramienta de consulta sobre la
 documentación y las guías de desarrollo. Cada parte de la app salió de una
@@ -237,6 +257,12 @@ quienes producen:
 - Hacer contacto con la federación de yerbateros misioneros y con
   asociaciones independientes de yerbateros.
 - Acordar con ellas la cuenta que recibe el fondo y cómo se usa lo reunido.
+
+**Etapa 2: sello de aporte.** Que quien suma al fondo reciba un recibo que
+pueda mostrar:
+
+- Un token único por aporte, emitido en Stellar, que queda en la wallet de
+  quien aportó y se puede ver en el explorador.
 
 ## Fotos
 

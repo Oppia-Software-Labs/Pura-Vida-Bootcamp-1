@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { Download } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 
 /** QR del link para pedir un mate: quien lo escanea abre el formulario ya cargado. */
 export function MateQr({ link }: { link: string }) {
@@ -42,6 +44,14 @@ export function MateQr({ link }: { link: string }) {
         Mostralo o imprimilo: quien lo escanea abre el formulario con tu
         dirección ya cargada.
       </figcaption>
+      {src && (
+        <Button variant="outline" size="sm" asChild>
+          <a href={src} download="mate-stellar-qr.png">
+            <Download />
+            Guardar QR
+          </a>
+        </Button>
+      )}
     </figure>
   )
 }
