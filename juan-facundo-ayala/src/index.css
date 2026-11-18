@@ -1,190 +1,157 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '@fontsource-variable/geist';
+@import '@fontsource-variable/fraunces';
+
+/* El modo oscuro sigue la preferencia del sistema. */
+@custom-variant dark (@media (prefers-color-scheme: dark));
+
+@theme inline {
+  --font-heading: 'Fraunces Variable', Georgia, serif;
+  --font-sans: 'Geist Variable', system-ui, sans-serif;
+  --color-highlight: var(--highlight);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --color-foreground: var(--foreground);
+  --color-background: var(--background);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/*
+ * Paleta: azul para transmitir confianza y ámbar cálido para la cercanía
+ * de compartir un mate. Los colores del mate (madera, yerba, metal) son
+ * fijos y solo los usa la ilustración.
+ */
 :root {
-  --bg: #f5f0e4;
-  --surface: #fffdf7;
-  --ink: #1e2a20;
-  --muted: #5f6b5f;
-  --line: #e2dac6;
-  --accent: #2f5d3a;
-  --accent-ink: #ffffff;
-  --accent-soft: #e3eedd;
-  --wood: #b9793a;
-  --danger: #a3341f;
-  --danger-soft: #f8e4de;
-  --ok: #2f5d3a;
-  --radius: 14px;
-  --mono: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, Consolas, monospace;
-  font-family: system-ui, 'Segoe UI', Roboto, sans-serif;
-  line-height: 1.5;
-  color: var(--ink);
-  background: var(--bg);
-  -webkit-font-smoothing: antialiased;
+  --background: oklch(0.985 0.006 250);
+  --foreground: oklch(0.24 0.05 265);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.24 0.05 265);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.24 0.05 265);
+  --primary: oklch(0.5 0.19 260);
+  --primary-foreground: oklch(0.99 0.005 250);
+  --secondary: oklch(0.95 0.025 255);
+  --secondary-foreground: oklch(0.36 0.11 262);
+  --muted: oklch(0.962 0.01 255);
+  --muted-foreground: oklch(0.48 0.035 262);
+  --accent: oklch(0.95 0.055 88);
+  --accent-foreground: oklch(0.4 0.09 62);
+  --destructive: oklch(0.55 0.2 27);
+  --border: oklch(0.915 0.015 255);
+  --input: oklch(0.915 0.015 255);
+  --ring: oklch(0.6 0.16 260);
+  --highlight: oklch(0.87 0.14 88);
+  --wood: oklch(0.62 0.12 58);
+  --yerba: oklch(0.56 0.13 140);
+  --steel: oklch(0.86 0.012 255);
+  --radius: 0.875rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #141a15;
-    --surface: #1c241d;
-    --ink: #ecefe6;
-    --muted: #a3ad9f;
-    --line: #2e3a2f;
-    --accent: #8fc07a;
-    --accent-ink: #10180f;
-    --accent-soft: #24331f;
-    --wood: #d79a5c;
-    --danger: #f08a73;
-    --danger-soft: #3a211b;
-    --ok: #8fc07a;
+    --background: oklch(0.2 0.035 265);
+    --foreground: oklch(0.96 0.01 250);
+    --card: oklch(0.25 0.04 265);
+    --card-foreground: oklch(0.96 0.01 250);
+    --popover: oklch(0.25 0.04 265);
+    --popover-foreground: oklch(0.96 0.01 250);
+    --primary: oklch(0.74 0.13 255);
+    --primary-foreground: oklch(0.19 0.04 265);
+    --secondary: oklch(0.31 0.05 265);
+    --secondary-foreground: oklch(0.93 0.02 255);
+    --muted: oklch(0.29 0.04 265);
+    --muted-foreground: oklch(0.77 0.03 255);
+    --accent: oklch(0.36 0.06 75);
+    --accent-foreground: oklch(0.92 0.09 88);
+    --destructive: oklch(0.72 0.17 25);
+    --border: oklch(1 0 0 / 10%);
+    --input: oklch(1 0 0 / 14%);
+    --ring: oklch(0.66 0.13 255);
+    --highlight: oklch(0.55 0.11 75);
+    --wood: oklch(0.66 0.12 58);
+    --yerba: oklch(0.62 0.13 140);
+    --steel: oklch(0.82 0.012 255);
   }
 }
 
-* {
-  box-sizing: border-box;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply font-sans;
+  }
+
+  body {
+    @apply min-h-svh bg-background text-foreground antialiased;
+    background-image:
+      radial-gradient(
+        56rem 34rem at 88% -8%,
+        color-mix(in oklch, var(--primary) 16%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        40rem 28rem at -10% 105%,
+        color-mix(in oklch, var(--highlight) 22%, transparent),
+        transparent 70%
+      );
+    background-attachment: fixed;
+  }
 }
 
-body {
-  margin: 0;
-  min-height: 100vh;
-  background: var(--bg);
+/* Vapor del mate en la ilustración. */
+@keyframes steam-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  35% {
+    opacity: 0.75;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
 }
 
-h1,
-h2,
-p {
-  margin: 0;
+.steam path {
+  animation: steam-rise 3.6s ease-in-out infinite;
 }
 
-button,
-input {
-  font: inherit;
-  color: inherit;
+.steam path:nth-child(2) {
+  animation-delay: 1.2s;
 }
 
-a {
-  color: var(--accent);
+.steam path:nth-child(3) {
+  animation-delay: 2.4s;
 }
 
-.app {
-  max-width: 620px;
-  margin: 0 auto;
-  padding: 32px 16px 48px;
-  display: grid;
-  gap: 16px;
-}
-
-.hero {
-  display: grid;
-  gap: 6px;
-  padding: 8px 4px 12px;
-}
-
-.hero h1 {
-  font-size: 2rem;
-  letter-spacing: -0.02em;
-  text-wrap: balance;
-}
-
-.hero p {
-  color: var(--muted);
-  text-wrap: pretty;
-}
-
-.badge {
-  justify-self: start;
-  font-size: 0.75rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: var(--accent-soft);
-  color: var(--accent);
-}
-
-.card {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 20px;
-  display: grid;
-  gap: 14px;
-}
-
-.card h2 {
-  font-size: 1.05rem;
-}
-
-.card-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.muted {
-  color: var(--muted);
-  font-size: 0.92rem;
-}
-
-.mono {
-  font-family: var(--mono);
-  font-size: 0.9rem;
-  overflow-wrap: anywhere;
-}
-
-.btn {
-  border: 1px solid transparent;
-  border-radius: 10px;
-  padding: 10px 16px;
-  font-weight: 600;
-  cursor: pointer;
-  background: var(--accent);
-  color: var(--accent-ink);
-  transition: transform 120ms ease, opacity 120ms ease;
-}
-
-.btn:active:not(:disabled) {
-  transform: scale(0.97);
-}
-
-.btn:disabled {
-  opacity: 0.55;
-  cursor: not-allowed;
-}
-
-.btn:focus-visible,
-input:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-.btn-ghost {
-  background: transparent;
-  color: var(--ink);
-  border-color: var(--line);
-}
-
-.btn-small {
-  padding: 6px 12px;
-  font-size: 0.88rem;
-}
-
-.notice {
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 0.92rem;
-  background: var(--accent-soft);
-  color: var(--ink);
-}
-
-.notice-error {
-  background: var(--danger-soft);
-  color: var(--danger);
-}
-
-.footer {
-  text-align: center;
-  color: var(--muted);
-  font-size: 0.85rem;
-  padding-top: 8px;
+@media (prefers-reduced-motion: reduce) {
+  .steam path {
+    animation: none;
+    opacity: 0.5;
+  }
 }
