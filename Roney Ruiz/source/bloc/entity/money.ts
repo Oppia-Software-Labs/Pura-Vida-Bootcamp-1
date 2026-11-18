@@ -15,3 +15,14 @@ export function formatStroops(stroops: bigint): string {
     .replace(/0+$/, "");
   return fraction ? `${whole}.${fraction}` : whole.toString();
 }
+
+const BPS_DENOMINATOR = 10_000n;
+
+export function splitWithCap(total: bigint, repairCapBps: number): { repairs: bigint; rest: bigint } {
+  if (total <= 0n) throw new Error("Invalid total amount");
+  if (!Number.isInteger(repairCapBps) || repairCapBps < 0 || repairCapBps > 10_000) {
+    throw new Error("Invalid repair cap");
+  }
+  const repairs = (total * BigInt(repairCapBps)) / BPS_DENOMINATOR;
+  return { repairs, rest: total - repairs };
+}
