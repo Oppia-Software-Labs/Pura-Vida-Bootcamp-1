@@ -176,15 +176,28 @@ export const WalletConnect: React.FC<WalletConnectProps> = ({ onAddressChange })
   // ESTADO DESCONECTADO (Apple minimal button)
   if (!address) {
     return (
-      <div className="relative">
+      <div className="relative flex flex-col items-end">
         <button
           onClick={handleConnect}
           disabled={isConnecting}
           className="group inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-white text-black hover:bg-neutral-200 active:scale-95 text-xs font-semibold tracking-tight transition-all duration-150 shadow-sm cursor-pointer disabled:opacity-50"
         >
           <Wallet className={`w-3.5 h-3.5 ${isConnecting ? 'animate-spin' : ''}`} />
-          <span>{isConnecting ? 'Conectando...' : 'Conectar Wallet'}</span>
+          <span>{isConnecting ? 'Abriendo Wallet Kit...' : 'Conectar Wallet'}</span>
         </button>
+
+        {statusMessage && (
+          <div className="absolute right-0 top-11 z-50 p-2.5 rounded-xl bg-neutral-950 border border-rose-500/30 text-rose-300 text-[11px] shadow-xl flex items-center gap-2 max-w-xs animate-in fade-in duration-150">
+            <AlertCircle className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+            <span className="leading-tight">{statusMessage.text}</span>
+            <button
+              onClick={() => setStatusMessage(null)}
+              className="text-neutral-500 hover:text-white ml-1 cursor-pointer font-bold"
+            >
+              ×
+            </button>
+          </div>
+        )}
       </div>
     );
   }

@@ -278,20 +278,65 @@ export async function buyRaffleTicket({
   const xdr = transaction.toXDR();
 
   onStatusUpdate?.('Solicitando firma en tu wallet conectada...');
-  const signedTxXdr = await signTransactionWithKit(xdr);
+  let signedTxXdr: string;
+  try {
+    signedTxXdr = await signTransactionWithKit(xdr);
+  } catch (error: unknown) {
+    const err = error as Error;
+    if (err.message?.includes('User declined') || err.message?.includes('rejected') || err.message?.includes('User rejected')) {
+      throw new Error('Firma rechazada por el usuario en la wallet.');
+    }
+    if (err.message?.includes('not installed') || err.message?.includes('Not installed')) {
+      throw new Error('Wallet no detectada. Instala Freighter, xBull o usa Albedo.');
+    }
+    throw new Error(err.message || 'Error al firmar con la wallet.');
+  }
 
   onStatusUpdate?.('Enviando transacción a Stellar Testnet...');
-  const signedTx = StellarSdk.TransactionBuilder.fromXDR(
-    signedTxXdr,
-    STELLAR_CONFIG.networkPassphrase
-  ) as StellarSdk.Transaction;
+  try {
+    const signedTx = StellarSdk.TransactionBuilder.fromXDR(
+      signedTxXdr,
+      STELLAR_CONFIG.networkPassphrase
+    ) as StellarSdk.Transaction;
 
-  const response = await horizonServer.submitTransaction(signedTx);
+    const response = await horizonServer.submitTransaction(signedTx);
 
-  return {
-    hash: response.hash,
-    ledger: response.ledger,
-  };
+    return {
+      hash: response.hash,
+      ledger: response.ledger,
+    };
+  } catch (error: unknown) {
+    const err = error as {
+      response?: {
+        data?: {
+          extras?: {
+            result_codes?: {
+              transaction?: string;
+              operations?: string[];
+            };
+          };
+          title?: string;
+          detail?: string;
+        };
+      };
+      message?: string;
+    };
+
+    const extras = err?.response?.data?.extras?.result_codes;
+    if (extras?.operations?.includes('op_underfunded')) {
+      throw new Error('Cuenta sin fondos suficientes para transferir y pagar comisiones en Testnet.');
+    }
+    if (extras?.transaction === 'tx_bad_seq') {
+      throw new Error('Secuencia de transacción desincronizada. Por favor reintenta en unos segundos.');
+    }
+    if (extras?.transaction === 'tx_insufficient_fee') {
+      throw new Error('Comisión de red insuficiente.');
+    }
+    if (err?.response?.data?.detail) {
+      throw new Error(`Error de Horizon: ${err.response.data.detail}`);
+    }
+    throw new Error(err?.message || 'Error al enviar la transacción a Horizon Testnet.');
+  }
 }
 
 /**
