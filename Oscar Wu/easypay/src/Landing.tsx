@@ -65,6 +65,15 @@ const checklist = [
 
 const partners = ['Stellar', 'Varial', 'xBull', 'Albedo', 'USDC', 'Horizon', 'Soroban']
 
+/** Logo de Stellar (SVG de Simple Icons, dominio público). Usa el color del texto. */
+function StellarIcon({ size = 18 }: { size?: number }) {
+  return (
+    <svg className="stellar-ic" width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12.283 1.851A10.154 10.154 0 001.846 12.002c0 .259.01.516.03.773A1.847 1.847 0 01.872 14.56L0 15.005v2.074l2.568-1.309.832-.424.82-.417 14.71-7.496 1.653-.842L24 4.85V2.776l-3.387 1.728-2.89 1.473-13.955 7.108a8.376 8.376 0 01-.07-1.086 8.313 8.313 0 0112.366-7.247l1.654-.843.247-.126a10.154 10.154 0 00-5.682-1.932zM24 6.925L5.055 16.571l-1.653.844L0 19.15v2.072L3.378 19.5l2.89-1.473 13.97-7.117a8.474 8.474 0 01.07 1.092A8.313 8.313 0 017.93 19.248l-.101.054-1.793.914a10.154 10.154 0 0016.119-8.214c0-.26-.01-.522-.03-.78a1.848 1.848 0 011.003-1.785L24 8.992Z" />
+    </svg>
+  )
+}
+
 function scrollToId(id: string) {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }
@@ -131,6 +140,7 @@ export default function Landing() {
       {/* Portada */}
       <section className="lp-hero">
         <div className="lp-copy">
+          <span className="lp-built"><StellarIcon size={16} /> Construido sobre Stellar</span>
           <h1>
             Cobra sin internet.<br />
             <span className="lp-grad">Liquida en Stellar.</span>
@@ -161,7 +171,7 @@ export default function Landing() {
         <div className="lp-marquee">
           <div className="lp-track">
             {[...partners, ...partners].map((p, i) => (
-              <span className="lp-logo" key={i}>{p}</span>
+              <span className="lp-logo" key={i}>{p === 'Stellar' && <StellarIcon size={22} />}{p}</span>
             ))}
           </div>
         </div>
@@ -314,6 +324,7 @@ export default function Landing() {
         <div className="lp-foot-brand">
           <a className="lp-brand" href="#/"><img className="logo" src="/logo.png" alt="" /> <span>EasyPay</span></a>
           <p>Cobra aunque no tengas internet.</p>
+          <p className="lp-built-foot">Construido sobre <StellarIcon size={14} /> Stellar</p>
         </div>
         <div className="lp-foot-cols">
           <div>
