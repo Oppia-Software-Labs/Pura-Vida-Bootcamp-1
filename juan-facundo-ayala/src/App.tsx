@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AccountBalance } from '@/components/AccountBalance'
 import { HowItWorks } from '@/components/HowItWorks'
 import { MateForm } from '@/components/MateForm'
@@ -30,6 +30,18 @@ function App() {
     setLastAddress(wallet.address)
     if (lastAddress !== null) setFormKey((key) => key + 1)
   }
+  // Alto de la columna derecha, para calcular dónde se fija al hacer scroll.
+  const column = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const node = column.current
+    if (!node) return
+    const observer = new ResizeObserver(() => {
+      node.style.setProperty('--column-height', `${node.offsetHeight}px`)
+    })
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [])
+
   const reloadHistory = () => setHistoryVersion((version) => version + 1)
 
   const refreshAll = () => {
@@ -46,7 +58,7 @@ function App() {
   // En pantallas grandes las tarjetas pasan a la columna derecha.
   return (
     <div className="mx-auto grid w-full max-w-5xl gap-x-16 gap-y-8 px-4 py-8 sm:px-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,26rem)] lg:grid-rows-[auto_1fr] lg:gap-y-10 lg:py-16">
-      <header className="grid gap-8">
+      <header className="rise-in grid gap-8">
         <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-3">
           <div className="flex items-center gap-3">
             <span className="font-heading text-xl font-semibold tracking-tight">
@@ -73,53 +85,57 @@ function App() {
         <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4 sm:gap-8">
           <div className="grid gap-4">
             <h1 className="font-heading text-4xl leading-[1.05] font-semibold tracking-tight text-balance sm:text-5xl">
-              Convidá{' '}
-              <span className="bg-[linear-gradient(transparent_62%,var(--highlight)_62%,var(--highlight)_92%,transparent_92%)] whitespace-nowrap">
-                un mate
-              </span>{' '}
-              en segundos.
+              Convidá <span className="whitespace-nowrap">un mate</span> en
+              segundos.
             </h1>
             <p className="max-w-md text-base text-pretty text-muted-foreground sm:text-lg">
               Una propina en XLM o en dólares digitales que viaja por Stellar.
               Vos firmás desde tu wallet y la otra persona la recibe al toque.
             </p>
           </div>
-          <MateIllustration className="w-32 sm:w-48 lg:w-52" />
+          <MateIllustration className="mate-float w-32 sm:w-48 lg:w-52" />
         </div>
       </header>
 
-      <main className="grid content-start gap-4 lg:col-start-2 lg:row-span-2 lg:row-start-1">
-        <WalletSection
-          address={wallet.address}
-          connecting={wallet.connecting}
-          error={wallet.error}
-          wrongNetwork={wallet.wrongNetwork}
-          onConnect={wallet.connect}
-          onDisconnect={wallet.disconnect}
+      <main className="lg:col-start-2 lg:row-span-2 lg:row-start-1">
+        {/* En pantallas grandes la columna acompaña el scroll; si es más alta
+            que la ventana, se fija recién al llegar a su final. */}
+        <div
+          ref={column}
+          className="rise-in grid content-start gap-4 [animation-delay:80ms] lg:sticky lg:top-[min(2rem,calc(100svh-var(--column-height,0px)-2rem))]"
         >
-          <AccountBalance
-            info={account.info}
-            loading={account.loading}
-            error={account.error}
-            refreshing={account.refreshing}
-            funding={account.funding}
-            enabling={account.enabling}
-            onRefresh={refreshAll}
-            onFund={fundAccount}
-            onEnable={account.enable}
+          <WalletSection
+            address={wallet.address}
+            connecting={wallet.connecting}
+            error={wallet.error}
+            wrongNetwork={wallet.wrongNetwork}
+            onConnect={wallet.connect}
+            onDisconnect={wallet.disconnect}
+          >
+            <AccountBalance
+              info={account.info}
+              loading={account.loading}
+              error={account.error}
+              refreshing={account.refreshing}
+              funding={account.funding}
+              enabling={account.enabling}
+              onRefresh={refreshAll}
+              onFund={fundAccount}
+              onEnable={account.enable}
+            />
+          </WalletSection>
+          <MateForm
+            key={formKey}
+            address={wallet.address}
+            account={account.info}
+            accountLoading={account.loading}
+            wrongNetwork={wallet.wrongNetwork}
+            onSent={refreshAll}
           />
-        </WalletSection>
-        <MateForm
-          key={formKey}
-          address={wallet.address}
-          account={account.info}
-          accountLoading={account.loading}
-          wrongNetwork={wallet.wrongNetwork}
-          onSent={refreshAll}
-        />
-        {wallet.address && (
-          <MateHistory address={wallet.address} version={historyVersion} />
-        )}
+          {wallet.address && (
+            <MateHistory address={wallet.address} version={historyVersion} />
+          )}
+        </div>
       </main>
 
       <section
@@ -179,7 +195,7 @@ function App() {
             para el{' '}
             <a
               className={FOOTER_LINK}
-              href="https://github.com/Oppia-Software-Labs/Pura-Vida-Bootcamp-1"
+              href="https://climb.oppialabs.com/e/pura-vida"
               target="_blank"
               rel="noreferrer"
             >

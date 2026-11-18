@@ -185,6 +185,19 @@ que verificarla ahí.
   en Testnet no tiene liquidez contra XLM, así que la conversión no tendría
   camino.
 
+## Validación
+
+Para saber si el aporte tiene sentido se entrevistó a un ingeniero agrónomo,
+director técnico de varios cultivos de yerba mate. Lo que contó:
+
+- Hay pocos recursos para trabajar los cultivos.
+- Escasea la mano de obra calificada.
+- Algunas donaciones vendrían bien para insumos, capacitación, herramientas y
+  elementos de trabajo.
+
+Es una sola entrevista: sirve como primera señal, no como estudio. Hoy el
+aporte sigue llegando a una cuenta de prueba.
+
 ## Roadmap
 
 Nada de esta sección está implementado: es lo que sigue después de esta
@@ -217,6 +230,13 @@ productores de café en Costa Rica:
   verificada como destino.
 - Una página pública de cada fondo, con el total reunido y cada aporte leídos
   de la red, para que cualquiera pueda auditarlo.
+
+**Etapa 2: donaciones efectivas.** Para que el aporte llegue de verdad a
+quienes producen:
+
+- Hacer contacto con la federación de yerbateros misioneros y con
+  asociaciones independientes de yerbateros.
+- Acordar con ellas la cuenta que recibe el fondo y cómo se usa lo reunido.
 
 ## Fotos
 

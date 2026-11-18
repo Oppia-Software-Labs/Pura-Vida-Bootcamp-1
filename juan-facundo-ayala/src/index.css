@@ -120,10 +120,22 @@
 
   html {
     @apply font-sans;
+    text-rendering: optimizeLegibility;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
     @apply min-h-svh bg-background text-foreground antialiased;
+  }
+
+  /* El fondo va en una capa fija propia: en celular, un fondo fijo sobre el
+     body obliga a repintar toda la página en cada scroll. */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
     background-image:
       radial-gradient(
         56rem 34rem at 88% -8%,
@@ -135,8 +147,53 @@
         color-mix(in oklch, var(--highlight) 22%, transparent),
         transparent 70%
       );
-    background-attachment: fixed;
   }
+
+  h1,
+  h2,
+  h3 {
+    font-optical-sizing: auto;
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* Sin la espera del doble toque: los botones responden al instante. */
+  a,
+  button,
+  input,
+  label {
+    touch-action: manipulation;
+  }
+}
+
+/* Entrada suave de cada bloque al cargar. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+.rise-in {
+  animation: rise-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* El mate flota apenas, como apoyado en la mano. */
+@keyframes mate-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+}
+
+.mate-float {
+  animation: mate-float 6s ease-in-out infinite;
 }
 
 /* Ilustración del mate: vapor que sube y estrellas que titilan. */
@@ -192,7 +249,9 @@
 
 @media (prefers-reduced-motion: reduce) {
   .mate-steam path,
-  .mate-stars path {
+  .mate-stars path,
+  .mate-float,
+  .rise-in {
     animation: none;
   }
 

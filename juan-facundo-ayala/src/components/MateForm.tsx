@@ -1,13 +1,5 @@
 import { type FormEvent, useEffect, useId, useRef, useState } from 'react'
-import {
-  CircleCheck,
-  ExternalLink,
-  Link2,
-  LoaderCircle,
-  Send,
-  Sprout,
-  TriangleAlert,
-} from 'lucide-react'
+import { Link2, LoaderCircle, Send, Sprout, TriangleAlert } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
@@ -17,6 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
+import { MateSent, type Sent } from '@/components/MateSent'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
@@ -26,7 +19,7 @@ import {
   maxSendable,
 } from '@/lib/account'
 import { type AssetCode, ASSETS, getAsset, XLM } from '@/lib/assets'
-import { explorerTxUrl, NETWORK_NAME, shortAddress } from '@/lib/config'
+import { NETWORK_NAME, shortAddress } from '@/lib/config'
 import { parseMateLink } from '@/lib/link'
 import {
   buildMateTx,
@@ -61,18 +54,6 @@ const STEP_LABEL: Record<Exclude<Step, 'idle'>, string> = {
 
 const NETWORK_ERROR =
   'No pudimos conectar con la red de Stellar. Revisá tu conexión y probá de nuevo.'
-
-type Sent = {
-  hash: string
-  amount: number
-  asset: AssetCode
-  to: string
-  message: string
-  /** Cuánto se pagó con XLM para que la red lo convirtiera al activo. */
-  converted: 'todo' | 'parte' | 'nada'
-  /** Aporte al fondo yerbatero que viajó en la misma transacción. */
-  share: number
-}
 
 /**
  * Cotización en XLM de un envío; `cost` es null si nadie ofrece el cambio.
@@ -298,51 +279,11 @@ export function MateForm({
 
       <CardContent>
         {sent ? (
-          <div className="grid gap-4">
-            <div
-              role="status"
-              className="grid animate-in justify-items-start gap-1 rounded-lg bg-accent p-4 text-accent-foreground duration-300 fade-in zoom-in-95 motion-reduce:animate-none"
-            >
-              <CircleCheck className="size-6" aria-hidden="true" />
-              <p
-                ref={sentTitle}
-                tabIndex={-1}
-                className="font-heading text-lg font-semibold outline-none"
-              >
-                ¡Mate convidado!
-              </p>
-              <p className="text-sm">
-                Le llegaron {formatXlmExact(sent.amount)} {sent.asset} a{' '}
-                <span className="font-mono">{shortAddress(sent.to)}</span>.
-                {sent.converted === 'todo' &&
-                  ' Pagaste con XLM y la red lo convirtió en el camino.'}
-                {sent.converted === 'parte' &&
-                  ' Una parte la pagaste con XLM y la red la convirtió en el camino.'}
-              </p>
-              {sent.share > 0 && (
-                <p className="text-sm">
-                  Además sumaste {formatXlmExact(sent.share)} {sent.asset} al
-                  fondo yerbatero de esta demo, en la misma transacción.
-                </p>
-              )}
-              {sent.message && (
-                <p className="text-sm italic">“{sent.message}”</p>
-              )}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Button onClick={() => setSent(null)}>Convidar otro</Button>
-              <Button variant="outline" asChild>
-                <a
-                  href={explorerTxUrl(sent.hash)}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Ver comprobante
-                  <ExternalLink data-icon="inline-end" />
-                </a>
-              </Button>
-            </div>
-          </div>
+          <MateSent
+            sent={sent}
+            titleRef={sentTitle}
+            onAgain={() => setSent(null)}
+          />
         ) : (
           <form className="grid gap-5" onSubmit={handleSubmit} noValidate>
             {fromLink && (
