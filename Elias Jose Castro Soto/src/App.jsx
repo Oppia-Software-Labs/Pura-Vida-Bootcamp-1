@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Wallet, Copy, Check, LogOut } from "lucide-react";
+import { Wallet, Copy, Check, LogOut, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -11,11 +11,13 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { useStellarWallet } from "@/hooks/useStellarWallet";
+import { useXlmBalance } from "@/hooks/useXlmBalance";
 
 const shorten = (a) => `${a.slice(0, 6)}…${a.slice(-6)}`;
 
 export default function App() {
   const { address, loading, error, connect, disconnect } = useStellarWallet();
+  const { balance, error: balanceError, refresh } = useXlmBalance(address);
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
@@ -68,6 +70,32 @@ export default function App() {
             <p className="text-sm text-muted-foreground">
               Tu dirección aparecerá aquí después de conectar.
             </p>
+          )}
+
+          {address && (
+            <div className="space-y-3 rounded-lg border bg-background/50 p-3">
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-muted-foreground">Balance (testnet)</span>
+                <Button variant="ghost" size="icon" onClick={refresh} aria-label="Actualizar balance">
+                  <RefreshCw className="size-4" />
+                </Button>
+              </div>
+
+              {balance === undefined ? (
+                <p className="text-sm text-muted-foreground">Consultando…</p>
+              ) : balance === null ? (
+                <p className="text-sm text-muted-foreground">
+                  Esta cuenta aún no existe en testnet. Fondéala con XLM de prueba.
+                </p>
+              ) : (
+                <p className="text-2xl font-semibold">
+                  {Number(balance).toLocaleString("es", { maximumFractionDigits: 2 })}{" "}
+                  <span className="text-base text-primary">XLM</span>
+                </p>
+              )}
+
+              {balanceError && <p className="text-sm text-destructive">{balanceError}</p>}
+            </div>
           )}
 
           {error && <p className="text-sm text-destructive">{error}</p>}
