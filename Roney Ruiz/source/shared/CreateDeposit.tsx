@@ -2,22 +2,29 @@ import { useState } from "react";
 import { useBalance } from "@hooks/useBalance";
 import { useCreateDeposit } from "@hooks/useCreateDeposit";
 import { useNow } from "@hooks/useNow";
-import { planDeposit } from "@bloc/entity/plan";
+import { planDeposit, type PlanError } from "@bloc/entity/plan";
 import { DEMO_MODE_DEFAULT } from "@config/network";
+import CopyButton from "./CopyButton";
+import DepositPreview from "./DepositPreview";
+import Field from "./Field";
 import { friendlyError, planErrorMessages } from "./friendlyError";
+import { formatXlm } from "./format";
 
-const inputClass = "w-full rounded border border-gray-300 px-3 py-2";
+type FieldName = "landlord" | "amount" | "time" | "other";
+
+const fieldOf: Record<PlanError, FieldName> = {
+  invalid_tenant: "other",
+  invalid_landlord: "landlord",
+  same_account: "landlord",
+  invalid_amount: "amount",
+  insufficient_balance: "amount",
+  end_not_in_future: "time",
+  deadline_not_after_end: "time",
+  invalid_repair_cap: "other",
+};
 
 function toEpoch(localDateTime: string): number {
   return localDateTime ? Math.floor(new Date(localDateTime).getTime() / 1000) : NaN;
-}
-
-function formatEpoch(epochSec: number): string {
-  return new Date(epochSec * 1000).toLocaleString("es", { dateStyle: "short", timeStyle: "short" });
-}
-
-function shorten(address: string): string {
-  return address.length > 12 ? `${address.slice(0, 6)}...${address.slice(-6)}` : address;
 }
 
 export default function CreateDeposit({ address }: { address: string }) {
@@ -44,135 +51,193 @@ export default function CreateDeposit({ address }: { address: string }) {
     balanceStroops: balance,
   });
 
+  function errorFor(field: FieldName): string | undefined {
+    if (!showErrors || result.ok) return undefined;
+    const messages = result.errors.filter((code) => fieldOf[code] === field).map((code) => planErrorMessages[code]);
+    return messages.length ? messages.join(" ") : undefined;
+  }
+
   if (depositId) {
     const link = `${location.origin}${location.pathname}?deposit=${depositId}`;
     return (
-      <section className="flex flex-col items-start gap-3">
-        <h2 className="text-lg font-semibold">Depósito creado</h2>
-        <p className="text-sm">Comparte este link con el arrendador para que encuentre el depósito:</p>
-        <p className="break-all font-mono text-sm">{link}</p>
-        <button type="button" onClick={reset} className="rounded border px-4 py-2">
-          Crear otro
+      <section className="card flex flex-col gap-5" aria-label="Depósito creado">
+        <div className="flex items-center gap-3">
+          <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-full bg-ok/15 text-lg text-ok">
+            ✓
+          </span>
+          <div>
+            <h2 className="text-lg font-semibold">Depósito creado</h2>
+            <p className="text-sm text-muted">El dinero ya está bloqueado en la red. Nadie lo custodia.</p>
+          </div>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <p className="label">Link para el arrendador</p>
+          <div className="flex items-center gap-2 rounded-lg border border-line-strong bg-canvas p-2">
+            <p className="min-w-0 flex-1 break-all font-mono text-xs text-muted">{link}</p>
+            <CopyButton text={link} label="Copiar link" />
+          </div>
+          <p className="hint">Compártelo para que el arrendador encuentre el depósito.</p>
+        </div>
+        <button type="button" onClick={reset} className="btn btn-ghost">
+          Crear otro depósito
         </button>
       </section>
     );
   }
 
+  const timeError = errorFor("time");
+
   return (
     <form
-      className="flex flex-col gap-4"
+      className="card flex flex-col gap-5"
+      aria-label="Crear depósito"
+      noValidate
       onSubmit={(event) => {
         event.preventDefault();
         setShowErrors(true);
         if (result.ok) void create(result.plan);
       }}
     >
-      <h2 className="text-lg font-semibold">Crear depósito</h2>
+      <div className="flex flex-col gap-1">
+        <h2 className="text-lg font-semibold">Nuevo depósito</h2>
+        <p className="text-sm text-muted">Bloquea el monto en la red. Tú lo recuperas si el arrendador no actúa a tiempo.</p>
+      </div>
 
-      <label className="flex flex-col gap-1 text-sm">
-        Dirección del arrendador
+      <Field id="landlord" label="Arrendador" hint="Dirección de su cuenta Stellar." error={errorFor("landlord")}>
         <input
-          className={`${inputClass} font-mono`}
+          id="landlord"
+          className="input font-mono"
           value={landlord}
           onChange={(event) => setLandlord(event.target.value)}
           placeholder="G..."
+          autoComplete="off"
+          spellCheck={false}
+          aria-invalid={Boolean(errorFor("landlord"))}
+          aria-describedby="landlord-message"
         />
-      </label>
+      </Field>
 
-      <label className="flex flex-col gap-1 text-sm">
-        Monto (XLM)
-        <input
-          className={inputClass}
-          inputMode="decimal"
-          value={amount}
-          onChange={(event) => setAmount(event.target.value)}
-          placeholder="100"
-        />
-      </label>
-
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={demo} onChange={(event) => setDemo(event.target.checked)} />
-        Modo demo (plazos en minutos)
-      </label>
-
-      {demo ? (
-        <div className="grid grid-cols-2 gap-3">
-          <label className="flex flex-col gap-1 text-sm">
-            Fin del contrato (min desde ahora)
-            <input
-              className={inputClass}
-              inputMode="numeric"
-              value={endMinutes}
-              onChange={(event) => setEndMinutes(event.target.value)}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            Plazo (min desde ahora)
-            <input
-              className={inputClass}
-              inputMode="numeric"
-              value={deadlineMinutes}
-              onChange={(event) => setDeadlineMinutes(event.target.value)}
-            />
-          </label>
+      <Field
+        id="amount"
+        label="Monto"
+        hint={balance !== null ? `Disponible: ${formatXlm(balance)} XLM` : undefined}
+        error={errorFor("amount")}
+      >
+        <div className="relative">
+          <input
+            id="amount"
+            className="input pr-14"
+            inputMode="decimal"
+            value={amount}
+            onChange={(event) => setAmount(event.target.value)}
+            placeholder="100"
+            autoComplete="off"
+            aria-invalid={Boolean(errorFor("amount"))}
+            aria-describedby="amount-message"
+          />
+          <span aria-hidden className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-faint">
+            XLM
+          </span>
         </div>
-      ) : (
-        <div className="grid grid-cols-2 gap-3">
-          <label className="flex flex-col gap-1 text-sm">
-            Fin del contrato
-            <input
-              className={inputClass}
-              type="datetime-local"
-              value={endAt}
-              onChange={(event) => setEndAt(event.target.value)}
-            />
-          </label>
-          <label className="flex flex-col gap-1 text-sm">
-            Plazo
-            <input
-              className={inputClass}
-              type="datetime-local"
-              value={deadlineAt}
-              onChange={(event) => setDeadlineAt(event.target.value)}
-            />
-          </label>
-        </div>
-      )}
+      </Field>
 
-      {result.ok && (
-        <div className="rounded bg-gray-100 p-3 text-sm">
-          <p>
-            Antes de {formatEpoch(result.plan.endOfContract)} nadie puede reclamar. Si{" "}
-            {shorten(result.plan.landlord)} no reclama entre {formatEpoch(result.plan.endOfContract)} y{" "}
-            {formatEpoch(result.plan.deadline)}, podrás recuperar {amount.trim()} XLM después de{" "}
-            {formatEpoch(result.plan.deadline)}.
+      <button
+        type="button"
+        role="switch"
+        aria-checked={demo}
+        onClick={() => setDemo(!demo)}
+        className="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-line bg-canvas px-3 py-2.5 text-left transition-colors hover:border-line-strong"
+      >
+        <span>
+          <span className="block text-sm font-medium">Modo demo</span>
+          <span className="hint">Plazos en minutos para probar rápido.</span>
+        </span>
+        <span
+          aria-hidden
+          className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${demo ? "bg-accent" : "bg-line-strong"}`}
+        >
+          <span
+            className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-fg transition-transform ${demo ? "translate-x-5" : ""}`}
+          />
+        </span>
+      </button>
+
+      <div className="flex flex-col gap-1.5">
+        <div className="grid gap-4 sm:grid-cols-2">
+          {demo ? (
+            <>
+              <Field id="end" label="Fin del contrato" hint="Minutos desde ahora.">
+                <input
+                  id="end"
+                  className="input"
+                  inputMode="numeric"
+                  value={endMinutes}
+                  onChange={(event) => setEndMinutes(event.target.value)}
+                  aria-invalid={Boolean(timeError)}
+                  aria-describedby="end-message"
+                />
+              </Field>
+              <Field id="deadline" label="Plazo" hint="Minutos desde ahora.">
+                <input
+                  id="deadline"
+                  className="input"
+                  inputMode="numeric"
+                  value={deadlineMinutes}
+                  onChange={(event) => setDeadlineMinutes(event.target.value)}
+                  aria-invalid={Boolean(timeError)}
+                  aria-describedby="deadline-message"
+                />
+              </Field>
+            </>
+          ) : (
+            <>
+              <Field id="end" label="Fin del contrato">
+                <input
+                  id="end"
+                  className="input"
+                  type="datetime-local"
+                  value={endAt}
+                  onChange={(event) => setEndAt(event.target.value)}
+                  aria-invalid={Boolean(timeError)}
+                />
+              </Field>
+              <Field id="deadline" label="Plazo">
+                <input
+                  id="deadline"
+                  className="input"
+                  type="datetime-local"
+                  value={deadlineAt}
+                  onChange={(event) => setDeadlineAt(event.target.value)}
+                  aria-invalid={Boolean(timeError)}
+                />
+              </Field>
+            </>
+          )}
+        </div>
+        {timeError && (
+          <p role="alert" className="text-xs text-danger">
+            {timeError}
           </p>
-          <p className="mt-2 text-xs text-gray-600">
-            La red usa la hora de cierre de su ledger, no tu reloj: deja 15 a 30 segundos de margen.
-          </p>
-        </div>
-      )}
+        )}
+      </div>
 
-      {showErrors && !result.ok && (
-        <ul role="alert" className="list-disc pl-5 text-sm text-red-600">
-          {result.errors.map((code) => (
-            <li key={code}>{planErrorMessages[code]}</li>
-          ))}
-        </ul>
+      {result.ok && <DepositPreview plan={result.plan} amount={amount.trim()} />}
+
+      {errorFor("other") && (
+        <p role="alert" className="alert">
+          {errorFor("other")}
+        </p>
       )}
 
       {error && (
-        <p role="alert" className="text-sm text-red-600">
+        <p role="alert" className="alert">
           {friendlyError(error)}
         </p>
       )}
 
-      <button
-        type="submit"
-        disabled={creating}
-        className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
-      >
-        {creating ? "Esperando firma..." : "Firmar y crear depósito"}
+      <button type="submit" disabled={creating} className="btn btn-primary w-full">
+        {creating && <span aria-hidden className="spinner" />}
+        {creating ? "Esperando tu firma en Varial..." : "Firmar y crear depósito"}
       </button>
     </form>
   );

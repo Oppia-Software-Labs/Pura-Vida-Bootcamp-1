@@ -1,1 +1,80 @@
 @import "tailwindcss";
+
+@theme {
+  --color-canvas: #0a0c11;
+  --color-surface: #11141b;
+  --color-raised: #181c26;
+  --color-line: #242a37;
+  --color-line-strong: #343c4f;
+  --color-fg: #e9ecf3;
+  --color-muted: #9ba4b8;
+  --color-faint: #7d869a;
+  --color-accent: #8393ff;
+  --color-accent-strong: #a1adff;
+  --color-on-accent: #0a0c11;
+  --color-ok: #4ade80;
+  --color-warn: #fbbf24;
+  --color-danger: #ff8a8a;
+  --font-sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, monospace;
+}
+
+@layer base {
+  html {
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-canvas font-sans text-fg antialiased;
+  }
+
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-accent;
+  }
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl border border-line bg-surface p-5 sm:p-6;
+  }
+
+  .label {
+    @apply text-sm font-medium text-fg;
+  }
+
+  .hint {
+    @apply text-xs text-faint;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-line-strong bg-canvas px-3 py-2.5 text-sm text-fg transition-colors placeholder:text-faint hover:border-faint focus:border-accent focus-visible:outline-0 focus-visible:ring-2 focus-visible:ring-accent/40;
+  }
+
+  .input[aria-invalid="true"] {
+    @apply border-danger;
+  }
+
+  .btn {
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-primary {
+    @apply bg-accent text-on-accent hover:bg-accent-strong disabled:hover:bg-accent;
+  }
+
+  .btn-ghost {
+    @apply border border-line-strong text-fg hover:bg-raised disabled:hover:bg-transparent;
+  }
+
+  .badge {
+    @apply rounded-full border border-warn/30 bg-warn/10 px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wide text-warn;
+  }
+
+  .alert {
+    @apply rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-sm text-danger;
+  }
+
+  .spinner {
+    @apply size-4 animate-spin rounded-full border-2 border-current border-t-transparent motion-reduce:animate-none;
+  }
+}
