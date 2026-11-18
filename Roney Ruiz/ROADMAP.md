@@ -7,8 +7,8 @@ Estado: ✅ hecho · 🔄 en curso · ⬜ pendiente
 | Fase | Qué entrega | Estado |
 |---|---|---|
 | 0 | Base del proyecto y documentación | ✅ |
-| 1 | Conectar wallet (requisito mínimo) | ⬜ siguiente |
-| 2 | Dominio con tests | ⬜ |
+| 1 | Conectar wallet (requisito mínimo) | ✅ |
+| 2 | Dominio con tests | ⬜ siguiente |
 | 3 | Crear depósito | ⬜ |
 | 4 | Listar y reclamar | ⬜ |
 | 5 | Cierre y entrega | ⬜ |
@@ -25,7 +25,7 @@ Los mensajes de commit sugeridos para cada fase están en [`context/structure.md
 - ✅ `README.md`, `CLAUDE.md`, ícono y `.gitattributes`.
 - ✅ Decisiones cerradas: nombre, activo, idioma, tope, descubrimiento y entrega.
 
-## Fase 1 · Conectar wallet ⬜
+## Fase 1 · Conectar wallet ✅
 
 Pantalla 1. Cumple el requisito mínimo de la tarea.
 
@@ -33,15 +33,15 @@ Pantalla 1. Cumple el requisito mínimo de la tarea.
 - ✅ `source/config/network.ts` con la red testnet.
 - ✅ `source/bloc/wallet/varial.ts`: conectar y firmar.
 - ✅ Hook `useWallet` y pantalla `ConnectWallet`.
-- ⬜ Mostrar dirección, saldo de XLM e indicador de red.
-- ⬜ Verificar que Horizon responde en testnet con una llamada simple.
+- ✅ Mostrar dirección, saldo de XLM e indicador de red.
+- ✅ Verificar que Horizon responde en testnet con una llamada simple.
 
 ## Fase 2 · Dominio con tests ⬜
 
 Lógica pura en `source/bloc/entity/`, sin React, wallet ni red. Cada archivo con su `*.test.ts` al lado.
 
 - ⬜ `types.ts`: `Deposit`, `DepositPlan`, `Role`, `Status`.
-- ⬜ `money.ts`: conversión a stroops con `BigInt` y división con tope.
+- 🔄 `money.ts`: conversión a stroops con `BigInt` (hecha) y división con tope (falta).
 - ⬜ `predicates.ts` y `evaluate.ts`: predicados del arrendador y del inquilino, y `evalPred`.
 - ⬜ `status.ts`: estado y acción disponible por rol.
 - ⬜ `plan.ts`: validar el formulario y devolver un `DepositPlan`.
