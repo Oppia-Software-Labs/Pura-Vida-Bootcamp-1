@@ -13,6 +13,7 @@ import {
 import { useStellarWallet } from "@/hooks/useStellarWallet";
 import { useXlmBalance } from "@/hooks/useXlmBalance";
 import NoWalletGuide from "@/components/NoWalletGuide";
+import Footer from "@/components/Footer";
 
 const shorten = (a) => `${a.slice(0, 6)}…${a.slice(-6)}`;
 
@@ -123,6 +124,7 @@ export default function App() {
       </main>
 
       <NoWalletGuide />
+      <Footer />
     </div>
   );
 }
