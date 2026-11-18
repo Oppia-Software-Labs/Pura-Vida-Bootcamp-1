@@ -16,6 +16,8 @@ export const NETWORK_PASSPHRASE = Networks.TESTNET;
 // USDC de Circle en testnet
 export const USDC_ISSUER = "GBBD47IF6LWK7P7MDEVSCWR7DPUWV3NY3DTQEVFL4NAT4AQH3ZLLFLA5";
 
+export const USDC = new Asset("USDC", USDC_ISSUER);
+
 export const horizon = new Horizon.Server(HORIZON_URL);
 
 // Stellar Wallets Kit v2 es un singleton estático: se inicializa una sola vez.
@@ -43,7 +45,7 @@ export async function getBalances(address) {
     const account = await horizon.loadAccount(address);
     const xlm = account.balances.find((b) => b.asset_type === "native");
     const usdc = account.balances.find(
-      (b) => b.asset_code === "USDC" && b.asset_issuer === USDC_ISSUER
+      (b) => b.asset_code === USDC.getCode() && b.asset_issuer === USDC.getIssuer()
     );
     return {
       funded: true,
@@ -54,6 +56,36 @@ export async function getBalances(address) {
     if (err instanceof NotFoundError) return { funded: false, xlm: "0", usdc: null };
     throw err;
   }
+}
+
+// Firma con Freighter y envía a Horizon una transacción ya construida.
+async function signAndSubmit(tx, address) {
+  const { signedTxXdr } = await StellarWalletsKit.signTransaction(tx.toXDR(), {
+    networkPassphrase: NETWORK_PASSPHRASE,
+    address,
+  });
+  const signed = TransactionBuilder.fromXDR(signedTxXdr, NETWORK_PASSPHRASE);
+  try {
+    const res = await horizon.submitTransaction(signed);
+    return res.hash;
+  } catch (err) {
+    const codes = err?.response?.data?.extras?.result_codes;
+    if (codes) throw new Error(`Transacción rechazada: ${JSON.stringify(codes)}`);
+    throw err;
+  }
+}
+
+// Agrega la trustline de USDC (changeTrust sin límite = límite máximo).
+export async function addUsdcTrustline(address) {
+  const account = await horizon.loadAccount(address);
+  const tx = new TransactionBuilder(account, {
+    fee: BASE_FEE,
+    networkPassphrase: NETWORK_PASSPHRASE,
+  })
+    .addOperation(Operation.changeTrust({ asset: USDC }))
+    .setTimeout(180)
+    .build();
+  return signAndSubmit(tx, address);
 }
 
 export async function sendXlm(source, destination, amount) {
@@ -83,18 +115,5 @@ export async function sendXlm(source, destination, amount) {
     .setTimeout(180)
     .build();
 
-  const { signedTxXdr } = await StellarWalletsKit.signTransaction(tx.toXDR(), {
-    networkPassphrase: NETWORK_PASSPHRASE,
-    address: source,
-  });
-
-  const signed = TransactionBuilder.fromXDR(signedTxXdr, NETWORK_PASSPHRASE);
-  try {
-    const res = await horizon.submitTransaction(signed);
-    return res.hash;
-  } catch (err) {
-    const codes = err?.response?.data?.extras?.result_codes;
-    if (codes) throw new Error(`Transacción rechazada: ${JSON.stringify(codes)}`);
-    throw err;
-  }
+  return signAndSubmit(tx, source);
 }

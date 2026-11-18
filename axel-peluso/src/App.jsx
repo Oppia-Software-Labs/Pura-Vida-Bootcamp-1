@@ -1,7 +1,20 @@
 import { useCallback, useEffect, useState } from "react";
-import { connectFreighter, disconnectWallet, getBalances, sendXlm } from "./stellar.js";
+import { addUsdcTrustline, connectFreighter, disconnectWallet, getBalances, sendXlm } from "./stellar.js";
 
 const short = (a) => `${a.slice(0, 6)}…${a.slice(-6)}`;
+
+function StatusLine({ status }) {
+  return (
+    <p className={status.ok === false ? "error" : status.ok ? "ok" : "muted"}>
+      {status.msg}{" "}
+      {status.hash && (
+        <a href={`https://stellar.expert/explorer/testnet/tx/${status.hash}`} target="_blank" rel="noreferrer">
+          Ver transacción
+        </a>
+      )}
+    </p>
+  );
+}
 
 export default function App() {
   const [address, setAddress] = useState(null);
@@ -13,6 +26,8 @@ export default function App() {
   const [amount, setAmount] = useState("");
   const [sending, setSending] = useState(false);
   const [status, setStatus] = useState(null);
+  const [trusting, setTrusting] = useState(false);
+  const [trustStatus, setTrustStatus] = useState(null);
 
   const refresh = useCallback(async (addr) => {
     setError(null);
@@ -44,6 +59,21 @@ export default function App() {
     setAddress(null);
     setBalances(null);
     setStatus(null);
+    setTrustStatus(null);
+  };
+
+  const onAddTrustline = async () => {
+    setTrustStatus({ ok: null, msg: "Firma la trustline en Freighter…" });
+    setTrusting(true);
+    try {
+      const hash = await addUsdcTrustline(address);
+      setTrustStatus({ ok: true, msg: "Trustline de USDC agregada.", hash });
+      refresh(address);
+    } catch (e) {
+      setTrustStatus({ ok: false, msg: e?.message || String(e) });
+    } finally {
+      setTrusting(false);
+    }
   };
 
   const onSend = async (e) => {
@@ -112,6 +142,15 @@ export default function App() {
               </div>
             </div>
 
+            {balances?.funded && balances.usdc === null && (
+              <div className="row">
+                <button onClick={onAddTrustline} disabled={trusting}>
+                  {trusting ? "Agregando…" : "Agregar trustline USDC"}
+                </button>
+              </div>
+            )}
+            {trustStatus && <StatusLine status={trustStatus} />}
+
             <div className="row">
               <button className="ghost" onClick={() => refresh(address)}>Actualizar</button>
               <button className="ghost" onClick={onDisconnect}>Desconectar</button>
@@ -145,20 +184,7 @@ export default function App() {
                 {sending ? "Enviando…" : "Enviar"}
               </button>
             </form>
-            {status && (
-              <p className={status.ok === false ? "error" : status.ok ? "ok" : "muted"}>
-                {status.msg}{" "}
-                {status.hash && (
-                  <a
-                    href={`https://stellar.expert/explorer/testnet/tx/${status.hash}`}
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Ver transacción
-                  </a>
-                )}
-              </p>
-            )}
+            {status && <StatusLine status={status} />}
           </section>
         </>
       )}
