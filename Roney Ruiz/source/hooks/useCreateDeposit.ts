@@ -9,6 +9,7 @@ export function useCreateDeposit(address: string) {
   const [creating, setCreating] = useState(false);
   const [error, setError] = useState<Error | null>(null);
   const [depositId, setDepositId] = useState<string | null>(null);
+  const [createdPlan, setCreatedPlan] = useState<DepositPlan | null>(null);
 
   const create = useCallback(
     async (plan: DepositPlan) => {
@@ -20,6 +21,7 @@ export function useCreateDeposit(address: string) {
         const id = await submitCreateDeposit(signed);
         saveDepositId(id);
         setDepositId(id);
+        setCreatedPlan(plan);
       } catch (e) {
         setError(e instanceof Error ? e : new Error(String(e)));
       } finally {
@@ -31,8 +33,9 @@ export function useCreateDeposit(address: string) {
 
   const reset = useCallback(() => {
     setDepositId(null);
+    setCreatedPlan(null);
     setError(null);
   }, []);
 
-  return { creating, error, depositId, create, reset };
+  return { creating, error, depositId, createdPlan, create, reset };
 }

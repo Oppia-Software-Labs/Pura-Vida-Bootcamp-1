@@ -1,22 +1,34 @@
 @import "tailwindcss";
 
 @theme {
-  --color-canvas: #0a0c11;
-  --color-surface: #11141b;
-  --color-raised: #181c26;
-  --color-line: #242a37;
+  --color-canvas: #090b10;
+  --color-surface: #10131a;
+  --color-raised: #171b25;
+  --color-line: #232937;
   --color-line-strong: #343c4f;
-  --color-fg: #e9ecf3;
+  --color-fg: #eceff6;
   --color-muted: #9ba4b8;
   --color-faint: #7d869a;
   --color-accent: #8393ff;
   --color-accent-strong: #a1adff;
-  --color-on-accent: #0a0c11;
+  --color-on-accent: #090b10;
   --color-ok: #4ade80;
   --color-warn: #fbbf24;
   --color-danger: #ff8a8a;
-  --font-sans: ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, monospace;
+  --animate-rise: rise 0.45s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
 }
 
 @layer base {
@@ -26,6 +38,10 @@
 
   body {
     @apply bg-canvas font-sans text-fg antialiased;
+    background-image:
+      radial-gradient(48rem 24rem at 50% -6rem, color-mix(in oklab, var(--color-accent) 18%, transparent), transparent),
+      radial-gradient(32rem 20rem at 100% 0, color-mix(in oklab, var(--color-warn) 6%, transparent), transparent);
+    background-repeat: no-repeat;
   }
 
   :focus-visible {
@@ -35,7 +51,11 @@
 
 @layer components {
   .card {
-    @apply rounded-2xl border border-line bg-surface p-5 sm:p-6;
+    @apply animate-rise rounded-2xl border border-line bg-surface/80 p-5 shadow-[inset_0_1px_0_0_rgb(255_255_255/0.04),0_24px_48px_-28px_rgb(0_0_0/0.8)] backdrop-blur motion-reduce:animate-none sm:p-6;
+  }
+
+  .eyebrow {
+    @apply text-xs font-semibold uppercase tracking-widest text-accent-strong;
   }
 
   .label {
@@ -47,7 +67,7 @@
   }
 
   .input {
-    @apply w-full rounded-lg border border-line-strong bg-canvas px-3 py-2.5 text-sm text-fg transition-colors placeholder:text-faint hover:border-faint focus:border-accent focus-visible:outline-0 focus-visible:ring-2 focus-visible:ring-accent/40;
+    @apply w-full rounded-lg border border-line-strong bg-canvas/70 px-3 py-2.5 text-sm text-fg transition-colors placeholder:text-faint hover:border-faint focus:border-accent focus-visible:outline-0 focus-visible:ring-2 focus-visible:ring-accent/40;
   }
 
   .input[aria-invalid="true"] {
@@ -55,15 +75,35 @@
   }
 
   .btn {
-    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+    @apply inline-flex cursor-pointer items-center justify-center gap-2 rounded-lg px-4 py-2.5 text-sm font-semibold transition-all disabled:cursor-not-allowed disabled:opacity-50;
   }
 
   .btn-primary {
-    @apply bg-accent text-on-accent hover:bg-accent-strong disabled:hover:bg-accent;
+    @apply bg-accent text-on-accent shadow-[0_8px_24px_-8px_color-mix(in_oklab,var(--color-accent)_70%,transparent)] hover:-translate-y-px hover:bg-accent-strong disabled:translate-y-0 disabled:shadow-none disabled:hover:bg-accent;
   }
 
   .btn-ghost {
     @apply border border-line-strong text-fg hover:bg-raised disabled:hover:bg-transparent;
+  }
+
+  .chip {
+    @apply cursor-pointer rounded-full border border-line-strong px-3 py-1 text-xs font-medium text-muted transition-colors hover:border-accent hover:text-fg;
+  }
+
+  .chip[aria-pressed="true"] {
+    @apply border-accent bg-accent/15 text-accent-strong;
+  }
+
+  .segmented {
+    @apply grid grid-cols-2 gap-1 rounded-lg border border-line bg-canvas/70 p-1;
+  }
+
+  .segment {
+    @apply cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-muted transition-colors hover:text-fg;
+  }
+
+  .segment[aria-pressed="true"] {
+    @apply bg-raised text-fg shadow-[inset_0_0_0_1px_var(--color-line-strong)];
   }
 
   .badge {

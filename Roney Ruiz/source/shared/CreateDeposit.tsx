@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { useBalance } from "@hooks/useBalance";
 import { useCreateDeposit } from "@hooks/useCreateDeposit";
 import { useNow } from "@hooks/useNow";
@@ -8,7 +8,7 @@ import CopyButton from "./CopyButton";
 import DepositPreview from "./DepositPreview";
 import Field from "./Field";
 import { friendlyError, planErrorMessages } from "./friendlyError";
-import { formatXlm } from "./format";
+import { formatEpoch, formatXlm, shortAddress } from "./format";
 
 type FieldName = "landlord" | "amount" | "time" | "other";
 
@@ -23,14 +23,35 @@ const fieldOf: Record<PlanError, FieldName> = {
   invalid_repair_cap: "other",
 };
 
+const amountPresets = ["100", "500", "1000"];
+const demoPresets = [
+  { end: "2", deadline: "5" },
+  { end: "5", deadline: "10" },
+  { end: "10", deadline: "30" },
+];
+
 function toEpoch(localDateTime: string): number {
   return localDateTime ? Math.floor(new Date(localDateTime).getTime() / 1000) : NaN;
+}
+
+function Section({ step, title, children }: { step: number; title: string; children: ReactNode }) {
+  return (
+    <fieldset className="flex flex-col gap-4">
+      <legend className="mb-1 flex items-center gap-2.5 text-sm font-semibold">
+        <span aria-hidden className="grid size-6 place-items-center rounded-full bg-accent/15 text-xs text-accent-strong">
+          {step}
+        </span>
+        {title}
+      </legend>
+      {children}
+    </fieldset>
+  );
 }
 
 export default function CreateDeposit({ address }: { address: string }) {
   const now = useNow();
   const { balance } = useBalance(address);
-  const { creating, error, depositId, create, reset } = useCreateDeposit(address);
+  const { creating, error, depositId, createdPlan, create, reset } = useCreateDeposit(address);
 
   const [landlord, setLandlord] = useState("");
   const [amount, setAmount] = useState("");
@@ -57,22 +78,39 @@ export default function CreateDeposit({ address }: { address: string }) {
     return messages.length ? messages.join(" ") : undefined;
   }
 
-  if (depositId) {
+  if (depositId && createdPlan) {
     const link = `${location.origin}${location.pathname}?deposit=${depositId}`;
+    const recap = [
+      ["Monto", `${formatXlm(createdPlan.totalStroops)} XLM`],
+      ["Arrendador", shortAddress(createdPlan.landlord)],
+      ["Reclama el arrendador desde", formatEpoch(createdPlan.endOfContract)],
+      ["Recuperas desde", formatEpoch(createdPlan.deadline)],
+    ];
     return (
-      <section className="card flex flex-col gap-5" aria-label="Depósito creado">
-        <div className="flex items-center gap-3">
-          <span aria-hidden className="grid size-10 shrink-0 place-items-center rounded-full bg-ok/15 text-lg text-ok">
+      <section className="card flex flex-col gap-6" aria-label="Depósito creado">
+        <div className="flex items-center gap-4">
+          <span
+            aria-hidden
+            className="grid size-12 shrink-0 place-items-center rounded-full bg-ok/15 text-2xl text-ok ring-8 ring-ok/5"
+          >
             ✓
           </span>
           <div>
-            <h2 className="text-lg font-semibold">Depósito creado</h2>
+            <h2 className="text-xl font-semibold tracking-tight">Depósito creado</h2>
             <p className="text-sm text-muted">El dinero ya está bloqueado en la red. Nadie lo custodia.</p>
           </div>
         </div>
+        <dl className="grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2">
+          {recap.map(([term, value]) => (
+            <div key={term} className="bg-surface px-4 py-3">
+              <dt className="hint">{term}</dt>
+              <dd className="text-sm font-medium">{value}</dd>
+            </div>
+          ))}
+        </dl>
         <div className="flex flex-col gap-1.5">
           <p className="label">Link para el arrendador</p>
-          <div className="flex items-center gap-2 rounded-lg border border-line-strong bg-canvas p-2">
+          <div className="flex items-center gap-2 rounded-lg border border-line-strong bg-canvas/70 p-2">
             <p className="min-w-0 flex-1 break-all font-mono text-xs text-muted">{link}</p>
             <CopyButton text={link} label="Copiar link" />
           </div>
@@ -89,7 +127,7 @@ export default function CreateDeposit({ address }: { address: string }) {
 
   return (
     <form
-      className="card flex flex-col gap-5"
+      className="card flex flex-col gap-7"
       aria-label="Crear depósito"
       noValidate
       onSubmit={(event) => {
@@ -99,129 +137,155 @@ export default function CreateDeposit({ address }: { address: string }) {
       }}
     >
       <div className="flex flex-col gap-1">
-        <h2 className="text-lg font-semibold">Nuevo depósito</h2>
+        <h2 className="text-xl font-semibold tracking-tight">Nuevo depósito</h2>
         <p className="text-sm text-muted">Bloquea el monto en la red. Tú lo recuperas si el arrendador no actúa a tiempo.</p>
       </div>
 
-      <Field id="landlord" label="Arrendador" hint="Dirección de su cuenta Stellar." error={errorFor("landlord")}>
-        <input
-          id="landlord"
-          className="input font-mono"
-          value={landlord}
-          onChange={(event) => setLandlord(event.target.value)}
-          placeholder="G..."
-          autoComplete="off"
-          spellCheck={false}
-          aria-invalid={Boolean(errorFor("landlord"))}
-          aria-describedby="landlord-message"
-        />
-      </Field>
-
-      <Field
-        id="amount"
-        label="Monto"
-        hint={balance !== null ? `Disponible: ${formatXlm(balance)} XLM` : undefined}
-        error={errorFor("amount")}
-      >
-        <div className="relative">
+      <Section step={1} title="¿Quién es el arrendador?">
+        <Field id="landlord" label="Dirección" hint="Su cuenta Stellar, empieza con G." error={errorFor("landlord")}>
           <input
-            id="amount"
-            className="input pr-14"
-            inputMode="decimal"
-            value={amount}
-            onChange={(event) => setAmount(event.target.value)}
-            placeholder="100"
+            id="landlord"
+            className="input font-mono text-xs sm:text-sm"
+            value={landlord}
+            onChange={(event) => setLandlord(event.target.value)}
+            placeholder="G..."
             autoComplete="off"
-            aria-invalid={Boolean(errorFor("amount"))}
-            aria-describedby="amount-message"
+            spellCheck={false}
+            aria-invalid={Boolean(errorFor("landlord"))}
+            aria-describedby="landlord-message"
           />
-          <span aria-hidden className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-faint">
-            XLM
-          </span>
-        </div>
-      </Field>
+        </Field>
+      </Section>
 
-      <button
-        type="button"
-        role="switch"
-        aria-checked={demo}
-        onClick={() => setDemo(!demo)}
-        className="flex cursor-pointer items-center justify-between gap-4 rounded-lg border border-line bg-canvas px-3 py-2.5 text-left transition-colors hover:border-line-strong"
-      >
-        <span>
-          <span className="block text-sm font-medium">Modo demo</span>
-          <span className="hint">Plazos en minutos para probar rápido.</span>
-        </span>
-        <span
-          aria-hidden
-          className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${demo ? "bg-accent" : "bg-line-strong"}`}
+      <Section step={2} title="¿Cuánto vas a bloquear?">
+        <Field
+          id="amount"
+          label="Monto"
+          hint={balance !== null ? `Disponible: ${formatXlm(balance)} XLM` : undefined}
+          error={errorFor("amount")}
         >
-          <span
-            className={`absolute top-0.5 left-0.5 size-5 rounded-full bg-fg transition-transform ${demo ? "translate-x-5" : ""}`}
-          />
-        </span>
-      </button>
+          <div className="relative">
+            <input
+              id="amount"
+              className="input pr-14"
+              inputMode="decimal"
+              value={amount}
+              onChange={(event) => setAmount(event.target.value)}
+              placeholder="0"
+              autoComplete="off"
+              aria-invalid={Boolean(errorFor("amount"))}
+              aria-describedby="amount-message"
+            />
+            <span aria-hidden className="pointer-events-none absolute inset-y-0 right-3 flex items-center text-sm text-faint">
+              XLM
+            </span>
+          </div>
+        </Field>
+        <div className="flex flex-wrap gap-2">
+          {amountPresets.map((preset) => (
+            <button
+              key={preset}
+              type="button"
+              className="chip"
+              aria-pressed={amount.trim() === preset}
+              onClick={() => setAmount(preset)}
+            >
+              {preset} XLM
+            </button>
+          ))}
+        </div>
+      </Section>
 
-      <div className="flex flex-col gap-1.5">
-        <div className="grid gap-4 sm:grid-cols-2">
-          {demo ? (
-            <>
-              <Field id="end" label="Fin del contrato" hint="Minutos desde ahora.">
-                <input
-                  id="end"
-                  className="input"
-                  inputMode="numeric"
-                  value={endMinutes}
-                  onChange={(event) => setEndMinutes(event.target.value)}
-                  aria-invalid={Boolean(timeError)}
-                  aria-describedby="end-message"
-                />
-              </Field>
-              <Field id="deadline" label="Plazo" hint="Minutos desde ahora.">
-                <input
-                  id="deadline"
-                  className="input"
-                  inputMode="numeric"
-                  value={deadlineMinutes}
-                  onChange={(event) => setDeadlineMinutes(event.target.value)}
-                  aria-invalid={Boolean(timeError)}
-                  aria-describedby="deadline-message"
-                />
-              </Field>
-            </>
-          ) : (
-            <>
-              <Field id="end" label="Fin del contrato">
-                <input
-                  id="end"
-                  className="input"
-                  type="datetime-local"
-                  value={endAt}
-                  onChange={(event) => setEndAt(event.target.value)}
-                  aria-invalid={Boolean(timeError)}
-                />
-              </Field>
-              <Field id="deadline" label="Plazo">
-                <input
-                  id="deadline"
-                  className="input"
-                  type="datetime-local"
-                  value={deadlineAt}
-                  onChange={(event) => setDeadlineAt(event.target.value)}
-                  aria-invalid={Boolean(timeError)}
-                />
-              </Field>
-            </>
+      <Section step={3} title="¿Cuándo puede reclamar cada uno?">
+        <div className="segmented" role="group" aria-label="Tipo de plazos">
+          <button type="button" className="segment" aria-pressed={demo} onClick={() => setDemo(true)}>
+            Modo demo
+          </button>
+          <button type="button" className="segment" aria-pressed={!demo} onClick={() => setDemo(false)}>
+            Fechas exactas
+          </button>
+        </div>
+
+        {demo && (
+          <div className="flex flex-wrap gap-2">
+            {demoPresets.map((preset) => (
+              <button
+                key={preset.end}
+                type="button"
+                className="chip"
+                aria-pressed={endMinutes === preset.end && deadlineMinutes === preset.deadline}
+                onClick={() => {
+                  setEndMinutes(preset.end);
+                  setDeadlineMinutes(preset.deadline);
+                }}
+              >
+                {preset.end} y {preset.deadline} min
+              </button>
+            ))}
+          </div>
+        )}
+
+        <div className="flex flex-col gap-1.5">
+          <div className="grid gap-4 sm:grid-cols-2">
+            {demo ? (
+              <>
+                <Field id="end" label="Fin del contrato" hint="Minutos desde ahora.">
+                  <input
+                    id="end"
+                    className="input"
+                    inputMode="numeric"
+                    value={endMinutes}
+                    onChange={(event) => setEndMinutes(event.target.value)}
+                    aria-invalid={Boolean(timeError)}
+                    aria-describedby="end-message"
+                  />
+                </Field>
+                <Field id="deadline" label="Plazo" hint="Minutos desde ahora.">
+                  <input
+                    id="deadline"
+                    className="input"
+                    inputMode="numeric"
+                    value={deadlineMinutes}
+                    onChange={(event) => setDeadlineMinutes(event.target.value)}
+                    aria-invalid={Boolean(timeError)}
+                    aria-describedby="deadline-message"
+                  />
+                </Field>
+              </>
+            ) : (
+              <>
+                <Field id="end" label="Fin del contrato">
+                  <input
+                    id="end"
+                    className="input"
+                    type="datetime-local"
+                    value={endAt}
+                    onChange={(event) => setEndAt(event.target.value)}
+                    aria-invalid={Boolean(timeError)}
+                  />
+                </Field>
+                <Field id="deadline" label="Plazo">
+                  <input
+                    id="deadline"
+                    className="input"
+                    type="datetime-local"
+                    value={deadlineAt}
+                    onChange={(event) => setDeadlineAt(event.target.value)}
+                    aria-invalid={Boolean(timeError)}
+                  />
+                </Field>
+              </>
+            )}
+          </div>
+          {timeError && (
+            <p role="alert" className="text-xs text-danger">
+              {timeError}
+            </p>
           )}
         </div>
-        {timeError && (
-          <p role="alert" className="text-xs text-danger">
-            {timeError}
-          </p>
-        )}
-      </div>
+      </Section>
 
-      {result.ok && <DepositPreview plan={result.plan} amount={amount.trim()} />}
+      {result.ok && <DepositPreview plan={result.plan} amount={amount.trim()} now={now} />}
 
       {errorFor("other") && (
         <p role="alert" className="alert">
@@ -235,10 +299,13 @@ export default function CreateDeposit({ address }: { address: string }) {
         </p>
       )}
 
-      <button type="submit" disabled={creating} className="btn btn-primary w-full">
-        {creating && <span aria-hidden className="spinner" />}
-        {creating ? "Esperando tu firma en Varial..." : "Firmar y crear depósito"}
-      </button>
+      <div className="flex flex-col gap-2">
+        <button type="submit" disabled={creating} className="btn btn-primary w-full py-3">
+          {creating && <span aria-hidden className="spinner" />}
+          {creating ? "Esperando tu firma en Varial..." : "Firmar y crear depósito"}
+        </button>
+        <p className="text-center hint">Se abrirá Varial para que confirmes la transacción.</p>
+      </div>
     </form>
   );
 }

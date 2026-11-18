@@ -2,7 +2,7 @@ import { useBalance } from "@hooks/useBalance";
 import { network } from "@config/network";
 import CopyButton from "./CopyButton";
 import { friendlyError } from "./friendlyError";
-import { formatXlm, shortAddress } from "./format";
+import { avatarGradient, formatXlm, shortAddress } from "./format";
 
 type Wallet = {
   address: string | null;
@@ -14,7 +14,7 @@ type Wallet = {
 function Balance({ address }: { address: string }) {
   const { balance, error, loading } = useBalance(address);
 
-  if (loading) return <div className="h-9 w-40 animate-pulse rounded-lg bg-raised motion-reduce:animate-none" />;
+  if (loading) return <div className="h-12 w-48 animate-pulse rounded-lg bg-raised motion-reduce:animate-none" />;
   if (error) {
     return (
       <p role="alert" className="alert">
@@ -39,8 +39,8 @@ function Balance({ address }: { address: string }) {
   }
   return (
     <div>
-      <p className="hint">Saldo</p>
-      <p className="text-3xl font-semibold tracking-tight">
+      <p className="hint">Saldo disponible</p>
+      <p className="text-4xl font-semibold tracking-tight">
         {formatXlm(balance)} <span className="text-lg font-medium text-muted">XLM</span>
       </p>
     </div>
@@ -52,19 +52,31 @@ export default function ConnectWallet({ wallet }: { wallet: Wallet }) {
 
   if (address) {
     return (
-      <section className="card flex flex-col gap-5" aria-label="Wallet">
-        <div className="flex items-center justify-between gap-3">
-          <p className="flex items-center gap-2 text-sm text-muted">
-            <span aria-hidden className="size-2 rounded-full bg-ok" />
-            Wallet conectada
-          </p>
-          <span className="badge capitalize">{network.name}</span>
-        </div>
-        <div className="flex items-center justify-between gap-3">
-          <p className="font-mono text-sm text-muted" title={address}>
-            {shortAddress(address)}
-          </p>
-          <CopyButton text={address} label="Copiar dirección" />
+      <section
+        className="card flex flex-col gap-5 border-accent/25 bg-linear-to-br from-accent/15 via-surface/80 to-surface/80"
+        aria-label="Wallet"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex min-w-0 items-center gap-3">
+            <span
+              aria-hidden
+              className="size-10 shrink-0 rounded-full"
+              style={{ background: avatarGradient(address) }}
+            />
+            <div className="min-w-0">
+              <p className="flex items-center gap-2 text-sm font-medium">
+                <span aria-hidden className="size-2 rounded-full bg-ok" />
+                Wallet conectada
+              </p>
+              <p className="font-mono text-xs text-muted" title={address}>
+                {shortAddress(address)}
+              </p>
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-2">
+            <span className="badge capitalize">{network.name}</span>
+            <CopyButton text={address} label="Copiar dirección" />
+          </div>
         </div>
         <Balance address={address} />
       </section>
@@ -72,14 +84,18 @@ export default function ConnectWallet({ wallet }: { wallet: Wallet }) {
   }
 
   return (
-    <section className="card flex flex-col items-start gap-5" aria-label="Wallet">
-      <div className="flex flex-col gap-1.5">
-        <h2 className="text-lg font-semibold">Conecta tu wallet</h2>
-        <p className="text-sm text-muted">
-          Usa la extensión Varial en testnet para crear y reclamar depósitos. Es dinero de prueba, sin validez legal.
+    <section className="card flex flex-col items-start gap-6 py-8 sm:py-10" aria-label="Wallet">
+      <div className="flex flex-col gap-3">
+        <p className="eyebrow">Depósito de garantía</p>
+        <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+          Tu depósito, sin que <span className="text-accent-strong">nadie lo custodie</span>.
+        </h2>
+        <p className="max-w-md text-muted">
+          El dinero se bloquea en la red Stellar y el plazo decide quién puede retirarlo. Conecta Varial en testnet para
+          empezar.
         </p>
       </div>
-      <button type="button" onClick={connect} disabled={connecting} className="btn btn-primary">
+      <button type="button" onClick={connect} disabled={connecting} className="btn btn-primary px-6 py-3">
         {connecting && <span aria-hidden className="spinner" />}
         {connecting ? "Esperando a Varial..." : "Conectar Varial"}
       </button>
