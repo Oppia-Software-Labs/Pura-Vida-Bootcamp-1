@@ -15,6 +15,7 @@ import { useXlmBalance } from "@/hooks/useXlmBalance";
 import NoWalletGuide from "@/components/NoWalletGuide";
 import Footer from "@/components/Footer";
 import SecurityNote from "@/components/SecurityNote";
+import ShootingSquares from "@/components/ShootingSquares";
 
 const shorten = (a) => `${a.slice(0, 6)}…${a.slice(-6)}`;
 
@@ -31,6 +32,7 @@ export default function App() {
 
   return (
     <div className="stars flex min-h-svh flex-col">
+      <ShootingSquares />
       <main className="flex flex-1 flex-col items-center justify-center gap-8 p-6">
         <header className="text-center">
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
