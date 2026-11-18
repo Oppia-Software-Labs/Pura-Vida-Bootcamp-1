@@ -55,3 +55,23 @@ No requiere compilación ni dependencias pesadas:
 
 ---
 *Desarrollado por David Calderon Soto para el Pura Vida Bootcamp 2026.*
+
+
+### Estructura de archivos
+
+```text
+David-Calderon-Soto/
+├── index.html       # Estructura principal de la dApp y componentes UI
+├── styles.css       # Estilos visuales con paleta Stellar y modo oscuro
+├── app.js           # Lógica cliente para Freighter, Albedo y Horizon Testnet
+└── README.md        # Documentación oficial del proyecto
+```
+
+### Verificación y Pruebas Realizadas
+
+- [x] Conexión detectada y compatible con Freighter Wallet.
+- [x] Conexión alternativa mediante Albedo (popup web).
+- [x] Creación de keypair local para pruebas sin extensiones.
+- [x] Consulta de cuenta y balance nativo de XLM en tiempo real.
+- [x] Solicitud automática de fondos de prueba (Friendbot +10,000 XLM).
+- [x] Visualización de historial de transacciones recientes desde Horizon.
