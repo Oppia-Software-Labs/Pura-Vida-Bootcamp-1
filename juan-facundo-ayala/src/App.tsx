@@ -117,7 +117,31 @@ function App() {
         </h2>
         <MisionesSection />
         <footer className="grid gap-1 pt-4 text-xs text-muted-foreground">
-          <p>Corre sobre Testnet: no usa fondos reales.</p>
+          <p>
+            Construido sobre{' '}
+            <a
+              className={FOOTER_LINK}
+              href="https://stellar.org/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Stellar
+            </a>
+            . Corre sobre Testnet: no usa fondos reales.
+          </p>
+          <p>
+            Lee la red con Horizon, activa cuentas con Friendbot, usa el USDC de
+            Circle y muestra cada comprobante en{' '}
+            <a
+              className={FOOTER_LINK}
+              href="https://stellar.expert/explorer/testnet"
+              target="_blank"
+              rel="noreferrer"
+            >
+              StellarExpert
+            </a>
+            .
+          </p>
           <p>
             Hecho con{' '}
             <a
@@ -128,7 +152,16 @@ function App() {
             >
               Stellar Raven
             </a>{' '}
-            para el Pura Vida Bootcamp ·{' '}
+            para el{' '}
+            <a
+              className={FOOTER_LINK}
+              href="https://github.com/Oppia-Software-Labs/Pura-Vida-Bootcamp-1"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Pura Vida Bootcamp
+            </a>{' '}
+            ·{' '}
             <a
               className={FOOTER_LINK}
               href={REPO_URL}

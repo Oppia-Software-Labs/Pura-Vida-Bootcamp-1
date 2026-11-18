@@ -13,8 +13,8 @@ type Photo = {
 
 const YERBAL: Photo = {
   src: '/misiones/yerbal.jpg',
-  width: 1280,
-  height: 960,
+  width: 1200,
+  height: 900,
   alt: 'Hileras de plantas de yerba mate sobre tierra colorada, bajo un cielo despejado',
   caption: 'Un yerbal en Misiones, sobre la tierra colorada.',
   author: 'Loco085',
@@ -25,8 +25,8 @@ const YERBAL: Photo = {
 
 const TAREFEROS: Photo = {
   src: '/misiones/tareferos.jpg',
-  width: 1280,
-  height: 990,
+  width: 800,
+  height: 619,
   alt: 'Trabajadores de la cosecha caminando por un camino de tierra roja entre árboles',
   caption: 'Tareferos, los trabajadores de la cosecha, cerca de Yaboty.',
   author: 'Phillip Capper',
@@ -38,8 +38,8 @@ const TAREFEROS: Photo = {
 
 const MATE: Photo = {
   src: '/misiones/mate.jpg',
-  width: 1280,
-  height: 1510,
+  width: 800,
+  height: 944,
   alt: 'Un mate de calabaza con bombilla, lleno de yerba, junto a una pala de madera con yerba suelta',
   caption: 'El resultado: la yerba, lista para el mate.',
   author: 'Siarhei Besarab',

@@ -4,8 +4,8 @@
 @import '@fontsource-variable/geist';
 @import '@fontsource-variable/fraunces';
 
-/* El modo oscuro sigue la preferencia del sistema. */
-@custom-variant dark (@media (prefers-color-scheme: dark));
+/* La app se muestra en oscuro: index.html pone la clase `dark` en <html>. */
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
   --font-heading: 'Fraunces Variable', Georgia, serif;
@@ -78,40 +78,39 @@
   --radius: 0.875rem;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: oklch(0.2 0.035 265);
-    --foreground: oklch(0.96 0.01 250);
-    --card: oklch(0.25 0.04 265);
-    --card-foreground: oklch(0.96 0.01 250);
-    --popover: oklch(0.25 0.04 265);
-    --popover-foreground: oklch(0.96 0.01 250);
-    --primary: oklch(0.74 0.13 255);
-    --primary-foreground: oklch(0.19 0.04 265);
-    --secondary: oklch(0.31 0.05 265);
-    --secondary-foreground: oklch(0.93 0.02 255);
-    --muted: oklch(0.29 0.04 265);
-    --muted-foreground: oklch(0.77 0.03 255);
-    --accent: oklch(0.36 0.06 75);
-    --accent-foreground: oklch(0.92 0.09 88);
-    --destructive: oklch(0.72 0.17 25);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 14%);
-    --ring: oklch(0.66 0.13 255);
-    --highlight: oklch(0.55 0.11 75);
-    --wood: oklch(0.66 0.12 58);
-    --wood-light: oklch(0.78 0.11 68);
-    --wood-dark: oklch(0.46 0.1 48);
-    --board: oklch(0.52 0.06 70);
-    --board-dark: oklch(0.42 0.06 62);
-    --board-edge: oklch(0.28 0.04 55);
-    --yerba: oklch(0.62 0.13 140);
-    --yerba-light: oklch(0.78 0.14 135);
-    --steel: oklch(0.82 0.014 255);
-    --steel-light: oklch(0.97 0.006 255);
-    --steel-dark: oklch(0.58 0.02 255);
-    --steam: oklch(0.86 0.02 255);
-  }
+.dark {
+  color-scheme: dark;
+  --background: oklch(0.2 0.035 265);
+  --foreground: oklch(0.96 0.01 250);
+  --card: oklch(0.25 0.04 265);
+  --card-foreground: oklch(0.96 0.01 250);
+  --popover: oklch(0.25 0.04 265);
+  --popover-foreground: oklch(0.96 0.01 250);
+  --primary: oklch(0.74 0.13 255);
+  --primary-foreground: oklch(0.19 0.04 265);
+  --secondary: oklch(0.31 0.05 265);
+  --secondary-foreground: oklch(0.93 0.02 255);
+  --muted: oklch(0.29 0.04 265);
+  --muted-foreground: oklch(0.77 0.03 255);
+  --accent: oklch(0.36 0.06 75);
+  --accent-foreground: oklch(0.92 0.09 88);
+  --destructive: oklch(0.72 0.17 25);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 14%);
+  --ring: oklch(0.66 0.13 255);
+  --highlight: oklch(0.55 0.11 75);
+  --wood: oklch(0.66 0.12 58);
+  --wood-light: oklch(0.78 0.11 68);
+  --wood-dark: oklch(0.46 0.1 48);
+  --board: oklch(0.52 0.06 70);
+  --board-dark: oklch(0.42 0.06 62);
+  --board-edge: oklch(0.28 0.04 55);
+  --yerba: oklch(0.62 0.13 140);
+  --yerba-light: oklch(0.78 0.14 135);
+  --steel: oklch(0.82 0.014 255);
+  --steel-light: oklch(0.97 0.006 255);
+  --steel-dark: oklch(0.58 0.02 255);
+  --steam: oklch(0.86 0.02 255);
 }
 
 @layer base {

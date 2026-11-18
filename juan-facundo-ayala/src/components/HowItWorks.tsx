@@ -9,7 +9,8 @@ const STEPS = [
   },
   {
     title: 'Firmá y listo',
-    detail: 'Aprobás el envío en tu wallet y llega en segundos.',
+    detail:
+      'Aprobás el envío en tu wallet y llega en segundos. Cada envío queda con su comprobante público en StellarExpert.',
   },
 ]
 

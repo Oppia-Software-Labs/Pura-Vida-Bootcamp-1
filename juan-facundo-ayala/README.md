@@ -6,7 +6,7 @@ Una app para convidar un mate: una propina en XLM o en USDC que viaja por
 Stellar Testnet, firmada desde la wallet de quien la envía. Si no tenés USDC,
 pagás con XLM y la red lo convierte en el camino. No usa fondos reales.
 
-![Pantalla de inicio de Mate Stellar: ilustración de un mate, botón para conectar la wallet y explicación de cómo funciona](docs/inicio.jpg)
+![Pantalla de inicio de Mate Stellar: ilustración de un mate, wallet conectada con su saldo y explicación de cómo funciona](docs/inicio.jpg)
 
 ## Qué hace
 
@@ -61,6 +61,8 @@ pagás con XLM y la red lo convierte en el camino. No usa fondos reales.
 ![Formulario para convidar un mate: destinatario, activo, monto, mensaje y aporte yerbatero](docs/formulario.jpg)
 
 ![Historial con los últimos mates, conversiones, activaciones y aportes](docs/historial.jpg)
+
+![Sección "De dónde viene la yerba": texto sobre Misiones y tres fotos de un yerbal, tareferos y un mate, con sus créditos](docs/misiones.jpg)
 
 ## Cómo correrla
 
@@ -160,9 +162,14 @@ navegador, que firma con una clave descartable, se probó:
 Transacción de ejemplo:
 [573a3314...7d538 en stellar.expert](https://stellar.expert/explorer/testnet/tx/573a33141298f01ed12425a1eaabf337ac48ed585d697503dcc04a5c0507d538).
 
-**Lo que no se probó.** La firma con una extensión real (Varial, xBull y las
-demás) no se probó: depende del navegador de cada persona y hay que
-verificarla ahí.
+**Con una wallet real.** Con Albedo se probó el recorrido completo desde el
+navegador: conectar, activar la cuenta con Friendbot, firmar y enviar un mate
+en XLM con aporte y otro en USDC pagado con XLM
+([2fd29192...8410f en stellar.expert](https://stellar.expert/explorer/testnet/tx/2fd29192c584eb98fa69777fba2149d264bd0bd1a96c24fec611e5377758410f)).
+
+**Lo que no se probó.** La firma con las wallets de extensión (Varial, xBull,
+Lobstr, Hana y Rabet) no se probó: depende del navegador de cada persona y hay
+que verificarla ahí.
 
 ## Limitaciones y próximos pasos
 
@@ -172,10 +179,43 @@ verificarla ahí.
   Para que sea real haría falta la cuenta de una organización verificada.
 - **Sin direcciones muxed.** La app acepta solo direcciones G, aunque la
   documentación indica que una dirección M puede ser destino de un pago.
-- **Firma con extensiones reales sin probar.** Es el primer paso pendiente.
+- **Firma probada solo con Albedo.** Falta probar las wallets de extensión.
 - **Un solo activo además de XLM.** Se evaluó sumar EURC y se descartó porque
   en Testnet no tiene liquidez contra XLM, así que la conversión no tendría
   camino.
+
+## Roadmap
+
+Nada de esta sección está implementado: es lo que sigue después de esta
+entrega.
+
+**Etapa 2: moneda local.** Que quien convida pague en su moneda y quien recibe
+pueda retirarla en la suya, sin tocar XLM ni USDC a mano:
+
+- Entrada y salida en colones costarricenses (CRC) y en pesos argentinos (ARS)
+  hacia USDC o XLM, a través de anchors: las entidades reguladas que conectan
+  Stellar con el sistema bancario de cada país. La integración sería con el
+  flujo estándar de depósito y retiro (SEP-24), con autenticación SEP-10.
+- Mostrar el monto en moneda local al lado del monto en USDC o XLM.
+- Requiere pasar a Mainnet y un acuerdo con un anchor en cada país. Por eso
+  queda fuera de esta entrega.
+
+Lo que se relevó hasta ahora, sin haberlo integrado ni probado:
+
+| Moneda | Opciones encontradas                                                                                                                                                                                         | Estado                                                  |
+| ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------- |
+| ARS    | Koywe y Manteca, que operan pesos contra USDC en Stellar según el [Stellar Regional Starter Pack](https://github.com/ElliotFriend/regional-starter-pack); Anclap emite un ARS propio en Stellar              | Piden credenciales de API y un servidor propio          |
+| CRC    | No se encontró un anchor en producción con colones. [Lendara](https://github.com/Lendara-Org/Lendara-monorepo) ofrece un anchor de prueba en Testnet (SEP-1, SEP-10 y SEP-24) con colones y rieles simulados | Sirve para prototipar; el colón es el punto más difícil |
+
+**Etapa 2: más cultivos.** El aporte del 5 % hoy es una demostración con
+yerba mate de Misiones. La misma mecánica (una segunda operación en la misma
+transacción) sirve para otros cultivos y regiones, por ejemplo un fondo para
+productores de café en Costa Rica:
+
+- Un fondo por cultivo, con la cuenta de una cooperativa u organización
+  verificada como destino.
+- Una página pública de cada fondo, con el total reunido y cada aporte leídos
+  de la red, para que cualquiera pueda auditarlo.
 
 ## Fotos
 
