@@ -1,9 +1,11 @@
-import { type FormEvent, useId, useState } from 'react'
+import { type FormEvent, useEffect, useId, useRef, useState } from 'react'
 import {
   CircleCheck,
   ExternalLink,
+  Link2,
   LoaderCircle,
   Send,
+  Sprout,
   TriangleAlert,
 } from 'lucide-react'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -17,17 +19,29 @@ import {
 } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { type AccountInfo, formatXlm } from '@/lib/account'
-import { explorerTxUrl, shortAddress } from '@/lib/config'
+import {
+  type AccountInfo,
+  formatXlm,
+  formatXlmExact,
+  maxSendable,
+} from '@/lib/account'
+import { type AssetCode, ASSETS, getAsset, XLM } from '@/lib/assets'
+import { explorerTxUrl, NETWORK_NAME, shortAddress } from '@/lib/config'
+import { parseMateLink } from '@/lib/link'
 import {
   buildMateTx,
   DEMO_RECIPIENT,
-  FEE_MARGIN_XLM,
   horizonErrorMessage,
   isValidAddress,
+  MateError,
+  maxCost,
   MEMO_MAX_BYTES,
   memoBytes,
+  parseAmount,
+  planMate,
+  quoteInXlm,
   submitMateTx,
+  YERBA_SHARE,
 } from '@/lib/mate'
 import { signWithWallet, walletErrorMessage } from '@/lib/wallet'
 
@@ -41,31 +55,125 @@ const STEP_LABEL: Record<Exclude<Step, 'idle'>, string> = {
   submitting: 'Enviando a la red…',
 }
 
-type Sent = { hash: string; amount: number; to: string }
+const NETWORK_ERROR =
+  'No pudimos conectar con la red de Stellar. Revisá tu conexión y probá de nuevo.'
+
+type Sent = {
+  hash: string
+  amount: number
+  asset: AssetCode
+  to: string
+  message: string
+  /** Cuánto se pagó con XLM para que la red lo convirtiera al activo. */
+  converted: 'todo' | 'parte' | 'nada'
+  /** Aporte al fondo yerbatero que viajó en la misma transacción. */
+  share: number
+}
+
+/**
+ * Cotización en XLM de un envío; `cost` es null si nadie ofrece el cambio.
+ * `failed` avisa que no se pudo consultar.
+ */
+type QuoteState = { key: string; cost: number | null; failed?: boolean }
 
 type Props = {
   address: string | null
   account: AccountInfo | null
+  /** Todavía se está leyendo el saldo por primera vez. */
+  accountLoading: boolean
+  /** La wallet está en otra red y no va a poder firmar. */
+  wrongNetwork: boolean
   /** Se llama después de un envío exitoso, para refrescar saldo e historial. */
   onSent: () => void
 }
 
-export function MateForm({ address, account, onSent }: Props) {
+export function MateForm({
+  address,
+  account,
+  accountLoading,
+  wrongNetwork,
+  onSent,
+}: Props) {
   const id = useId()
-  const [to, setTo] = useState('')
-  const [amountText, setAmountText] = useState('1')
-  const [message, setMessage] = useState('')
+  // Si la app se abrió desde un link para pedir un mate, llega precargada.
+  const [link] = useState(() => parseMateLink(window.location.search))
+  const [to, setTo] = useState(link?.to ?? '')
+  const [assetCode, setAssetCode] = useState<AssetCode>(link?.asset ?? 'XLM')
+  const [amountText, setAmountText] = useState(link?.amount || '1')
+  const [message, setMessage] = useState(link?.message ?? '')
+  const [withYerba, setWithYerba] = useState(true)
   const [showErrors, setShowErrors] = useState(false)
   const [step, setStep] = useState<Step>('idle')
   const [error, setError] = useState('')
   const [sent, setSent] = useState<Sent | null>(null)
+  const [quote, setQuote] = useState<QuoteState | null>(null)
+  const sentTitle = useRef<HTMLParagraphElement>(null)
+  const toInput = useRef<HTMLInputElement>(null)
+  const wasSent = useRef(false)
 
-  const ready = Boolean(address && account?.funded)
+  // Lleva el foco al resultado para que también lo anuncie un lector de
+  // pantalla y, al volver, al primer campo del formulario.
+  useEffect(() => {
+    if (sent) sentTitle.current?.focus()
+    else if (wasSent.current) toInput.current?.focus()
+    wasSent.current = Boolean(sent)
+  }, [sent])
+
+  const asset = getAsset(assetCode) ?? XLM
+  const isXlm = asset.issuer === null
+  const ready = Boolean(address && account?.funded) && !wrongNetwork
   const busy = step !== 'idle'
   const destination = to.trim()
-  const amount = Number(amountText.replace(',', '.'))
-  const maxAmount = Math.max(0, (account?.available ?? 0) - FEE_MARGIN_XLM)
+  const amount = parseAmount(amountText)
+  const maxXlm = maxSendable(account)
+  const fromLink = link !== null && destination === link.to
   const usedBytes = memoBytes(message.trim())
+
+  // Si quien envía ya tiene el activo, paga con eso. Si no, paga con XLM y
+  // la red lo convierte en el camino: hace falta cotizar cuánto cuesta.
+  // El aporte yerbatero se suma arriba del mate: quien recibe cobra completo.
+  const holding = account?.tokens[assetCode] ?? 0
+  const plan = planMate({
+    to: destination,
+    asset,
+    amount: amount ?? 0,
+    held: holding,
+    withYerba,
+  })
+  const share = plan.share
+  const total = (amount ?? 0) + share
+  const converts = amount !== null && plan.toConvert > 0
+  const convertsAll =
+    plan.mateConverts && (share === 0 || plan.shareConverts) && holding === 0
+  const quoteKey = converts ? `${assetCode}:${plan.toConvert.toFixed(7)}` : ''
+
+  useEffect(() => {
+    if (!quoteKey || !ready) return
+    const [code, value] = quoteKey.split(':')
+    const target = getAsset(code)
+    if (!target) return
+    let cancelled = false
+    // Se espera un momento para no cotizar cada tecla.
+    const timer = setTimeout(() => {
+      quoteInXlm(target, Number(value))
+        .then((result) => {
+          if (!cancelled) {
+            setQuote({ key: quoteKey, cost: result ? result.cost : null })
+          }
+        })
+        .catch(() => {
+          // Sin cotización no se bloquea: se vuelve a cotizar al enviar.
+          if (!cancelled) setQuote({ key: quoteKey, cost: null, failed: true })
+        })
+    }, 400)
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [quoteKey, ready])
+
+  const currentQuote = quote && quote.key === quoteKey ? quote : null
+  const cost = currentQuote?.cost ?? null
 
   const toError = !destination
     ? 'Pegá la dirección de quien recibe.'
@@ -75,43 +183,87 @@ export function MateForm({ address, account, onSent }: Props) {
         ? 'No podés convidarte a vos mismo.'
         : ''
   const amountError =
-    !Number.isFinite(amount) || amount <= 0
-      ? 'Ingresá un monto mayor a 0.'
-      : amount > maxAmount
-        ? `Podés enviar hasta ${formatXlm(maxAmount)} XLM.`
-        : ''
+    amount === null
+      ? 'Ingresá un monto mayor a 0, con hasta 7 decimales (por ejemplo, 1,5).'
+      : isXlm
+        ? total > maxXlm + 1e-9
+          ? share > 0
+            ? `Con el aporte son ${formatXlmExact(total)} XLM y podés enviar hasta ${formatXlm(maxXlm)}.`
+            : `Podés enviar hasta ${formatXlm(maxXlm)} XLM.`
+          : ''
+        : !converts || !currentQuote || currentQuote.failed
+          ? ''
+          : cost === null
+            ? `No te alcanzan los ${asset.code} y en este momento nadie lo cambia por XLM en la red.`
+            : maxCost(cost) > maxXlm
+              ? `Hacen falta unos ${formatXlm(maxCost(cost))} XLM y podés gastar hasta ${formatXlm(maxXlm)}.`
+              : ''
   const messageError =
     usedBytes > MEMO_MAX_BYTES ? 'El mensaje es demasiado largo.' : ''
   const invalid = Boolean(toError || amountError || messageError)
+
+  // Aclara con qué se paga cuando lo que llega no es XLM.
+  const amountHint =
+    isXlm || amount === null || !ready
+      ? ''
+      : !converts
+        ? `Lo pagás con tus ${asset.code}: tenés ${formatXlm(holding)}.`
+        : !currentQuote
+          ? 'Buscando el mejor cambio…'
+          : currentQuote.failed
+            ? 'No pudimos cotizar el cambio ahora. Se cotiza de nuevo al enviar.'
+            : cost === null
+              ? ''
+              : convertsAll
+                ? `No tenés ${asset.code}: lo pagás con unos ${formatXlm(cost)} XLM y la red lo convierte en el camino.`
+                : `Tus ${asset.code} no alcanzan para todo: el resto lo pagás con unos ${formatXlm(cost)} XLM y la red lo convierte en el camino.`
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault()
     if (!address || busy) return
     setShowErrors(true)
     setError('')
-    if (invalid) return
+    if (invalid || amount === null) return
 
+    let phase: Step = 'building'
     try {
-      setStep('building')
+      setStep(phase)
       const xdr = await buildMateTx({
         from: address,
         to: destination,
+        asset,
         amount,
         message,
+        withYerba,
       })
-      setStep('signing')
+      phase = 'signing'
+      setStep(phase)
       const signedXdr = await signWithWallet(xdr, address)
-      setStep('submitting')
+      phase = 'submitting'
+      setStep(phase)
       const hash = await submitMateTx(signedXdr)
-      setSent({ hash, amount, to: destination })
+      setSent({
+        hash,
+        amount,
+        asset: assetCode,
+        to: destination,
+        message: message.trim(),
+        converted: !converts ? 'nada' : convertsAll ? 'todo' : 'parte',
+        share,
+      })
       setMessage('')
       setShowErrors(false)
       onSent()
     } catch (err) {
+      // Solo durante la firma el error viene de la wallet; en los otros
+      // pasos es un rechazo de Horizon o un problema de conexión.
       setError(
         horizonErrorMessage(err) ||
-          walletErrorMessage(err) ||
-          'Cerraste la wallet sin firmar.',
+          (err instanceof MateError
+            ? err.message
+            : phase === 'signing'
+              ? walletErrorMessage(err) || 'Cerraste la wallet sin firmar.'
+              : NETWORK_ERROR),
       )
     } finally {
       setStep('idle')
@@ -126,26 +278,50 @@ export function MateForm({ address, account, onSent }: Props) {
         </p>
         <CardTitle className="text-xl">Convidá un mate</CardTitle>
         <CardDescription>
-          {ready
-            ? 'Elegí a quién, cuánto y dejale un mensaje.'
-            : address
-              ? 'Activá tu cuenta con XLM de prueba para poder enviar.'
-              : 'Conectá tu wallet para poder enviar.'}
+          {wrongNetwork
+            ? `Cambiá tu wallet a ${NETWORK_NAME} para poder enviar.`
+            : ready
+              ? 'Elegí a quién, cuánto y dejale un mensaje.'
+              : !address
+                ? 'Conectá tu wallet para poder enviar.'
+                : !account
+                  ? 'Necesitamos leer tu saldo para poder enviar.'
+                  : 'Activá tu cuenta con XLM de prueba para poder enviar.'}
         </CardDescription>
       </CardHeader>
 
       <CardContent>
         {sent ? (
           <div className="grid gap-4">
-            <div className="grid justify-items-start gap-1 rounded-lg bg-accent p-4 text-accent-foreground">
+            <div
+              role="status"
+              className="grid animate-in justify-items-start gap-1 rounded-lg bg-accent p-4 text-accent-foreground duration-300 fade-in zoom-in-95 motion-reduce:animate-none"
+            >
               <CircleCheck className="size-6" aria-hidden="true" />
-              <p className="font-heading text-lg font-semibold">
+              <p
+                ref={sentTitle}
+                tabIndex={-1}
+                className="font-heading text-lg font-semibold outline-none"
+              >
                 ¡Mate convidado!
               </p>
               <p className="text-sm">
-                Enviaste {formatXlm(sent.amount)} XLM a{' '}
+                Le llegaron {formatXlmExact(sent.amount)} {sent.asset} a{' '}
                 <span className="font-mono">{shortAddress(sent.to)}</span>.
+                {sent.converted === 'todo' &&
+                  ' Pagaste con XLM y la red lo convirtió en el camino.'}
+                {sent.converted === 'parte' &&
+                  ' Una parte la pagaste con XLM y la red la convirtió en el camino.'}
               </p>
+              {sent.share > 0 && (
+                <p className="text-sm">
+                  Además sumaste {formatXlmExact(sent.share)} {sent.asset} al
+                  fondo yerbatero de esta demo, en la misma transacción.
+                </p>
+              )}
+              {sent.message && (
+                <p className="text-sm italic">“{sent.message}”</p>
+              )}
             </div>
             <div className="flex flex-wrap gap-2">
               <Button onClick={() => setSent(null)}>Convidar otro</Button>
@@ -163,6 +339,16 @@ export function MateForm({ address, account, onSent }: Props) {
           </div>
         ) : (
           <form className="grid gap-5" onSubmit={handleSubmit} noValidate>
+            {fromLink && (
+              <Alert>
+                <Link2 />
+                <AlertDescription>
+                  Abriste un link para convidarle un mate a{' '}
+                  <span className="font-mono">{shortAddress(link.to)}</span>.
+                  Revisá que sea la persona correcta antes de enviar.
+                </AlertDescription>
+              </Alert>
+            )}
             <fieldset className="grid gap-5" disabled={!ready || busy}>
               <div className="grid gap-2">
                 <div className="flex items-center justify-between gap-2">
@@ -171,13 +357,14 @@ export function MateForm({ address, account, onSent }: Props) {
                     type="button"
                     variant="link"
                     size="xs"
-                    className="h-auto p-0"
+                    className="-my-2 h-auto px-0 py-2"
                     onClick={() => setTo(DEMO_RECIPIENT)}
                   >
                     Usar cuenta de demo
                   </Button>
                 </div>
                 <Input
+                  ref={toInput}
                   id={`${id}-to`}
                   className="h-10 font-mono"
                   placeholder="G…"
@@ -198,7 +385,40 @@ export function MateForm({ address, account, onSent }: Props) {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor={`${id}-amount`}>Cuánto (XLM)</Label>
+                <p
+                  id={`${id}-asset`}
+                  className="text-sm leading-none font-medium"
+                >
+                  Qué le llega
+                </p>
+                <div
+                  role="group"
+                  aria-labelledby={`${id}-asset`}
+                  className="grid grid-cols-2 gap-2"
+                >
+                  {ASSETS.map((option) => {
+                    const selected = option.code === assetCode
+                    return (
+                      <Button
+                        key={option.code}
+                        type="button"
+                        variant={selected ? 'default' : 'outline'}
+                        className="h-auto flex-col gap-0 py-2"
+                        aria-pressed={selected}
+                        onClick={() => setAssetCode(option.code)}
+                      >
+                        <span className="font-semibold">{option.code}</span>
+                        <span className="text-xs font-normal opacity-80">
+                          {option.name}
+                        </span>
+                      </Button>
+                    )
+                  })}
+                </div>
+              </div>
+
+              <div className="grid gap-2">
+                <Label htmlFor={`${id}-amount`}>Cuánto ({asset.code})</Label>
                 <div className="flex flex-wrap gap-2">
                   {QUICK_AMOUNTS.map((value) => (
                     <Button
@@ -220,17 +440,52 @@ export function MateForm({ address, account, onSent }: Props) {
                     value={amountText}
                     onChange={(e) => setAmountText(e.target.value)}
                     aria-invalid={showErrors && Boolean(amountError)}
-                    aria-describedby={`${id}-amount-error`}
+                    aria-describedby={`${id}-amount-error ${id}-amount-hint`}
                   />
                 </div>
+                <p
+                  id={`${id}-amount-hint`}
+                  className="text-sm text-pretty text-muted-foreground empty:hidden"
+                  aria-live="polite"
+                >
+                  {amountError ? '' : amountHint}
+                </p>
                 <p
                   id={`${id}-amount-error`}
                   className="text-sm text-destructive empty:hidden"
                   role="alert"
                 >
-                  {showErrors ? amountError : ''}
+                  {showErrors || (!isXlm && amount !== null) ? amountError : ''}
                 </p>
               </div>
+
+              <label className="flex cursor-pointer items-start gap-3 rounded-lg border bg-muted/40 p-3 has-checked:border-primary/40 has-checked:bg-accent/60">
+                <input
+                  type="checkbox"
+                  className="mt-0.5 size-4 shrink-0 accent-primary"
+                  checked={withYerba}
+                  onChange={(e) => setWithYerba(e.target.checked)}
+                />
+                <span className="grid gap-0.5">
+                  <span className="text-sm font-medium text-pretty">
+                    <Sprout
+                      className="mr-1.5 inline size-4 align-[-0.15em] text-primary"
+                      aria-hidden="true"
+                    />
+                    Sumar {YERBA_SHARE * 100} % al fondo yerbatero de Misiones
+                  </span>
+                  {share > 0 && (
+                    <span className="text-sm text-muted-foreground tabular-nums">
+                      Son {formatXlmExact(share)} {asset.code} más, aparte de tu
+                      mate.
+                    </span>
+                  )}
+                  <span className="text-xs text-pretty text-muted-foreground">
+                    Demo en Testnet: llega a una cuenta de prueba, en la misma
+                    transacción que tu mate.
+                  </span>
+                </span>
+              </label>
 
               <div className="grid gap-2">
                 <div className="flex items-center justify-between gap-2">
@@ -290,9 +545,19 @@ export function MateForm({ address, account, onSent }: Props) {
               )}
               {busy
                 ? STEP_LABEL[step]
-                : amount > 0 && Number.isFinite(amount)
-                  ? `Convidar ${formatXlm(amount)} XLM`
-                  : 'Convidar'}
+                : wrongNetwork
+                  ? `Cambiá a ${NETWORK_NAME}`
+                  : !address
+                    ? 'Conectá tu wallet'
+                    : !account
+                      ? accountLoading
+                        ? 'Leyendo tu saldo…'
+                        : 'No pudimos leer tu saldo'
+                      : !account.funded
+                        ? 'Activá tu cuenta'
+                        : amount !== null
+                          ? `Convidar ${formatXlmExact(amount)} ${asset.code}`
+                          : 'Convidar'}
             </Button>
           </form>
         )}

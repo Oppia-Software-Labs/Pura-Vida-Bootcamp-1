@@ -1,11 +1,11 @@
 const STEPS = [
   {
     title: 'Conectá tu wallet',
-    detail: 'Varial (ex Freighter), xBull, Albedo, Lobstr y otras.',
+    detail: 'Varial (ex Freighter), xBull, Albedo, Lobstr, Hana o Rabet.',
   },
   {
     title: 'Elegí a quién y cuánto',
-    detail: 'Una dirección de Stellar, un monto y un mensaje.',
+    detail: 'Una dirección, un monto en XLM o USDC y un mensaje.',
   },
   {
     title: 'Firmá y listo',

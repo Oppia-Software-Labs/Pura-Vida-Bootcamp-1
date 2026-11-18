@@ -4,20 +4,33 @@ import { HowItWorks } from '@/components/HowItWorks'
 import { MateForm } from '@/components/MateForm'
 import { MateHistory } from '@/components/MateHistory'
 import { MateIllustration } from '@/components/MateIllustration'
+import { MisionesSection } from '@/components/MisionesSection'
 import { Badge } from '@/components/ui/badge'
 import { WalletSection } from '@/components/WalletSection'
 import { useAccount } from '@/hooks/useAccount'
 import { useWallet } from '@/hooks/useWallet'
 
+const REPO_URL =
+  'https://github.com/jfacundoayala/Pura-Vida-Bootcamp-1/tree/feature/juan-facundo-ayala/juan-facundo-ayala'
+
+const FOOTER_LINK =
+  'rounded-sm underline underline-offset-4 outline-none hover:text-foreground focus-visible:ring-3 focus-visible:ring-ring/50'
+
 function App() {
   const wallet = useWallet()
   const account = useAccount(wallet.address)
-  // Sube con cada envío para que el historial se vuelva a cargar.
-  const [sentCount, setSentCount] = useState(0)
+  // Sube cada vez que puede haber movimientos nuevos, para recargar el historial.
+  const [historyVersion, setHistoryVersion] = useState(0)
+  const reloadHistory = () => setHistoryVersion((version) => version + 1)
 
-  const handleSent = () => {
-    setSentCount((count) => count + 1)
+  const refreshAll = () => {
+    reloadHistory()
     void account.refresh()
+  }
+
+  const fundAccount = async () => {
+    await account.fund()
+    reloadHistory()
   }
 
   // En pantallas chicas el orden es: portada, tarjetas, "cómo funciona".
@@ -42,11 +55,11 @@ function App() {
               en segundos.
             </h1>
             <p className="max-w-md text-base text-pretty text-muted-foreground sm:text-lg">
-              Una propina en XLM que viaja por Stellar. Vos firmás desde tu
-              wallet y la otra persona la recibe al toque.
+              Una propina en XLM o en dólares digitales que viaja por Stellar.
+              Vos firmás desde tu wallet y la otra persona la recibe al toque.
             </p>
           </div>
-          <MateIllustration className="w-24 sm:w-36 lg:w-44" />
+          <MateIllustration className="w-32 sm:w-48 lg:w-52" />
         </div>
       </header>
 
@@ -65,17 +78,23 @@ function App() {
             error={account.error}
             refreshing={account.refreshing}
             funding={account.funding}
-            onRefresh={account.refresh}
-            onFund={account.fund}
+            enabling={account.enabling}
+            onRefresh={refreshAll}
+            onFund={fundAccount}
+            onEnable={account.enable}
           />
         </WalletSection>
+        {/* La key reinicia el formulario al cambiar o desconectar la cuenta. */}
         <MateForm
+          key={wallet.address ?? 'sin-wallet'}
           address={wallet.address}
           account={account.info}
-          onSent={handleSent}
+          accountLoading={account.loading}
+          wrongNetwork={wallet.wrongNetwork}
+          onSent={refreshAll}
         />
         {wallet.address && (
-          <MateHistory address={wallet.address} version={sentCount} />
+          <MateHistory address={wallet.address} version={historyVersion} />
         )}
       </main>
 
@@ -90,9 +109,36 @@ function App() {
           Cómo funciona
         </h2>
         <HowItWorks />
-        <p className="pt-4 text-xs text-muted-foreground">
-          Hecho con Stellar Raven. Corre sobre Testnet: no usa fondos reales.
-        </p>
+        <h2
+          id="misiones"
+          className="pt-6 text-xs font-semibold tracking-wide text-muted-foreground uppercase"
+        >
+          De dónde viene la yerba
+        </h2>
+        <MisionesSection />
+        <footer className="grid gap-1 pt-4 text-xs text-muted-foreground">
+          <p>Corre sobre Testnet: no usa fondos reales.</p>
+          <p>
+            Hecho con{' '}
+            <a
+              className={FOOTER_LINK}
+              href="https://raven.stellar.org/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Stellar Raven
+            </a>{' '}
+            para el Pura Vida Bootcamp ·{' '}
+            <a
+              className={FOOTER_LINK}
+              href={REPO_URL}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Ver el código
+            </a>
+          </p>
+        </footer>
       </section>
     </div>
   )
