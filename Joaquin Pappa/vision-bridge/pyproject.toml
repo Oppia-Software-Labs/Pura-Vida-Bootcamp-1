@@ -1,0 +1,16 @@
+[project]
+name = "vision-bridge"
+version = "0.1.0"
+description = "Bridge local entre chess-vision (cámara) y Chess Ledger"
+requires-python = ">=3.11"
+dependencies = ["python-chess>=1.10", "websockets>=15"]
+
+[project.optional-dependencies]
+dev = ["pytest>=7.4", "stellar-sdk>=12"]
+attest = ["stellar-sdk>=12"]
+
+[project.scripts]
+vision-bridge = "vision_bridge.server:main"
+
+[tool.setuptools.packages.find]
+include = ["vision_bridge*"]

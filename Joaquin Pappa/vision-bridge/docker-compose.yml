@@ -1,0 +1,13 @@
+services:
+  vision-bridge:
+    build:
+      context: ..
+      dockerfile: vision-bridge/Dockerfile
+    image: chess-ledger/vision-bridge
+    # Solo en loopback: la app (local o desplegada) conecta a ws://127.0.0.1:8765 desde tu navegador.
+    ports:
+      - "127.0.0.1:8765:8765"
+    environment:
+      # Orígenes extra además de http://localhost:* (p. ej. la URL del frontend desplegado).
+      BRIDGE_ORIGINS: ${BRIDGE_ORIGINS:-}
+    restart: unless-stopped
