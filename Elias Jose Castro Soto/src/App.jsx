@@ -35,11 +35,15 @@ export default function App() {
       <ShootingSquares />
       <main className="flex flex-1 flex-col items-center justify-center gap-8 p-6">
         <header className="text-center">
+          <Badge variant="outline" className="mb-4">
+            Mi primera app en Stellar · Testnet
+          </Badge>
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">
-            Mi primera app en <span className="text-primary">Stellar</span>
+            Mi wallet en <span className="text-primary">Stellar</span>
           </h1>
-          <p className="mt-3 text-muted-foreground">
-            Conecta tu wallet y empieza a explorar la red.
+          <p className="mx-auto mt-3 max-w-md text-muted-foreground">
+            Conecta tu wallet y mira tu saldo en la red de pruebas. ¿Cuenta vacía?
+            Recibe XLM de prueba con Friendbot.
           </p>
         </header>
 
