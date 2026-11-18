@@ -44,16 +44,9 @@ El depósito no lo tiene ninguna de las dos partes. Se bloquea en la red Stellar
 
 ```mermaid
 flowchart LR
-    A(["Depósito creado"]) --> B["Antes de E<br/>nadie puede reclamar"]
-    B -->|"llega E"| C["Entre E y D<br/>solo el arrendador"]
-    C -->|"llega D"| D["Desde D<br/>solo el inquilino"]
-
-    classDef wait fill:#e5e7eb,stroke:#6b7280,color:#111827
-    classDef landlord fill:#fde68a,stroke:#b45309,color:#111827
-    classDef tenant fill:#bbf7d0,stroke:#15803d,color:#111827
-    class B wait
-    class C landlord
-    class D tenant
+    A["Depósito creado"] --> B["t &lt; E<br/>nadie puede reclamar"]
+    B --> C["E ≤ t &lt; D<br/>solo el arrendador"]
+    C --> D["t ≥ D<br/>solo el inquilino"]
 ```
 
 Quien reclama primero cierra el depósito: el balance se elimina y nadie más puede cobrarlo.
