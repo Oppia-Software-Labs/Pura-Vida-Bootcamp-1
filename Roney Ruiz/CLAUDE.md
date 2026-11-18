@@ -19,22 +19,24 @@ Package manager: Bun.
 - `bun run dev`: dev server.
 - `bun run build`: `tsc -b` plus the Vite build.
 - `bun run lint`: oxlint.
-- `bun run test`: Vitest (domain only).
+- `bun run test`: Vitest (entity only).
 
 ## Architecture
 
 Frontend-only SPA, no backend. Code lives in `source/`:
 
-- `domain/`: pure logic. It does not import React, the wallet or the network.
-- `stellar/` and `wallet/`: adapters to the network and to Varial (`@stellar/varial-sdk`, a single wallet).
-- `ui/`: screens, hooks and `friendlyError`.
+- `bloc/entity/`: pure logic. It does not import React, the wallet or the network.
+- `bloc/stellar/` and `bloc/wallet/`: adapters to the network and to Varial (`@stellar/varial-sdk`, a single wallet).
+- `hooks/`: React state hooks.
+- `shared/`: screens and `friendlyError`.
+- Import aliases, one per folder in `source/`: `@config/*`, `@hooks/*`, `@shared/*`, `@bloc/*`.
 
 The network is fixed to testnet and defined in one place (`source/config/network.ts`).
 
 ## Tests
 
-- Vitest, configured in `vitest.config.ts`; only pure domain logic is tested, with no network or wallet.
-- Tests live next to the code they cover, as `*.test.ts` files (for example `source/domain/evaluate.test.ts`).
+- Vitest, configured in `vitest.config.ts`; only pure entity logic is tested, with no network or wallet.
+- Tests live next to the code they cover, as `*.test.ts` files (for example `source/bloc/entity/evaluate.test.ts`).
 
 ## Conventions
 

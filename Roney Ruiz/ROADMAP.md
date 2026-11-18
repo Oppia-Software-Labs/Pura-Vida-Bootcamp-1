@@ -29,16 +29,16 @@ Los mensajes de commit sugeridos para cada fase están en [`context/structure.md
 
 Pantalla 1. Cumple el requisito mínimo de la tarea.
 
-- ⬜ Confirmar con Raven los nombres y imports de `@stellar/varial-sdk`.
-- ⬜ `source/config/network.ts` con la red testnet.
-- ⬜ `source/wallet/varial.ts`: conectar y firmar.
-- ⬜ Hook `useWallet` y pantalla `ConnectWallet`.
+- ✅ Confirmar con Raven los nombres y imports de `@stellar/varial-sdk`.
+- ✅ `source/config/network.ts` con la red testnet.
+- ✅ `source/bloc/wallet/varial.ts`: conectar y firmar.
+- ✅ Hook `useWallet` y pantalla `ConnectWallet`.
 - ⬜ Mostrar dirección, saldo de XLM e indicador de red.
 - ⬜ Verificar que Horizon responde en testnet con una llamada simple.
 
 ## Fase 2 · Dominio con tests ⬜
 
-Lógica pura en `source/domain/`, sin React, wallet ni red. Cada archivo con su `*.test.ts` al lado.
+Lógica pura en `source/bloc/entity/`, sin React, wallet ni red. Cada archivo con su `*.test.ts` al lado.
 
 - ⬜ `types.ts`: `Deposit`, `DepositPlan`, `Role`, `Status`.
 - ⬜ `money.ts`: conversión a stroops con `BigInt` y división con tope.

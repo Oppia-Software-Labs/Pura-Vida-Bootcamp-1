@@ -47,14 +47,14 @@ export const DEMO_MODE_DEFAULT = true; // E y D en minutos
 
 ```mermaid
 flowchart LR
-    UI["ui<br/>pantallas React"] --> H["hooks<br/>estado"]
-    H --> A["stellar/ · wallet/<br/>adaptadores"]
-    A --> D["domain/<br/>lógica pura"]
+    UI["shared<br/>pantallas React"] --> H["hooks<br/>estado"]
+    H --> A["bloc/stellar · bloc/wallet<br/>adaptadores"]
+    A --> D["bloc/entity<br/>lógica pura"]
     A -. red .-> N[("Stellar<br/>testnet")]
     A -. firma .-> W[["Varial"]]
 ```
 
-**Regla:** `domain/` no importa React, ni la wallet, ni la red. Toda regla de negocio vive ahí y se prueba con Vitest. Los adaptadores traducen entre el dominio y el mundo exterior.
+**Regla:** `bloc/entity/` no importa React, ni la wallet, ni la red. Toda regla de negocio vive ahí y se prueba con Vitest. Los adaptadores traducen entre el dominio y el mundo exterior.
 
 ### Carpetas
 
@@ -69,33 +69,36 @@ plazo/
    ├─ index.css                  # @import "tailwindcss"
    ├─ config/
    │  └─ network.ts
-   ├─ domain/                    # puro, con tests
-   │  ├─ types.ts                # Deposit, DepositPlan, Role, Status
-   │  ├─ money.ts                # stroops, BigInt, tope de reparaciones
-   │  ├─ plan.ts                 # validar input → DepositPlan
-   │  ├─ predicates.ts           # modelo propio de predicados
-   │  ├─ evaluate.ts             # evalPred, nextChangeAt
-   │  └─ status.ts               # estado y acción por rol
-   ├─ stellar/                   # adaptadores a la red
-   │  ├─ servers.ts              # Horizon.Server (y RPC)
-   │  ├─ buildCreateDeposit.ts   # DepositPlan → XDR
-   │  ├─ buildClaim.ts           # balanceId → XDR
-   │  ├─ submit.ts               # enviar XDR firmado, extraer IDs
-   │  └─ listDeposits.ts         # consulta por claimant → Deposit[]
-   ├─ wallet/
-   │  └─ varial.ts               # conectar, firmar
-   └─ ui/
+   ├─ hooks/                     # useWallet, useDeposits, useNow
+   ├─ bloc/
+   │  ├─ entity/                 # puro, con tests
+   │  │  ├─ types.ts             # Deposit, DepositPlan, Role, Status
+   │  │  ├─ money.ts             # stroops, BigInt, tope de reparaciones
+   │  │  ├─ plan.ts              # validar input → DepositPlan
+   │  │  ├─ predicates.ts        # modelo propio de predicados
+   │  │  ├─ evaluate.ts          # evalPred, nextChangeAt
+   │  │  └─ status.ts            # estado y acción por rol
+   │  ├─ stellar/                # adaptadores a la red
+   │  │  ├─ servers.ts           # Horizon.Server (y RPC)
+   │  │  ├─ buildCreateDeposit.ts # DepositPlan → XDR
+   │  │  ├─ buildClaim.ts        # balanceId → XDR
+   │  │  ├─ submit.ts            # enviar XDR firmado, extraer IDs
+   │  │  └─ listDeposits.ts      # consulta por claimant → Deposit[]
+   │  └─ wallet/
+   │     └─ varial.ts            # conectar, firmar
+   └─ shared/
       ├─ ConnectWallet.tsx       # pantalla 1 (requisito de la tarea)
       ├─ CreateDeposit.tsx       # pantalla 2
       ├─ MyDeposits.tsx          # pantalla 3
       ├─ DepositCard.tsx         # rol, estado, acción
-      ├─ friendlyError.ts        # error en inglés → mensaje en español
-      └─ hooks/                  # useWallet, useDeposits, useNow
+      └─ friendlyError.ts        # error en inglés → mensaje en español
 ```
+
+**Alias de imports:** uno por carpeta de `source/`, definidos en `tsconfig.app.json`, `vite.config.ts` y `vitest.config.ts`: `@config/*`, `@hooks/*`, `@shared/*` y `@bloc/*` (por ejemplo `@bloc/wallet/varial`).
 
 ## 5. Modelo de datos
 
-`source/domain/types.ts`:
+`source/bloc/entity/types.ts`:
 
 ```ts
 type Role = "tenant" | "landlord";
@@ -133,17 +136,17 @@ Los identificadores van en inglés; la UI los muestra traducidos.
 |---|---|---|
 | wallet | `connectWallet()` | pide acceso a Varial y devuelve la dirección |
 | wallet | `signXdr(xdr, address)` | pide a la wallet firmar (testnet) |
-| domain | `planDeposit(input)` | valida y devuelve `DepositPlan` o errores |
-| domain | `splitWithCap(total, bps)` | calcula reparaciones y resto con BigInt |
-| domain | `landlordPredicate(E, D)` / `tenantPredicate(D)` | construye los predicados |
-| domain | `evalPred(pred, nowSec)` | ¿se cumple el predicado ahora? |
-| domain | `deriveStatus(deposit, nowSec)` | estado y acción por rol |
+| entity | `planDeposit(input)` | valida y devuelve `DepositPlan` o errores |
+| entity | `splitWithCap(total, bps)` | calcula reparaciones y resto con BigInt |
+| entity | `landlordPredicate(E, D)` / `tenantPredicate(D)` | construye los predicados |
+| entity | `evalPred(pred, nowSec)` | ¿se cumple el predicado ahora? |
+| entity | `deriveStatus(deposit, nowSec)` | estado y acción por rol |
 | stellar | `buildCreateDeposit(plan)` | arma la transacción (1 o 2 operaciones) y devuelve XDR |
 | stellar | `buildClaim(balanceId, claimant)` | arma el reclamo y devuelve XDR |
 | stellar | `submit(signedXdr)` | envía y devuelve resultado e IDs de balance |
 | stellar | `listDepositsFor(address)` | consulta por claimant y mapea a `Deposit[]` |
 | stellar | `getDepositById(id)` | lectura por ID (RPC; plan B de Horizon) |
-| ui | `friendlyError(err)` | traduce un error en inglés a un mensaje en español |
+| shared | `friendlyError(err)` | traduce un error en inglés a un mensaje en español |
 
 ## 7. Flujos
 
@@ -153,8 +156,8 @@ Los identificadores van en inglés; la UI los muestra traducidos.
 sequenceDiagram
     actor T as Inquilino
     participant UI
-    participant D as domain
-    participant S as stellar/
+    participant D as entity
+    participant S as stellar
     participant W as Varial
     participant N as Red
 
@@ -214,7 +217,7 @@ Mínimo 5 propios. Mensajes en inglés, formato Conventional Commits. El commit 
 |---|---|---|
 | 1 ✅ | `chore: scaffold vite app with varial sdk` | proyecto base |
 | 2 | `feat(wallet): connect varial on testnet` | `network.ts`, `varial.ts`, pantalla 1: **requisito mínimo**, dirección + saldo |
-| 3 | `feat(domain): add deadline predicates and tests` | `predicates`, `evaluate`, `money`, tests |
+| 3 | `feat(entity): add deadline predicates and tests` | `predicates`, `evaluate`, `money`, tests |
 | 4 | `feat(deposit): create deposit and sign` | `plan`, `buildCreateDeposit`, `submit`, pantalla 2 |
 | 5 | `feat(deposit): list and claim deposits` | `listDeposits`, `buildClaim`, pantalla 3 |
 | 6 | `docs: add readme with limits and raven use` | cierre del PR |
