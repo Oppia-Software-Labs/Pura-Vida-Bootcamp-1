@@ -9,8 +9,8 @@ Estado: ✅ hecho · 🔄 en curso · ⬜ pendiente
 | 0 | Base del proyecto y documentación | ✅ |
 | 1 | Conectar wallet (requisito mínimo) | ✅ |
 | 2 | Entity con tests | ✅ |
-| 3 | Crear depósito | ⬜ siguiente |
-| 4 | Listar y reclamar | ⬜ |
+| 3 | Crear depósito | ✅ |
+| 4 | Listar y reclamar | ⬜ siguiente |
 | 5 | Cierre y entrega | ⬜ |
 | 6 | Reto: tope de reparaciones | ⬜ opcional |
 
@@ -47,16 +47,16 @@ Lógica pura en `source/bloc/entity/`, sin React, wallet ni red. Cada archivo co
 - ✅ `plan.ts`: validar el formulario y devolver un `DepositPlan`.
 - ✅ Tests de los bordes: `t == E` y `t == D`.
 
-## Fase 3 · Crear depósito ⬜
+## Fase 3 · Crear depósito ✅
 
 Pantalla 2.
 
-- ⬜ `buildCreateDeposit`: transacción con el inquilino como claimant, devuelve XDR.
-- ⬜ `submit`: enviar el XDR firmado y extraer el `balanceId`.
-- ⬜ Pantalla `CreateDeposit` con modo demo (`E` y `D` en minutos).
-- ⬜ Vista previa en lenguaje natural antes de firmar.
-- ⬜ `friendlyError`: errores en inglés traducidos a mensajes en español.
-- ⬜ Mostrar el link `?deposit=<id>` y guardar el id en `localStorage`.
+- ✅ `buildCreateDeposit`: transacción con el inquilino como claimant, devuelve XDR.
+- ✅ `submit`: enviar el XDR firmado y extraer el `balanceId`.
+- ✅ Pantalla `CreateDeposit` con modo demo (`E` y `D` en minutos).
+- ✅ Vista previa en lenguaje natural antes de firmar.
+- ✅ `friendlyError`: errores en inglés traducidos a mensajes en español.
+- ✅ Mostrar el link `?deposit=<id>` y guardar el id en `localStorage`.
 
 ## Fase 4 · Listar y reclamar ⬜
 

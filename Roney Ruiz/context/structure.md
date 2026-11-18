@@ -69,7 +69,7 @@ plazo/
    ├─ index.css                  # @import "tailwindcss"
    ├─ config/
    │  └─ network.ts
-   ├─ hooks/                     # useWallet, useBalance, useDeposits, useNow
+   ├─ hooks/                     # useWallet, useBalance, useCreateDeposit, useNow, useDeposits
    ├─ bloc/
    │  ├─ entity/                 # puro, con tests
    │  │  ├─ types.ts             # Deposit, DepositPlan, Role, Status
@@ -83,8 +83,11 @@ plazo/
    │  │  ├─ balance.ts           # saldo de XLM de una cuenta
    │  │  ├─ buildCreateDeposit.ts # DepositPlan → XDR
    │  │  ├─ buildClaim.ts        # balanceId → XDR
+   │  │  ├─ predicate.ts         # Predicate → ClaimPredicate del SDK
    │  │  ├─ submit.ts            # enviar XDR firmado, extraer IDs
    │  │  └─ listDeposits.ts      # consulta por claimant → Deposit[]
+   │  ├─ storage/
+   │  │  └─ deposits.ts          # ids de depósitos en localStorage
    │  └─ wallet/
    │     └─ varial.ts            # conectar, firmar
    └─ shared/
@@ -149,7 +152,7 @@ Los identificadores van en inglés; la UI los muestra traducidos. El estado no s
 |---|---|---|
 | wallet | `connectWallet()` | pide acceso a Varial y devuelve la dirección |
 | wallet | `signXdr(xdr, address)` | pide a la wallet firmar (testnet) |
-| entity | `planDeposit(input)` | valida y devuelve `{ ok, plan }` o `{ ok: false, errors }` con códigos en inglés (`invalid_tenant`, `deadline_not_after_end`...) |
+| entity | `planDeposit(input)` | valida y devuelve `{ ok, plan }` o `{ ok: false, errors }` con códigos en inglés (`invalid_tenant`, `deadline_not_after_end`, `insufficient_balance`...) |
 | entity | `xlmToStroops(xlm)` / `formatStroops(stroops)` | convierte texto de XLM a stroops `BigInt` y viceversa |
 | entity | `splitWithCap(total, bps)` | calcula reparaciones y resto con BigInt |
 | entity | `landlordPredicate(E, D)` / `tenantPredicate(D)` | construye los predicados |
@@ -158,7 +161,7 @@ Los identificadores van en inglés; la UI los muestra traducidos. El estado no s
 | stellar | `getXlmBalance(address)` | saldo en stroops por Horizon; `null` si la cuenta no existe |
 | stellar | `buildCreateDeposit(plan)` | arma la transacción (1 o 2 operaciones) y devuelve XDR |
 | stellar | `buildClaim(balanceId, claimant)` | arma el reclamo y devuelve XDR |
-| stellar | `submit(signedXdr)` | envía y devuelve resultado e IDs de balance |
+| stellar | `submitCreateDeposit(signedXdr)` | envía y devuelve el ID del balance; los rechazos se lanzan como `Transaction rejected: <código>` |
 | stellar | `listDepositsFor(address)` | consulta por claimant y mapea a `Deposit[]` |
 | stellar | `getDepositById(id)` | lectura por ID (RPC; plan B de Horizon) |
 | shared | `friendlyError(err)` | traduce un error en inglés a un mensaje en español |
