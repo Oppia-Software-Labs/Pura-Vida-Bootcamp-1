@@ -96,7 +96,7 @@ export interface Purchase {
   amount: string;
   platformFee: string;
   offererAmount: string;
-  txHash: string;
+  txHash?: string;
   createdAt: string;
   hasReview: boolean;
   token?: ReadingToken;
