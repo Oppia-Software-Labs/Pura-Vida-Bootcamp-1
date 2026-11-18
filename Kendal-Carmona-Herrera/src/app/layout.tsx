@@ -9,7 +9,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className="h-full antialiased">
+    // Browser extensions (LanguageTool, Grammarly, wallets) stamp attributes on
+    // <html> before React hydrates. This only silences attribute mismatches on this
+    // one element; mismatches inside the tree are still reported.
+    <html lang="en" className="h-full antialiased" suppressHydrationWarning>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
