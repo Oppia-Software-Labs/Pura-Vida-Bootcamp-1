@@ -12,6 +12,7 @@ import { LevelNest } from "./LevelNest";
 import { LevelPayment } from "./LevelPayment";
 import { LevelWallet, WalletInstructions } from "./LevelWallet";
 import { ProgressPath } from "./ProgressPath";
+import { useRaven } from "./RavenPanel";
 
 const RECEIPT_KEY = "baula-receipt-v1";
 
@@ -31,11 +32,14 @@ function savedReceipt(): PaymentReceipt | null {
 
 export function JourneyView({ requested }: { requested?: Level }) {
   const { progress, ready, complete, wallet } = useJourney();
+  const { open: openRaven, setLevel: setRavenLevel } = useRaven();
   const [selected, setSelected] = useState<Level>();
   const [receipt, setReceipt] = useState<PaymentReceipt | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
   const current = Math.min(selected ?? requested ?? nextLevel(progress), nextLevel(progress)) as Level;
   const level = LEVELS[current - 1];
+
+  useEffect(() => setRavenLevel(current), [current, setRavenLevel]);
 
   function goTo(value: Level) {
     setSelected(value);
@@ -96,6 +100,7 @@ export function JourneyView({ requested }: { requested?: Level }) {
           )}
           {ready && current === 4 && progress === 4 && <Celebration receipt={receipt}/>}
           {ready && current === 4 && progress < 4 && wallet?.testnet && <LevelPayment key={wallet.address} address={wallet.address} onSent={finish}/>}
+          <div className="level-chat"><button className="button button-quiet" onClick={() => openRaven(current)} aria-haspopup="dialog"><Icon name="raven"/> Pregúntale a Raven</button></div>
         </div>
       </section>
     </main>

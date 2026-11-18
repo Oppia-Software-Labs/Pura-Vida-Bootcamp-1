@@ -313,3 +313,42 @@ code { font-family: ui-monospace, Consolas, monospace; overflow-wrap: anywhere; 
   .celebration-art { inset: 30% 0 0; background-image: linear-gradient(180deg, #0b2130 6%, transparent 66%), url("/playa-nocturna.svg"); }
   .celebration-turtle { width: min(52%, 174px); top: 38%; }
 }
+
+/* Asistente Raven */
+.raven-launch { position: fixed; z-index: 31; right: clamp(13px, 3vw, 34px); bottom: max(16px, env(safe-area-inset-bottom)); display: inline-flex; align-items: center; gap: 8px; min-height: 48px; border: 1px solid #68c7bf; border-radius: 30px; padding: 8px 14px; background: #12353f; color: #d8fff6; box-shadow: 0 8px 25px #01061098; font-size: .85rem; font-weight: 740; }
+.raven-launch:hover { background: #1c5660; }
+.raven-panel { position: fixed; inset: auto clamp(12px, 3vw, 34px) max(13px, env(safe-area-inset-bottom)) auto; width: min(calc(100% - 24px), 458px); max-width: none; max-height: calc(100dvh - var(--banner-height) - 30px); margin: 0; padding: 0; border: 1px solid #416779; border-radius: 17px; color: var(--cream); background: #0c182b; box-shadow: 0 16px 70px #02060edb; }
+.raven-panel[open] { display: flex; flex-direction: column; }
+.raven-panel::backdrop { background: #030b16ab; }
+.raven-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 13px; background: #122638; border-bottom: 1px solid #304959; }
+.raven-avatar { display: grid; place-items: center; width: 43px; height: 43px; border-radius: 11px; background: #173d49; color: var(--mint); }
+.raven-head h2 { font-family: var(--heading); font-size: 1.35rem; font-weight: 630; line-height: 1.15; }
+.raven-head p { display: flex; gap: 6px; align-items: center; margin-top: 4px; font-size: .73rem; line-height: 1.27; color: #c6d4df; }
+.mode-dot { background: #fdd184; width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
+.mode-live { background: #72e9cf; }
+.raven-transcript { min-height: 90px; flex: 1 1 280px; display: flex; flex-direction: column; align-items: flex-start; overflow-y: auto; overscroll-behavior: contain; padding: 12px; gap: 10px; }
+.raven-message { max-width: 95%; padding: 9px 11px; border-radius: 11px; font-size: .85rem; line-height: 1.46; white-space: pre-wrap; overflow-wrap: anywhere; }
+.raven-assistant { border: 1px solid #32485e; background: #14243a; }
+.raven-user { align-self: flex-end; background: #17444b; color: #e3fff9; border: 1px solid #3d7f7b; }
+.raven-message ul { list-style: none; padding: 6px 0 0; margin: 7px 0 0; border-top: 1px solid #3c5267; font-size: .74rem; }
+.raven-message li a { color: var(--mint); display: inline-flex; align-items: center; gap: 5px; text-decoration: underline; text-underline-offset: 3px; }
+.raven-actions { display: grid; gap: 7px; padding: 11px 12px 12px; border-top: 1px solid #33475e; }
+.raven-level { color: var(--mint); font-size: .75rem; font-weight: 750; }
+.raven-suggestions { display: flex; flex-wrap: wrap; gap: 5px; }
+.raven-suggestions button { min-height: 31px; border: 1px solid #3d5a70; border-radius: 8px; padding: 4px 8px; background: #172839; color: #dce8f0; font-size: .72rem; line-height: 1.3; }
+.raven-suggestions button:hover:not(:disabled) { border-color: var(--mint); }
+.raven-suggestions button:disabled { opacity: .57; }
+.raven-form { display: flex; gap: 6px; }
+.raven-form input { min-width: 0; width: 100%; min-height: 44px; border: 1px solid #416079; background: #081425; border-radius: 9px; padding: 8px 10px; color: var(--cream); }
+.raven-form input::placeholder { color: #acbbcc; }
+.raven-form .button { min-width: 44px; min-height: 44px; padding: 6px; }
+#raven-help { color: var(--muted); font-size: .7rem; }
+.raven-error { color: var(--danger); font-size: .79rem; }
+.level-chat { display: flex; justify-content: flex-end; margin-top: 20px; }
+@media (max-width: 450px) {
+  .raven-launch { width: 47px; height: 47px; padding: 0; justify-content: center; }
+  .raven-launch span { display: none; }
+  .raven-head { padding: 10px; }
+  .raven-transcript { flex-basis: 205px; }
+  .raven-actions { padding: 9px; }
+}
