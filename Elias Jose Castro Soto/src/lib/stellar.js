@@ -1,4 +1,5 @@
 const HORIZON = "https://horizon-testnet.stellar.org";
+const FRIENDBOT = "https://friendbot.stellar.org";
 
 // Devuelve el balance en XLM, o null si la cuenta aún no existe en testnet.
 export async function getXlmBalance(address) {
@@ -8,4 +9,11 @@ export async function getXlmBalance(address) {
   const data = await res.json();
   const native = data.balances.find((b) => b.asset_type === "native");
   return native ? native.balance : "0";
+}
+
+export async function fundWithFriendbot(address) {
+  const res = await fetch(`${FRIENDBOT}?addr=${encodeURIComponent(address)}`);
+  if (!res.ok) {
+    throw new Error("Friendbot no pudo fondear la cuenta. Puede estar limitado por uso; intenta de nuevo en un rato.");
+  }
 }

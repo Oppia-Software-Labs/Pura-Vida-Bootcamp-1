@@ -17,7 +17,7 @@ const shorten = (a) => `${a.slice(0, 6)}…${a.slice(-6)}`;
 
 export default function App() {
   const { address, loading, error, connect, disconnect } = useStellarWallet();
-  const { balance, error: balanceError, refresh } = useXlmBalance(address);
+  const { balance, funding, error: balanceError, refresh, fund } = useXlmBalance(address);
   const [copied, setCopied] = useState(false);
 
   const copy = async () => {
@@ -84,9 +84,14 @@ export default function App() {
               {balance === undefined ? (
                 <p className="text-sm text-muted-foreground">Consultando…</p>
               ) : balance === null ? (
-                <p className="text-sm text-muted-foreground">
-                  Esta cuenta aún no existe en testnet. Fondéala con XLM de prueba.
-                </p>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    Esta cuenta aún no existe en testnet. Fondéala con XLM de prueba.
+                  </p>
+                  <Button size="sm" onClick={fund} disabled={funding}>
+                    {funding ? "Fondeando…" : "Fondear con Friendbot"}
+                  </Button>
+                </div>
               ) : (
                 <p className="text-2xl font-semibold">
                   {Number(balance).toLocaleString("es", { maximumFractionDigits: 2 })}{" "}
