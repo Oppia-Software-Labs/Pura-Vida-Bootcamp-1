@@ -8,9 +8,7 @@ de Stellar, ver la dirección y el balance de XLM, y fondear cuentas nuevas con
 Friendbot. Fue construida usando **Stellar Raven**, el servidor MCP oficial de
 Stellar, como asistente de desarrollo.
 
-> 📸 **Captura de pantalla principal:** `[PLACEHOLDER: ./docs/captura-principal.png]`
->
-> 🔗 **Demo desplegada (opcional):** `[PLACEHOLDER: URL o eliminar esta línea]`
+![Pantalla principal](./docs/captura-principal.png)
 
 ## Qué hace
 
@@ -22,9 +20,19 @@ Stellar, como asistente de desarrollo.
 - **Avisos de seguridad** contra phishing y sobre el alcance de la conexión.
 - Tema oscuro responsive, con fondo estelar.
 
-> 📸 **Flujo completo:** `[PLACEHOLDER: ./docs/captura-selector.png]`
-> `[PLACEHOLDER: ./docs/captura-conectado.png]`
-> `[PLACEHOLDER: ./docs/captura-friendbot.png]`
+**Flujo completo:**
+
+Selector de wallets al conectar:
+
+![Selector de wallets](./docs/captura-selector.png)
+
+Wallet conectada con dirección y balance:
+
+![Wallet conectada con balance](./docs/captura-conectado.png)
+
+Guía para quienes aún no tienen wallet:
+
+![Guía de 5 pasos para crear una wallet](./docs/captura-guia.png)
 
 ## Stack
 
@@ -77,7 +85,13 @@ así que `npm install` / `npm ci` funcionan sin pasos extra.
 5. Si el balance dice que la cuenta no existe, pulsa **Fondear con Friendbot**
    para recibir XLM de prueba.
 
-**Probado con:** `[PLACEHOLDER: wallet(s) con las que probaste, ej. Albedo / Varial]`
+![Confirmación de conexión en Albedo](./docs/captura-albedo.png)
+
+Albedo pide la contraseña para autorizar el acceso a la clave pública:
+
+![Autorización con contraseña en Albedo](./docs/captura-albedo-password.png)
+
+**Probado con:** **Albedo** (wallet web, testnet).
 
 ## Estructura del proyecto
 
@@ -177,13 +191,10 @@ de Stellar antes de escribir código. Estas fueron las consultas y lo que decid�
     Friendbot sin valor real.
   - No guardar llaves ni datos sensibles; usar solo URLs HTTPS.
   - Correr `npm audit` y documentar el resultado (ver [Seguridad](#seguridad)).
-  - Dejar CSP/HSTS al hosting: `[PLACEHOLDER: completar si desplegaste, o eliminar]`.
 
-### 6. Otras consultas
+### 6. Evidencia
 
-`[PLACEHOLDER: agrega aquí cualquier otra consulta que hayas hecho con Raven desde OpenCode: prompt, qué respondió y qué decidiste]`
-
-> 📸 **Evidencia:** `[PLACEHOLDER: ./docs/raven-claude.png]` · `[PLACEHOLDER: ./docs/raven-opencode.png]`
+> 📸 **Evidencia:** [Consulta sobre estructura del README con Raven en Claude](./docs/raven-claude.png)
 
 ## Decisiones técnicas
 
@@ -208,7 +219,6 @@ de Stellar antes de escribir código. Estas fueron las consultas y lo que decid�
 - **`npm audit`** reporta **50 vulnerabilidades transitivas** provenientes del Kit y sus
   dependencias. Al ser una app de demostración en testnet, sin backend ni datos de usuario,
   el riesgo práctico es bajo, pero se dejan documentadas.
-  `[PLACEHOLDER: ajusta esta frase si resolviste alguna]`
 
 ## Limitaciones conocidas
 
@@ -226,3 +236,5 @@ Construido con [Stellar Wallets Kit](https://jsr.io/@creit-tech/stellar-wallets-
 [shadcn/ui](https://ui.shadcn.com), [Lucide](https://lucide.dev) y asistido por
 [Stellar Raven](https://raven.stellar.org).
 Desarrollado por Elias Jose Castro Soto para el Bootcamp Pura Vida.
+
+![Footer con créditos](./docs/captura-footer.png)
