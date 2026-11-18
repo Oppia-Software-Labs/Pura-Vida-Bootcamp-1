@@ -1,0 +1,13 @@
+* text=auto eol=lf
+
+bun.lock text eol=lf -diff
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.woff binary
+*.woff2 binary
+*.pen binary
