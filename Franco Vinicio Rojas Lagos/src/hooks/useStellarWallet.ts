@@ -6,17 +6,29 @@ import {
 } from "@creit-tech/stellar-wallets-kit";
 import { defaultModules } from "@creit-tech/stellar-wallets-kit/modules/utils";
 import * as StellarSdk from "@stellar/stellar-sdk";
-import { isValidStellarAddress, STELLAR_CONFIG } from "../lib/stellar";
+import {
+  getNetworkConfig,
+  isValidStellarAddress,
+  type StellarNetworkId,
+} from "../lib/stellar";
 
 let kitInitialized = false;
 
-function ensureKitInitialized() {
-  if (kitInitialized || typeof window === "undefined") return;
-  StellarWalletsKit.init({
-    modules: defaultModules(),
-    network: Networks.TESTNET,
-  });
-  kitInitialized = true;
+function toKitNetwork(networkId: StellarNetworkId): Networks {
+  return networkId === "mainnet" ? Networks.PUBLIC : Networks.TESTNET;
+}
+
+function ensureKitInitialized(networkId: StellarNetworkId) {
+  if (typeof window === "undefined") return;
+  if (!kitInitialized) {
+    StellarWalletsKit.init({
+      modules: defaultModules(),
+      network: toKitNetwork(networkId),
+    });
+    kitInitialized = true;
+  } else {
+    StellarWalletsKit.setNetwork(toKitNetwork(networkId));
+  }
 }
 
 export type ConnectionMode = "disconnected" | "wallet" | "watch";
@@ -36,7 +48,9 @@ export interface UseStellarWalletReturn {
   clearError: () => void;
 }
 
-export function useStellarWallet(): UseStellarWalletReturn {
+export function useStellarWallet(
+  networkId: StellarNetworkId
+): UseStellarWalletReturn {
   const [address, setAddress] = useState<string | null>(null);
   const [mode, setMode] = useState<ConnectionMode>("disconnected");
   const [walletName, setWalletName] = useState<string | null>(null);
@@ -44,44 +58,59 @@ export function useStellarWallet(): UseStellarWalletReturn {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    ensureKitInitialized();
+    ensureKitInitialized(networkId);
+  }, [networkId]);
 
-    const unsubState = StellarWalletsKit.on(KitEventType.STATE_UPDATED, (event) => {
-      const nextAddress = event.payload.address;
-      if (nextAddress) {
-        setAddress(nextAddress);
-        setMode("wallet");
+  useEffect(() => {
+    ensureKitInitialized(networkId);
+
+    const unsubState = StellarWalletsKit.on(
+      KitEventType.STATE_UPDATED,
+      (event) => {
+        const nextAddress = event.payload.address;
+        if (nextAddress) {
+          setAddress(nextAddress);
+          setMode("wallet");
+          try {
+            setWalletName(StellarWalletsKit.selectedModule.productName);
+          } catch {
+            setWalletName("Stellar Wallet");
+          }
+        }
+      }
+    );
+
+    const unsubWallet = StellarWalletsKit.on(
+      KitEventType.WALLET_SELECTED,
+      () => {
         try {
           setWalletName(StellarWalletsKit.selectedModule.productName);
         } catch {
           setWalletName("Stellar Wallet");
         }
       }
-    });
+    );
 
-    const unsubWallet = StellarWalletsKit.on(KitEventType.WALLET_SELECTED, () => {
-      try {
-        setWalletName(StellarWalletsKit.selectedModule.productName);
-      } catch {
-        setWalletName("Stellar Wallet");
+    const unsubDisconnect = StellarWalletsKit.on(
+      KitEventType.DISCONNECT,
+      () => {
+        setAddress(null);
+        setMode("disconnected");
+        setWalletName(null);
       }
-    });
-
-    const unsubDisconnect = StellarWalletsKit.on(KitEventType.DISCONNECT, () => {
-      setAddress(null);
-      setMode("disconnected");
-      setWalletName(null);
-    });
+    );
 
     return () => {
       unsubState();
       unsubWallet();
       unsubDisconnect();
     };
+    // Subscribe once at mount; network updates are handled by the effect above
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const connect = useCallback(async () => {
-    ensureKitInitialized();
+    ensureKitInitialized(networkId);
     setError(null);
     setIsConnecting(true);
 
@@ -103,7 +132,7 @@ export function useStellarWallet(): UseStellarWalletReturn {
     } finally {
       setIsConnecting(false);
     }
-  }, []);
+  }, [networkId]);
 
   const disconnect = useCallback(async () => {
     setError(null);
@@ -122,7 +151,9 @@ export function useStellarWallet(): UseStellarWalletReturn {
   const connectWatchAddress = useCallback((publicKey: string) => {
     const trimmed = publicKey.trim();
     if (!isValidStellarAddress(trimmed)) {
-      setError("Ingresa una dirección Stellar válida (56 caracteres iniciando con G).");
+      setError(
+        "Ingresa una dirección Stellar válida (56 caracteres iniciando con G)."
+      );
       return;
     }
     setError(null);
@@ -146,7 +177,9 @@ export function useStellarWallet(): UseStellarWalletReturn {
     try {
       await StellarWalletsKit.profileModal();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "No se pudo abrir el perfil.");
+      setError(
+        err instanceof Error ? err.message : "No se pudo abrir el perfil."
+      );
     }
   }, [mode]);
 
@@ -154,16 +187,17 @@ export function useStellarWallet(): UseStellarWalletReturn {
     async (xdr: string): Promise<string> => {
       if (mode !== "wallet" || !address) {
         throw new Error(
-          "Conecta una wallet de Stellar (por ejemplo Freighter/Varial o Albedo) para firmar transacciones."
+          "Conecta una wallet de Stellar (por ejemplo LOBSTR, Freighter/Varial o Albedo) para firmar transacciones."
         );
       }
+      const { networkPassphrase } = getNetworkConfig(networkId);
       const { signedTxXdr } = await StellarWalletsKit.signTransaction(xdr, {
-        networkPassphrase: STELLAR_CONFIG.networkPassphrase,
+        networkPassphrase,
         address,
       });
       return signedTxXdr;
     },
-    [address, mode]
+    [address, mode, networkId]
   );
 
   const clearError = useCallback(() => setError(null), []);

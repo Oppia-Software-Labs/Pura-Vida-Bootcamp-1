@@ -1,28 +1,52 @@
 import * as StellarSdk from "@stellar/stellar-sdk";
 
-export type StellarNetworkId = "testnet";
+export type StellarNetworkId = "testnet" | "mainnet";
 
 export interface StellarNetworkConfig {
   id: StellarNetworkId;
   label: string;
+  shortLabel: string;
   horizonUrl: string;
-  rpcUrl: string;
   networkPassphrase: string;
-  friendbotUrl: string;
+  friendbotUrl: string | null;
   explorerUrl: string;
 }
 
-export const STELLAR_CONFIG: StellarNetworkConfig = {
-  id: "testnet",
-  label: "Stellar Testnet",
-  horizonUrl: "https://horizon-testnet.stellar.org",
-  rpcUrl: "https://soroban-testnet.stellar.org",
-  networkPassphrase: StellarSdk.Networks.TESTNET,
-  friendbotUrl: "https://friendbot.stellar.org",
-  explorerUrl: "https://stellar.expert/explorer/testnet",
+export const NETWORK_CONFIGS: Record<StellarNetworkId, StellarNetworkConfig> = {
+  testnet: {
+    id: "testnet",
+    label: "Stellar Testnet",
+    shortLabel: "Testnet",
+    horizonUrl: "https://horizon-testnet.stellar.org",
+    networkPassphrase: StellarSdk.Networks.TESTNET,
+    friendbotUrl: "https://friendbot.stellar.org",
+    explorerUrl: "https://stellar.expert/explorer/testnet",
+  },
+  mainnet: {
+    id: "mainnet",
+    label: "Stellar Mainnet",
+    shortLabel: "Mainnet",
+    horizonUrl: "https://horizon.stellar.org",
+    networkPassphrase: StellarSdk.Networks.PUBLIC,
+    friendbotUrl: null,
+    explorerUrl: "https://stellar.expert/explorer/public",
+  },
 };
 
-export const horizon = new StellarSdk.Horizon.Server(STELLAR_CONFIG.horizonUrl);
+const horizonServers: Record<StellarNetworkId, StellarSdk.Horizon.Server> = {
+  testnet: new StellarSdk.Horizon.Server(NETWORK_CONFIGS.testnet.horizonUrl),
+  mainnet: new StellarSdk.Horizon.Server(NETWORK_CONFIGS.mainnet.horizonUrl),
+};
+
+export function getNetworkConfig(networkId: StellarNetworkId): StellarNetworkConfig {
+  return NETWORK_CONFIGS[networkId];
+}
+
+export function getHorizonServer(
+  networkId: StellarNetworkId
+): StellarSdk.Horizon.Server {
+  return horizonServers[networkId];
+}
 
 export interface AssetBalance {
   code: string;
@@ -71,7 +95,11 @@ export function formatXlm(value: string | number): string {
   }).format(num);
 }
 
-export async function fetchAccountSnapshot(address: string): Promise<AccountSnapshot> {
+export async function fetchAccountSnapshot(
+  address: string,
+  networkId: StellarNetworkId = "testnet"
+): Promise<AccountSnapshot> {
+  const horizon = getHorizonServer(networkId);
   try {
     const account = await horizon.loadAccount(address);
 
@@ -85,7 +113,10 @@ export async function fetchAccountSnapshot(address: string): Promise<AccountSnap
             isNative: true,
           };
         }
-        if (entry.asset_type === "credit_alphanum4" || entry.asset_type === "credit_alphanum12") {
+        if (
+          entry.asset_type === "credit_alphanum4" ||
+          entry.asset_type === "credit_alphanum12"
+        ) {
           return {
             code: entry.asset_code,
             issuer: entry.asset_issuer,
@@ -125,26 +156,40 @@ export async function fetchAccountSnapshot(address: string): Promise<AccountSnap
   }
 }
 
-export async function fundWithFriendbot(address: string): Promise<{ hash: string | null }> {
+export async function fundWithFriendbot(
+  address: string
+): Promise<{ hash: string | null }> {
+  const friendbotUrl = NETWORK_CONFIGS.testnet.friendbotUrl;
+  if (!friendbotUrl) {
+    throw new Error("Friendbot solo está disponible en Stellar Testnet.");
+  }
+
   const response = await fetch(
-    `${STELLAR_CONFIG.friendbotUrl}?addr=${encodeURIComponent(address)}`
+    `${friendbotUrl}?addr=${encodeURIComponent(address)}`
   );
 
   if (!response.ok) {
-    const body = (await response.json().catch(() => null)) as { detail?: string } | null;
+    const body = (await response.json().catch(() => null)) as {
+      detail?: string;
+    } | null;
     throw new Error(
-      body?.detail || `Friendbot respondió con estado ${response.status}. Intenta de nuevo.`
+      body?.detail ||
+        `Friendbot respondió con estado ${response.status}. Intenta de nuevo.`
     );
   }
 
-  const data = (await response.json().catch(() => null)) as { hash?: string } | null;
+  const data = (await response.json().catch(() => null)) as {
+    hash?: string;
+  } | null;
   return { hash: data?.hash ?? null };
 }
 
 export async function fetchRecentPayments(
   address: string,
+  networkId: StellarNetworkId = "testnet",
   limit = 10
 ): Promise<PaymentRecord[]> {
+  const horizon = getHorizonServer(networkId);
   try {
     const page = await horizon
       .payments()
@@ -226,10 +271,16 @@ export async function fetchRecentPayments(
   }
 }
 
-export function getExplorerAccountUrl(address: string): string {
-  return `${STELLAR_CONFIG.explorerUrl}/account/${address}`;
+export function getExplorerAccountUrl(
+  address: string,
+  networkId: StellarNetworkId = "testnet"
+): string {
+  return `${getNetworkConfig(networkId).explorerUrl}/account/${address}`;
 }
 
-export function getExplorerTxUrl(hash: string): string {
-  return `${STELLAR_CONFIG.explorerUrl}/tx/${hash}`;
+export function getExplorerTxUrl(
+  hash: string,
+  networkId: StellarNetworkId = "testnet"
+): string {
+  return `${getNetworkConfig(networkId).explorerUrl}/tx/${hash}`;
 }

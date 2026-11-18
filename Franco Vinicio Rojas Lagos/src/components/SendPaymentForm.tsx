@@ -3,8 +3,10 @@ import { CheckCircle2, ExternalLink, Lock, Send } from "lucide-react";
 import {
   formatXlm,
   getExplorerTxUrl,
+  getNetworkConfig,
   isValidStellarAddress,
   shortenAddress,
+  type StellarNetworkId,
 } from "../lib/stellar";
 import {
   buildXlmPaymentXdr,
@@ -17,6 +19,7 @@ import type { ConnectionMode } from "../hooks/useStellarWallet";
 interface SendPaymentFormProps {
   sourceAddress: string;
   mode: ConnectionMode;
+  networkId: StellarNetworkId;
   funded: boolean;
   onSignTransaction: (xdr: string) => Promise<string>;
   onPaymentSuccess: () => Promise<void>;
@@ -27,6 +30,7 @@ type TxStage = "idle" | "building" | "signing" | "submitting" | "success" | "err
 export function SendPaymentForm({
   sourceAddress,
   mode,
+  networkId,
   funded,
   onSignTransaction,
   onPaymentSuccess,
@@ -50,6 +54,7 @@ export function SendPaymentForm({
   const memoId = useId();
   const memoHintId = useId();
 
+  const networkConfig = getNetworkConfig(networkId);
   const isProcessing =
     stage === "building" || stage === "signing" || stage === "submitting";
   const canSign = mode === "wallet" && funded;
@@ -71,7 +76,7 @@ export function SendPaymentForm({
 
     setTxHash(null);
     setStage("building");
-    setStatusMessage("1/3 · Construyendo transacción en Stellar Testnet…");
+    setStatusMessage(`1/3 · Construyendo transacción en ${networkConfig.label}…`);
 
     try {
       const unsignedXdr = await buildXlmPaymentXdr({
@@ -79,6 +84,7 @@ export function SendPaymentForm({
         destinationAddress: destination,
         amountXlm: amount,
         memo,
+        networkId,
       });
 
       setStage("signing");
@@ -86,8 +92,8 @@ export function SendPaymentForm({
       const signedXdr = await onSignTransaction(unsignedXdr);
 
       setStage("submitting");
-      setStatusMessage("3/3 · Enviando transacción firmada a Horizon…");
-      const result = await submitSignedTransaction(signedXdr);
+      setStatusMessage(`3/3 · Enviando transacción firmada a ${networkConfig.label}…`);
+      const result = await submitSignedTransaction(signedXdr, networkId);
 
       setTxHash(result.hash);
       setStage("success");
@@ -98,7 +104,7 @@ export function SendPaymentForm({
       await onPaymentSuccess();
     } catch (err) {
       setStage("error");
-      setStatusMessage(parseStellarError(err));
+      setStatusMessage(parseStellarError(err, networkId));
     }
   };
 
@@ -107,7 +113,9 @@ export function SendPaymentForm({
       <div className="section-header">
         <div>
           <span className="eyebrow">Paso 3 · Operación clásica</span>
-          <h2 id="send-payment-heading">Enviar Pago en XLM</h2>
+          <h2 id="send-payment-heading">
+            Enviar Pago en XLM ({networkConfig.shortLabel})
+          </h2>
         </div>
       </div>
 
@@ -116,14 +124,16 @@ export function SendPaymentForm({
           <Lock size={16} aria-hidden="true" />
           <span>
             Estás en modo solo lectura. Conecta tu wallet de Stellar en el Paso 1 para firmar y
-            enviar pagos en Testnet.
+            enviar pagos en {networkConfig.shortLabel}.
           </span>
         </div>
       )}
 
       {mode === "wallet" && !funded && (
         <div className="alert alert-info" role="status">
-          Fondea tu cuenta primero con Friendbot en el Paso 2 para poder enviar pagos.
+          {networkId === "testnet"
+            ? "Fondea tu cuenta primero con Friendbot en el Paso 2 para poder enviar pagos."
+            : "Esta cuenta aún no tiene saldo en Mainnet. Cambia a Testnet para probar gratis con Friendbot."}
         </div>
       )}
 
@@ -206,7 +216,9 @@ export function SendPaymentForm({
 
         {previewReady && canSign && (
           <div className="tx-preview" aria-label="Resumen antes de firmar">
-            <p className="tx-preview-title">Resumen previo a la firma</p>
+            <p className="tx-preview-title">
+              Resumen previo a la firma ({networkConfig.label})
+            </p>
             <dl>
               <div>
                 <dt>Destino</dt>
@@ -233,7 +245,11 @@ export function SendPaymentForm({
           aria-busy={isProcessing}
         >
           <Send size={17} aria-hidden="true" />
-          {isProcessing ? "Procesando transacción…" : "Firmar y Enviar XLM"}
+          {isProcessing
+            ? "Procesando transacción…"
+            : networkId === "mainnet"
+              ? "Firmar y Enviar XLM (Mainnet)"
+              : "Firmar y Enviar XLM"}
         </button>
 
         {statusMessage && (
@@ -249,14 +265,16 @@ export function SendPaymentForm({
           >
             <div className="status-stack">
               <div className="status-line">
-                {stage === "success" && <CheckCircle2 size={16} aria-hidden="true" />}
+                {stage === "success" && (
+                  <CheckCircle2 size={16} aria-hidden="true" />
+                )}
                 <span>{statusMessage}</span>
               </div>
               {txHash && (
                 <div className="tx-hash-row">
                   <code className="mono">{shortenAddress(txHash, 10, 10)}</code>
                   <a
-                    href={getExplorerTxUrl(txHash)}
+                    href={getExplorerTxUrl(txHash, networkId)}
                     target="_blank"
                     rel="noreferrer"
                     className="btn-link"

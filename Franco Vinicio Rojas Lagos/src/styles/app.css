@@ -37,6 +37,11 @@
   --info-text-light: #1d4ed8;
   --info-text-dark: #93c5fd;
 
+  --warn-bg-light: #fef3c7;
+  --warn-bg-dark: #3b2a0c;
+  --warn-text-light: #92400e;
+  --warn-text-dark: #fcd34d;
+
   /* Fallback defaults (light) for browsers without light-dark() */
   --bg: var(--bg-light);
   --surface: var(--surface-light);
@@ -53,6 +58,8 @@
   --error-text: var(--error-text-light);
   --info-bg: var(--info-bg-light);
   --info-text: var(--info-text-light);
+  --warn-bg: var(--warn-bg-light);
+  --warn-text: var(--warn-text-light);
 
   @media (prefers-color-scheme: dark) {
     --bg: var(--bg-dark);
@@ -70,6 +77,8 @@
     --error-text: var(--error-text-dark);
     --info-bg: var(--info-bg-dark);
     --info-text: var(--info-text-dark);
+    --warn-bg: var(--warn-bg-dark);
+    --warn-text: var(--warn-text-dark);
   }
 
   @supports (color: light-dark(white, black)) {
@@ -88,6 +97,8 @@
     --error-text: light-dark(var(--error-text-light), var(--error-text-dark));
     --info-bg: light-dark(var(--info-bg-light), var(--info-bg-dark));
     --info-text: light-dark(var(--info-text-light), var(--info-text-dark));
+    --warn-bg: light-dark(var(--warn-bg-light), var(--warn-bg-dark));
+    --warn-text: light-dark(var(--warn-text-light), var(--warn-text-dark));
   }
 
   accent-color: var(--brand);
@@ -283,6 +294,44 @@ a {
   background: var(--success-text);
 }
 
+.status-dot-warn {
+  background: var(--warn-text);
+}
+
+.network-switch {
+  display: inline-flex;
+  padding: 0.2rem;
+  border-radius: 999px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border);
+  gap: 0.2rem;
+}
+
+.network-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.32rem 0.72rem;
+  border-radius: 999px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.network-btn.is-active {
+  background: var(--surface);
+  color: var(--text);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.12);
+}
+
+.network-btn.is-active.is-mainnet {
+  background: var(--warn-bg);
+  color: var(--warn-text);
+}
+
 /* Buttons */
 .btn {
   display: inline-flex;
@@ -385,6 +434,12 @@ a {
 .alert-info {
   background: var(--info-bg);
   color: var(--info-text);
+  justify-content: flex-start;
+}
+
+.alert-warning {
+  background: var(--warn-bg);
+  color: var(--warn-text);
   justify-content: flex-start;
 }
 

@@ -3,12 +3,15 @@ import { ArrowDownLeft, ArrowUpRight, ExternalLink, History } from "lucide-react
 import {
   formatXlm,
   getExplorerTxUrl,
+  getNetworkConfig,
   shortenAddress,
   type PaymentRecord,
+  type StellarNetworkId,
 } from "../lib/stellar";
 
 interface PaymentsTableProps {
   payments: PaymentRecord[];
+  networkId: StellarNetworkId;
   loading: boolean;
   funded: boolean;
 }
@@ -30,15 +33,23 @@ function getOperationLabel(payment: PaymentRecord): string {
   return payment.direction === "in" ? "Recibido" : "Enviado";
 }
 
-export function PaymentsTable({ payments, loading, funded }: PaymentsTableProps) {
+export function PaymentsTable({
+  payments,
+  networkId,
+  loading,
+  funded,
+}: PaymentsTableProps) {
   const captionId = useId();
+  const networkConfig = getNetworkConfig(networkId);
 
   return (
     <section className="card" aria-labelledby="history-heading">
       <div className="section-header">
         <div>
           <span className="eyebrow">Paso 4 · Actividad reciente</span>
-          <h2 id="history-heading">Historial de Pagos</h2>
+          <h2 id="history-heading">
+            Historial de Pagos ({networkConfig.shortLabel})
+          </h2>
         </div>
         <span className="badge badge-info">
           <History size={14} aria-hidden="true" />
@@ -48,8 +59,8 @@ export function PaymentsTable({ payments, loading, funded }: PaymentsTableProps)
 
       {!funded ? (
         <p className="muted">
-          Una vez que la cuenta esté activa en Stellar Testnet, aquí aparecerán tus pagos y
-          fondeos recientes.
+          Una vez que la cuenta esté activa en {networkConfig.label}, aquí aparecerán tus
+          pagos y movimientos recientes.
         </p>
       ) : loading && payments.length === 0 ? (
         <p className="muted">Consultando operaciones recientes en Horizon…</p>
@@ -64,7 +75,7 @@ export function PaymentsTable({ payments, loading, funded }: PaymentsTableProps)
         >
           <table className="payments-table">
             <caption id={captionId} className="visually-hidden">
-              Historial de los últimos pagos en Stellar Testnet
+              Historial de los últimos pagos en {networkConfig.label}
             </caption>
             <thead>
               <tr>
@@ -102,7 +113,7 @@ export function PaymentsTable({ payments, loading, funded }: PaymentsTableProps)
                   <td>{formatDate(payment.createdAt)}</td>
                   <td>
                     <a
-                      href={getExplorerTxUrl(payment.transactionHash)}
+                      href={getExplorerTxUrl(payment.transactionHash, networkId)}
                       target="_blank"
                       rel="noreferrer"
                       className="btn-link"

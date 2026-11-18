@@ -1,11 +1,17 @@
 import * as StellarSdk from "@stellar/stellar-sdk";
-import { horizon, isValidStellarAddress, STELLAR_CONFIG } from "./stellar";
+import {
+  getHorizonServer,
+  getNetworkConfig,
+  isValidStellarAddress,
+  type StellarNetworkId,
+} from "./stellar";
 
 export interface BuildPaymentParams {
   sourceAddress: string;
   destinationAddress: string;
   amountXlm: string;
   memo?: string;
+  networkId: StellarNetworkId;
 }
 
 export interface SubmittedTransactionResult {
@@ -27,9 +33,13 @@ interface HorizonErrorShape {
   };
 }
 
-export function parseStellarError(error: unknown): string {
+export function parseStellarError(
+  error: unknown,
+  networkId: StellarNetworkId = "testnet"
+): string {
   const err = error as HorizonErrorShape | undefined;
   const codes = err?.response?.data?.extras?.result_codes;
+  const networkLabel = getNetworkConfig(networkId).label;
 
   if (codes?.operations?.length) {
     const opCode = codes.operations[0];
@@ -37,7 +47,9 @@ export function parseStellarError(error: unknown): string {
       case "op_underfunded":
         return "Fondos insuficientes en XLM (recuerda mantener la reserva mínima de tu cuenta).";
       case "op_no_destination":
-        return "La cuenta destino aún no existe en Stellar Testnet. Fondea primero esa cuenta con Friendbot.";
+        return networkId === "testnet"
+          ? "La cuenta destino aún no existe en Stellar Testnet. Fondea primero esa cuenta con Friendbot."
+          : "La cuenta destino aún no está activada en Stellar Mainnet.";
       case "op_no_trust":
         return "La cuenta destino no tiene una trustline activa para ese asset.";
       case "op_line_full":
@@ -56,14 +68,16 @@ export function parseStellarError(error: unknown): string {
       case "tx_too_late":
         return "La transacción expiró antes de enviarse. Intenta de nuevo.";
       case "tx_bad_auth":
-        return "Firma inválida o red incorrecta. Verifica que tu wallet esté en Stellar Testnet.";
+        return `Firma inválida o red incorrecta. Verifica que tu wallet esté configurada en ${networkLabel}.`;
       default:
         return `Transacción rechazada por la red (${codes.transaction}).`;
     }
   }
 
   if (error instanceof StellarSdk.NotFoundError) {
-    return "Tu cuenta aún no está fondeada en Testnet. Usa Friendbot para activarla primero.";
+    return networkId === "testnet"
+      ? "Tu cuenta aún no está fondeada en Testnet. Usa Friendbot para activarla primero."
+      : "Tu cuenta aún no está activada en Stellar Mainnet.";
   }
 
   const rawMessage = err?.message ?? String(error ?? "Error desconocido");
@@ -79,12 +93,15 @@ export async function buildXlmPaymentXdr({
   destinationAddress,
   amountXlm,
   memo,
+  networkId,
 }: BuildPaymentParams): Promise<string> {
   const destination = destinationAddress.trim();
   const normalizedAmount = amountXlm.trim();
 
   if (!isValidStellarAddress(destination)) {
-    throw new Error("La dirección destino no es una llave pública Stellar válida (G…).");
+    throw new Error(
+      "La dirección destino no es una llave pública Stellar válida (G…)."
+    );
   }
 
   const numericAmount = Number(normalizedAmount);
@@ -97,11 +114,13 @@ export async function buildXlmPaymentXdr({
     throw new Error("El memo no puede superar los 28 bytes.");
   }
 
+  const horizon = getHorizonServer(networkId);
+  const config = getNetworkConfig(networkId);
   const account = await horizon.loadAccount(sourceAddress);
 
   const builder = new StellarSdk.TransactionBuilder(account, {
     fee: StellarSdk.BASE_FEE,
-    networkPassphrase: STELLAR_CONFIG.networkPassphrase,
+    networkPassphrase: config.networkPassphrase,
   })
     .addOperation(
       StellarSdk.Operation.payment({
@@ -120,11 +139,15 @@ export async function buildXlmPaymentXdr({
 }
 
 export async function submitSignedTransaction(
-  signedXdr: string
+  signedXdr: string,
+  networkId: StellarNetworkId = "testnet"
 ): Promise<SubmittedTransactionResult> {
+  const horizon = getHorizonServer(networkId);
+  const config = getNetworkConfig(networkId);
+
   const transaction = StellarSdk.TransactionBuilder.fromXDR(
     signedXdr,
-    STELLAR_CONFIG.networkPassphrase
+    config.networkPassphrase
   ) as StellarSdk.Transaction;
 
   const response = await horizon.submitTransaction(transaction);

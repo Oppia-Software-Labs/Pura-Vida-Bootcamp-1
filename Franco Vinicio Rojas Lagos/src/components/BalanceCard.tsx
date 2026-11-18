@@ -1,8 +1,15 @@
-import { Coins, Droplets, RefreshCw, AlertTriangle } from "lucide-react";
-import { formatXlm, shortenAddress, type AccountSnapshot } from "../lib/stellar";
+import { AlertTriangle, Coins, Droplets, RefreshCw } from "lucide-react";
+import {
+  formatXlm,
+  getNetworkConfig,
+  shortenAddress,
+  type AccountSnapshot,
+  type StellarNetworkId,
+} from "../lib/stellar";
 
 interface BalanceCardProps {
   account: AccountSnapshot | null;
+  networkId: StellarNetworkId;
   loading: boolean;
   funding: boolean;
   fundMessage: string | null;
@@ -13,6 +20,7 @@ interface BalanceCardProps {
 
 export function BalanceCard({
   account,
+  networkId,
   loading,
   funding,
   fundMessage,
@@ -20,6 +28,7 @@ export function BalanceCard({
   onRefresh,
   onFundWithFriendbot,
 }: BalanceCardProps) {
+  const networkConfig = getNetworkConfig(networkId);
   const xlmNum = account ? Number.parseFloat(account.xlmBalance) : 0;
   const estimatedReserve = account?.funded
     ? (2 + account.subentryCount) * 0.5
@@ -32,7 +41,7 @@ export function BalanceCard({
       <div className="section-header">
         <div>
           <span className="eyebrow">Paso 2 · Estado en Horizon</span>
-          <h2 id="balance-heading">Balances de la Cuenta</h2>
+          <h2 id="balance-heading">Balances ({networkConfig.shortLabel})</h2>
         </div>
         <button
           type="button"
@@ -63,30 +72,45 @@ export function BalanceCard({
       )}
 
       {!account ? (
-        <p className="muted">Cargando estado de la cuenta desde Stellar Horizon…</p>
+        <p className="muted">
+          Cargando estado de la cuenta desde {networkConfig.label} Horizon…
+        </p>
       ) : !account.funded ? (
         <div className="unfunded-box">
           <div className="unfunded-header">
             <AlertTriangle size={20} aria-hidden="true" />
             <div>
-              <h3>Cuenta aún no activada en Testnet</h3>
-              <p className="muted">
-                Horizon devolvió <code>404 NotFoundError</code>: esta llave pública todavía no
-                tiene saldo mínimo en Stellar Testnet. Fondea la cuenta gratis con{" "}
-                <strong>Friendbot</strong> para recibir <strong>10,000 XLM</strong> de prueba.
-              </p>
+              <h3>Cuenta aún no activada en {networkConfig.shortLabel}</h3>
+              {networkId === "testnet" ? (
+                <p className="muted">
+                  Horizon devolvió <code>404 NotFoundError</code>: esta llave pública todavía
+                  no tiene saldo mínimo en Stellar Testnet. Fondea la cuenta gratis con{" "}
+                  <strong>Friendbot</strong> para recibir <strong>10,000 XLM</strong> de
+                  prueba.
+                </p>
+              ) : (
+                <p className="muted">
+                  Horizon devolvió <code>404 NotFoundError</code>: esta llave pública aún no
+                  tiene al menos 1 XLM en Stellar Mainnet. Si deseas probar gratis con
+                  Friendbot, cambia a <strong>Testnet</strong> en el Paso 1.
+                </p>
+              )}
             </div>
           </div>
 
-          <button
-            type="button"
-            className="btn btn-primary"
-            onClick={onFundWithFriendbot}
-            disabled={funding}
-          >
-            <Droplets size={18} aria-hidden="true" />
-            {funding ? "Fondeando con Friendbot…" : "Fondear con Friendbot (+10,000 XLM)"}
-          </button>
+          {networkId === "testnet" && (
+            <button
+              type="button"
+              className="btn btn-primary"
+              onClick={onFundWithFriendbot}
+              disabled={funding}
+            >
+              <Droplets size={18} aria-hidden="true" />
+              {funding
+                ? "Fondeando con Friendbot…"
+                : "Fondear con Friendbot (+10,000 XLM)"}
+            </button>
+          )}
         </div>
       ) : (
         <div className="balance-content">
@@ -140,7 +164,8 @@ export function BalanceCard({
 
           <div className="friendbot-footer">
             <span className="hint">
-              Cuenta activa en ledger {account.lastModifiedLedger ?? "—"} · Red de pruebas
+              Cuenta activa en ledger {account.lastModifiedLedger ?? "—"} ·{" "}
+              {networkConfig.label}
             </span>
           </div>
         </div>

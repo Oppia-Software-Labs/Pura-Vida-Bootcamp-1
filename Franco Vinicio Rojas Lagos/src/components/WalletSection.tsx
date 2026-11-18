@@ -1,5 +1,6 @@
 import { useId, useState, type FormEvent } from "react";
 import {
+  AlertTriangle,
   Check,
   Copy,
   ExternalLink,
@@ -10,15 +11,22 @@ import {
   User,
   Wallet,
 } from "lucide-react";
-import { getExplorerAccountUrl, shortenAddress } from "../lib/stellar";
+import {
+  getExplorerAccountUrl,
+  getNetworkConfig,
+  shortenAddress,
+  type StellarNetworkId,
+} from "../lib/stellar";
 import type { ConnectionMode } from "../hooks/useStellarWallet";
 
 interface WalletSectionProps {
   address: string | null;
   mode: ConnectionMode;
   walletName: string | null;
+  networkId: StellarNetworkId;
   isConnecting: boolean;
   error: string | null;
+  onChangeNetwork: (networkId: StellarNetworkId) => void;
   onConnect: () => Promise<void>;
   onDisconnect: () => Promise<void>;
   onConnectWatch: (publicKey: string) => void;
@@ -31,8 +39,10 @@ export function WalletSection({
   address,
   mode,
   walletName,
+  networkId,
   isConnecting,
   error,
+  onChangeNetwork,
   onConnect,
   onDisconnect,
   onConnectWatch,
@@ -45,6 +55,7 @@ export function WalletSection({
   const [showWatchForm, setShowWatchForm] = useState(false);
   const watchInputId = useId();
   const watchHintId = useId();
+  const networkConfig = getNetworkConfig(networkId);
 
   const handleCopy = async () => {
     if (!address) return;
@@ -69,11 +80,47 @@ export function WalletSection({
           <span className="eyebrow">Paso 1 · Conexión</span>
           <h2 id="wallet-section-heading">Conecta tu Wallet de Stellar</h2>
         </div>
-        <span className="badge badge-network">
-          <span className="status-dot" aria-hidden="true" />
-          Stellar Testnet
-        </span>
+
+        <div className="network-controls">
+          <div
+            className="network-switch"
+            role="group"
+            aria-label="Seleccionar red de Stellar"
+          >
+            <button
+              type="button"
+              className={`network-btn ${networkId === "testnet" ? "is-active" : ""}`}
+              aria-pressed={networkId === "testnet"}
+              onClick={() => onChangeNetwork("testnet")}
+            >
+              <span className="status-dot" aria-hidden="true" />
+              Testnet
+            </button>
+            <button
+              type="button"
+              className={`network-btn ${
+                networkId === "mainnet" ? "is-active is-mainnet" : ""
+              }`}
+              aria-pressed={networkId === "mainnet"}
+              onClick={() => onChangeNetwork("mainnet")}
+            >
+              <span className="status-dot status-dot-warn" aria-hidden="true" />
+              Mainnet
+            </button>
+          </div>
+        </div>
       </div>
+
+      {networkId === "mainnet" && (
+        <div className="alert alert-warning" role="status">
+          <AlertTriangle size={16} aria-hidden="true" />
+          <span>
+            <strong>Stellar Mainnet activa:</strong> los balances y envíos usan{" "}
+            <strong>XLM reales</strong> (ideal para probar wallets Mainnet como LOBSTR). Para
+            pruebas gratuitas con Friendbot, cambia a <strong>Testnet</strong>.
+          </span>
+        </div>
+      )}
 
       {error && (
         <div className="alert alert-error" role="alert">
@@ -93,8 +140,9 @@ export function WalletSection({
         <div className="wallet-disconnected">
           <p className="muted">
             Conecta tu wallet favorita mediante <strong>Stellar Wallets Kit v2</strong>{" "}
-            (Freighter / Varial, xBull, Albedo, Lobstr, Hana y más) para consultar balances,
-            fondear en Testnet y firmar pagos en XLM.
+            (LOBSTR, Freighter / Varial, xBull, Albedo, Hana y más) sobre{" "}
+            <strong>{networkConfig.label}</strong> para consultar balances y firmar pagos en
+            XLM.
           </p>
 
           <div className="wallet-actions">
@@ -115,7 +163,9 @@ export function WalletSection({
               aria-expanded={showWatchForm}
             >
               <Eye size={18} aria-hidden="true" />
-              {showWatchForm ? "Ocultar modo explorador" : "Explorar una dirección (solo lectura)"}
+              {showWatchForm
+                ? "Ocultar modo explorador"
+                : "Explorar una dirección (solo lectura)"}
             </button>
           </div>
 
@@ -125,8 +175,8 @@ export function WalletSection({
                 <div className="field">
                   <label htmlFor={watchInputId}>Dirección pública Stellar (G…)</label>
                   <span id={watchHintId} className="hint">
-                    Solo lectura: podrás consultar balances, fondear con Friendbot e historial sin
-                    extensión de wallet.
+                    Solo lectura: podrás consultar balances e historial en{" "}
+                    {networkConfig.shortLabel} sin extensión de wallet.
                   </span>
                   <div className="inline-input-row">
                     <input
@@ -146,20 +196,22 @@ export function WalletSection({
                 </div>
               </form>
 
-              <div className="demo-row">
-                <span className="hint">¿No tienes una dirección a mano?</span>
-                <button
-                  type="button"
-                  className="btn-link"
-                  onClick={() => {
-                    const generated = onGenerateDemo();
-                    setWatchInput(generated);
-                  }}
-                >
-                  <Sparkles size={14} aria-hidden="true" />
-                  Generar dirección de prueba en Testnet
-                </button>
-              </div>
+              {networkId === "testnet" && (
+                <div className="demo-row">
+                  <span className="hint">¿No tienes una dirección a mano?</span>
+                  <button
+                    type="button"
+                    className="btn-link"
+                    onClick={() => {
+                      const generated = onGenerateDemo();
+                      setWatchInput(generated);
+                    }}
+                  >
+                    <Sparkles size={14} aria-hidden="true" />
+                    Generar dirección de prueba en Testnet
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -167,12 +219,17 @@ export function WalletSection({
         <div className="wallet-connected">
           <div className="wallet-identity">
             <div className="wallet-badges">
-              <span className={`badge ${mode === "wallet" ? "badge-success" : "badge-info"}`}>
+              <span
+                className={`badge ${mode === "wallet" ? "badge-success" : "badge-info"}`}
+              >
                 <ShieldCheck size={14} aria-hidden="true" />
                 {walletName ?? "Wallet conectada"}
               </span>
+              <span className="badge badge-network">{networkConfig.label}</span>
               {mode === "watch" && (
-                <span className="hint">Para firmar y enviar XLM, conecta una wallet real.</span>
+                <span className="hint">
+                  Para firmar y enviar XLM, conecta una wallet real.
+                </span>
               )}
             </div>
 
@@ -206,7 +263,11 @@ export function WalletSection({
 
           <div className="wallet-actions">
             {mode === "wallet" && (
-              <button type="button" className="btn btn-secondary btn-sm" onClick={onOpenProfile}>
+              <button
+                type="button"
+                className="btn btn-secondary btn-sm"
+                onClick={onOpenProfile}
+              >
                 <User size={15} aria-hidden="true" />
                 Perfil
               </button>
@@ -223,7 +284,7 @@ export function WalletSection({
               </button>
             )}
             <a
-              href={getExplorerAccountUrl(address)}
+              href={getExplorerAccountUrl(address, networkId)}
               target="_blank"
               rel="noreferrer"
               className="btn btn-secondary btn-sm"
@@ -231,7 +292,11 @@ export function WalletSection({
               <ExternalLink size={15} aria-hidden="true" />
               Stellar Expert
             </a>
-            <button type="button" className="btn btn-danger btn-sm" onClick={onDisconnect}>
+            <button
+              type="button"
+              className="btn btn-danger btn-sm"
+              onClick={onDisconnect}
+            >
               <LogOut size={15} aria-hidden="true" />
               Desconectar
             </button>
