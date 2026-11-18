@@ -58,10 +58,20 @@ export function validateAmount(
     amountStroops + BigInt(BASE_FEE_STROOPS) >
     xlmToStroops(spendableXlm)
   ) {
-    return `That is more than your spendable balance of ${spendableXlm} XLM, which already reserves the transaction fee.`;
+    return `That is more than your spendable balance allows. The ${stroopsToXlm(BigInt(BASE_FEE_STROOPS))} XLM network fee is added on top, so the most you can send is ${maxSendableXlm(spendableXlm)} XLM.`;
   }
 
   return null;
+}
+
+/**
+ * Largest amount that still leaves room for the network fee. The spendable
+ * balance already excludes the locked reserve, so only the fee comes off here.
+ * Floors at zero when not even the fee fits.
+ */
+export function maxSendableXlm(spendableXlm: string): string {
+  const remaining = xlmToStroops(spendableXlm) - BigInt(BASE_FEE_STROOPS);
+  return stroopsToXlm(remaining > BigInt(0) ? remaining : BigInt(0));
 }
 
 export function validateMemo(value: string): string | null {
@@ -75,20 +85,29 @@ export function validateMemo(value: string): string | null {
   return null;
 }
 
-/** Returns the first error in field order, so one message is shown at a time. */
+/** Returns every failing field in form order, so the form can show them together. */
+export function validatePaymentFields(
+  input: ValidatePaymentInput,
+): PaymentFieldError[] {
+  const errors: PaymentFieldError[] = [];
+
+  const destination = validateDestination(input.destination);
+  if (destination !== null) errors.push({ field: "destination", message: destination });
+
+  const amount = validateAmount(input.amount, input.spendableXlm);
+  if (amount !== null) errors.push({ field: "amount", message: amount });
+
+  const memo = validateMemo(input.memo);
+  if (memo !== null) errors.push({ field: "memo", message: memo });
+
+  return errors;
+}
+
+/** Returns the first failing field in form order, or `null` when the payment is valid. */
 export function validatePayment(
   input: ValidatePaymentInput,
 ): PaymentFieldError | null {
-  const destination = validateDestination(input.destination);
-  if (destination !== null) return { field: "destination", message: destination };
-
-  const amount = validateAmount(input.amount, input.spendableXlm);
-  if (amount !== null) return { field: "amount", message: amount };
-
-  const memo = validateMemo(input.memo);
-  if (memo !== null) return { field: "memo", message: memo };
-
-  return null;
+  return validatePaymentFields(input)[0] ?? null;
 }
 
 /**

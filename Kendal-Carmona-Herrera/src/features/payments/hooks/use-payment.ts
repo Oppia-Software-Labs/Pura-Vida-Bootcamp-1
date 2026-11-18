@@ -48,11 +48,15 @@ function toPaymentError(
 /**
  * Owns one payment attempt at a time. `submit` never rejects: a failure is state,
  * because the form renders it and the page must stay interactive.
+ *
+ * `onSettled` runs after every attempt, failed ones included: a transaction that
+ * reached the network and was rejected there still charged its fee, so the
+ * balance has to be re-read either way.
  */
 export function usePayment({
-  onSuccess,
+  onSettled,
 }: {
-  onSuccess: () => void;
+  onSettled: () => void;
 }): UsePaymentResult {
   const [state, setState] = useState<PaymentState>(INITIAL_STATE);
 
@@ -69,29 +73,28 @@ export function usePayment({
       try {
         const result = await sendPayment(input);
 
-        if (!result.ok) {
+        if (result.ok) {
+          setState({
+            status: "success",
+            error: null,
+            receipt: result.data,
+            fieldErrors: null,
+          });
+        } else {
           setState({
             status: "error",
             error: toPaymentError(result.error.reason, result.error.message),
             receipt: null,
             fieldErrors: null,
           });
-          return;
         }
 
-        setState({
-          status: "success",
-          error: null,
-          receipt: result.data,
-          fieldErrors: null,
-        });
-
-        onSuccess();
+        onSettled();
       } finally {
         inFlightRef.current = false;
       }
     },
-    [onSuccess],
+    [onSettled],
   );
 
   const reset = useCallback(() => {

@@ -58,7 +58,7 @@ export function DashboardView() {
             description={
               isWrongNetwork
                 ? "Switch your wallet to Stellar Testnet and your balance and payments will load here."
-                : "Connect a Stellar wallet to see your XLM balance, spendable amount and recent payments. Everything is read-only for now."
+                : "Connect a Stellar wallet to see your XLM balance, spendable amount and recent payments, and to send XLM on Testnet."
             }
           />
         )
@@ -95,7 +95,7 @@ export function DashboardView() {
           </div>
 
           {/*
-            Deliberately not gated on `funded`: a successful payment calls
+            Deliberately not gated on `funded`: every payment attempt calls
             refreshAll, which flips the account to `loading`, and a stricter gate
             would unmount the form one frame after the receipt appeared — taking
             the transaction hash away from the user who needs it. While loading,
@@ -109,7 +109,7 @@ export function DashboardView() {
               address={address}
               networkPassphrase={state.networkPassphrase}
               spendableXlm={account.snapshot?.spendableXlm ?? null}
-              onSent={refreshAll}
+              onSettled={refreshAll}
             />
           ) : null}
         </div>

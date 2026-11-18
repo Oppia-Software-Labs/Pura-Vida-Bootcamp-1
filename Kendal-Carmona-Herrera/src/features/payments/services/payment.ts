@@ -3,6 +3,7 @@ import {
   Asset,
   FeeBumpTransaction,
   Memo,
+  NotFoundError,
   Operation,
   TransactionBuilder,
   TransactionFailedError,
@@ -62,6 +63,9 @@ const DECLINED_MESSAGE = "You declined the signature request in your wallet.";
 const MISMATCH_MESSAGE =
   "The signed transaction did not match what was requested. Nothing was submitted.";
 
+const NO_DESTINATION_MESSAGE =
+  "The destination account does not exist on Testnet. It has to be funded before it can receive a payment.";
+
 function failure<T>(message: string): ServiceResult<T> {
   // `StellarServiceError` only carries three reasons, so the actionable text lives
   // in the message and the reason stays generic.
@@ -71,7 +75,7 @@ function failure<T>(message: string): ServiceResult<T> {
 function describeOperationCode(code: string): string | null {
   switch (code) {
     case "op_no_destination":
-      return "The destination account does not exist on Testnet. It has to be funded before it can receive a payment.";
+      return NO_DESTINATION_MESSAGE;
     case "op_underfunded":
       return "Insufficient balance for that amount plus the reserve and fee.";
     case "op_low_reserve":
@@ -201,6 +205,15 @@ export async function sendPayment(
     // stale one only fails after the user has already signed.
     const server = getHorizonServer();
     const source = await server.loadAccount(input.sourceAddress);
+
+    // A payment to a missing account fails on-chain and still burns the fee, so it
+    // is refused here, before the user is asked to sign anything.
+    try {
+      await server.loadAccount(destination);
+    } catch (error) {
+      if (error instanceof NotFoundError) return failure(NO_DESTINATION_MESSAGE);
+      throw error;
+    }
 
     const account = new Account(source.account_id, source.sequence);
 

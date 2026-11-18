@@ -2,11 +2,13 @@ import { StrKey } from "@stellar/stellar-sdk";
 import { describe, expect, it } from "vitest";
 
 import {
+  maxSendableXlm,
   normalizeAmount,
   validateAmount,
   validateDestination,
   validateMemo,
   validatePayment,
+  validatePaymentFields,
 } from "./validation";
 
 /** A real, checksummed account address instead of a hand-typed string. */
@@ -69,6 +71,27 @@ describe("validateAmount", () => {
       "more than your spendable balance",
     );
   });
+
+  it("names the real maximum and the fee instead of claiming the fee is already reserved", () => {
+    const message = validateAmount("100", "100");
+
+    expect(message).toBe(
+      "That is more than your spendable balance allows. The 0.00001 XLM network fee is added on top, so the most you can send is 99.99999 XLM.",
+    );
+    expect(message).not.toContain("already reserves");
+  });
+});
+
+describe("maxSendableXlm", () => {
+  it("is the spendable balance minus the network fee", () => {
+    expect(maxSendableXlm("100")).toBe("99.99999");
+    expect(maxSendableXlm("9999")).toBe("9998.99999");
+  });
+
+  it("never goes below zero when the fee does not fit", () => {
+    expect(maxSendableXlm("0")).toBe("0");
+    expect(maxSendableXlm("0.000005")).toBe("0");
+  });
 });
 
 describe("validateMemo", () => {
@@ -117,6 +140,34 @@ describe("validatePayment", () => {
       field: "memo",
       message: expect.stringContaining("29 bytes"),
     });
+  });
+});
+
+describe("validatePaymentFields", () => {
+  const base = {
+    destination: VALID_ADDRESS,
+    amount: "10",
+    memo: "",
+    spendableXlm: "100",
+  };
+
+  it("returns no errors for a valid payment", () => {
+    expect(validatePaymentFields(base)).toEqual([]);
+  });
+
+  it("reports every failing field at once, in form order", () => {
+    expect(
+      validatePaymentFields({
+        ...base,
+        destination: "",
+        amount: "",
+        memo: "a".repeat(29),
+      }),
+    ).toEqual([
+      { field: "destination", message: "Enter a destination address." },
+      { field: "amount", message: "Enter an amount to send." },
+      { field: "memo", message: expect.stringContaining("29 bytes") },
+    ]);
   });
 });
 

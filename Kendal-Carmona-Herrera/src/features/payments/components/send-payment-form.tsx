@@ -6,11 +6,10 @@ import type { FormEvent } from "react";
 import { StateMessage } from "@/components/feedback/state-message";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { shortenAddress } from "@/lib/format";
-import { BASE_FEE_STROOPS, MEMO_TEXT_MAX_BYTES } from "@/lib/stellar/constants";
-import { stroopsToXlm, xlmToStroops } from "@/lib/stellar/reserves";
+import { MEMO_TEXT_MAX_BYTES } from "@/lib/stellar/constants";
 
 import { usePayment } from "../hooks/use-payment";
-import { validatePayment } from "../services/validation";
+import { maxSendableXlm, validatePaymentFields } from "../services/validation";
 import type { PaymentFieldError } from "../types";
 
 const SURFACE =
@@ -31,45 +30,44 @@ export interface SendPaymentFormProps {
   address: string;
   networkPassphrase: string;
   spendableXlm: string | null;
-  onSent: () => void;
+  /** Runs after every payment attempt, failed or not, so balances can be re-read. */
+  onSettled: () => void;
 }
 
 export function SendPaymentForm({
   address,
   networkPassphrase,
   spendableXlm,
-  onSent,
+  onSettled,
 }: SendPaymentFormProps) {
   const [destination, setDestination] = useState("");
   const [amount, setAmount] = useState("");
   const [memo, setMemo] = useState("");
-  const [fieldError, setFieldError] = useState<PaymentFieldError | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<PaymentFieldError[]>([]);
 
-  const payment = usePayment({ onSuccess: onSent });
+  const payment = usePayment({ onSettled });
 
   const isPending =
     payment.status === "signing" || payment.status === "submitting";
 
   const memoBytes = TEXT_ENCODER.encode(memo).length;
 
-  // Spendable already excludes the locked reserve, so only the fee comes off here.
-  const maxAmount =
-    spendableXlm === null
-      ? null
-      : stroopsToXlm(xlmToStroops(spendableXlm) - BigInt(BASE_FEE_STROOPS));
+  const maxAmount = spendableXlm === null ? null : maxSendableXlm(spendableXlm);
 
   const errorFor = (field: PaymentFieldError["field"]): string | null =>
-    fieldError !== null && fieldError.field === field ? fieldError.message : null;
+    fieldErrors.find((error) => error.field === field)?.message ?? null;
 
   const clearError = (field: PaymentFieldError["field"]) => {
-    setFieldError((current) =>
-      current !== null && current.field === field ? null : current,
+    setFieldErrors((current) =>
+      current.some((error) => error.field === field)
+        ? current.filter((error) => error.field !== field)
+        : current,
     );
   };
 
   const handleReset = () => {
     payment.reset();
-    setFieldError(null);
+    setFieldErrors([]);
     setDestination("");
     setAmount("");
     setMemo("");
@@ -80,19 +78,16 @@ export function SendPaymentForm({
 
     if (isPending || spendableXlm === null) return;
 
-    const validation = validatePayment({
+    const errors = validatePaymentFields({
       destination,
       amount,
       memo,
       spendableXlm,
     });
 
-    if (validation !== null) {
-      setFieldError(validation);
-      return;
-    }
+    setFieldErrors(errors);
 
-    setFieldError(null);
+    if (errors.length > 0) return;
 
     void payment.submit({
       sourceAddress: address,
