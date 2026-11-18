@@ -26,6 +26,8 @@ export type Deposit = {
   id: string;
   amountStroops: bigint;
   myRole: Role;
+  tenant: string;
+  landlord: string;
   landlordPredicate: Predicate;
   tenantPredicate: Predicate;
 };

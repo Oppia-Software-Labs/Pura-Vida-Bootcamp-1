@@ -11,6 +11,8 @@ function deposit(myRole: Role): Deposit {
     id: "balance-id",
     amountStroops: 1_000_000_000n,
     myRole,
+    tenant: "tenant-address",
+    landlord: "landlord-address",
     landlordPredicate: landlordPredicate(E, D),
     tenantPredicate: tenantPredicate(D),
   };
