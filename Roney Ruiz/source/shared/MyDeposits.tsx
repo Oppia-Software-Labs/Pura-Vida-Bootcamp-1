@@ -1,39 +1,29 @@
+import { Link } from "react-router";
 import { useClaim } from "@hooks/useClaim";
 import { useDeposits } from "@hooks/useDeposits";
 import { useNow } from "@hooks/useNow";
-import { readSharedDepositId } from "@bloc/storage/deposits";
-import { cardClass } from "./classes";
+import { buttonClass } from "@helpers/classes";
+import { friendlyError } from "@helpers/friendlyError";
 import DepositCard from "./DepositCard";
-import { friendlyError } from "./friendlyError";
 import { Alert, Button } from "./primitives";
 
-type MyDepositsProps = { address: string; refreshKey: number; onChanged: () => void };
+type MyDepositsProps = { address: string; refreshKey: number; onRefresh: () => void; onClaimed: () => void };
 
-export default function MyDeposits({ address, refreshKey, onChanged }: MyDepositsProps) {
+export default function MyDeposits({ address, refreshKey, onRefresh, onClaimed }: MyDepositsProps) {
   const now = useNow();
   const { deposits, partial, error, loading } = useDeposits(address, refreshKey);
-  const { claim, claimingId, failure, claimedIds } = useClaim(address, onChanged);
-  const sharedId = readSharedDepositId();
-  const sharedMissing = !loading && !error && sharedId !== null && !deposits.some((deposit) => deposit.id === sharedId);
+  const { claim, claimingId, failure, claimedIds } = useClaim(address, onClaimed);
 
   return (
-    <section className={`${cardClass()} flex flex-col gap-5`} aria-label="Mis depósitos">
+    <section className="flex flex-col gap-4" aria-label="Mis depósitos">
       <div className="flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight">Mis depósitos</h2>
-          <p className="text-sm text-muted">Los que creaste y los que te asignaron.</p>
-        </div>
-        <Button variant="ghost" size="sm" onClick={onChanged} disabled={loading}>
+        <p className="text-sm text-muted">
+          {loading ? "Buscando tus depósitos..." : `${deposits.length} ${deposits.length === 1 ? "depósito" : "depósitos"}`}
+        </p>
+        <Button variant="ghost" size="sm" onClick={onRefresh} disabled={loading}>
           Actualizar
         </Button>
       </div>
-
-      {sharedMissing && (
-        <p className="rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-sm text-warn">
-          No encontramos el depósito del link entre los de tu cuenta. Verifica que conectaste la cuenta del arrendador
-          o la del inquilino.
-        </p>
-      )}
 
       {partial && (
         <p className="rounded-lg border border-warn/30 bg-warn/10 px-3 py-2 text-sm text-warn">
@@ -46,32 +36,34 @@ export default function MyDeposits({ address, refreshKey, onChanged }: MyDeposit
       {error && (
         <div className="flex flex-col items-start gap-3">
           <Alert>{friendlyError(error)}</Alert>
-          <Button variant="ghost" onClick={onChanged}>
+          <Button variant="ghost" onClick={onRefresh}>
             Reintentar
           </Button>
         </div>
       )}
 
       {!loading && !error && deposits.length === 0 && (
-        <p className="rounded-xl border border-dashed border-line-strong px-4 py-8 text-center text-sm text-muted">
-          Aún no tienes depósitos. Crea el primero, o abre el link que te compartió el inquilino.
-        </p>
+        <div className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-line-strong px-4 py-10 text-center">
+          <p className="max-w-sm text-sm text-muted">
+            Aún no tienes depósitos. Crea el primero, o abre el link que te compartió el inquilino.
+          </p>
+          <Link to="/crear" className={buttonClass()}>
+            Crear mi primer depósito
+          </Link>
+        </div>
       )}
 
-      <div className="flex flex-col gap-4">
-        {deposits.map((deposit) => (
-          <DepositCard
-            key={deposit.id}
-            deposit={deposit}
-            now={now}
-            claimed={claimedIds.has(deposit.id)}
-            claiming={claimingId === deposit.id}
-            error={failure?.id === deposit.id ? failure.error : null}
-            highlighted={deposit.id === sharedId}
-            onClaim={() => void claim(deposit.id)}
-          />
-        ))}
-      </div>
+      {deposits.map((deposit) => (
+        <DepositCard
+          key={deposit.id}
+          deposit={deposit}
+          now={now}
+          claimed={claimedIds.has(deposit.id)}
+          claiming={claimingId === deposit.id}
+          error={failure?.id === deposit.id ? failure.error : null}
+          onClaim={() => void claim(deposit.id)}
+        />
+      ))}
     </section>
   );
 }

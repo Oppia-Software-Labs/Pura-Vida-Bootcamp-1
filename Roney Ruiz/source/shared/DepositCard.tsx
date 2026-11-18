@@ -1,8 +1,9 @@
 import { deriveStatus } from "@bloc/entity/status";
 import type { Deposit, Status } from "@bloc/entity/types";
 import CopyButton from "./CopyButton";
-import { friendlyError } from "./friendlyError";
-import { formatCountdown, formatXlm, shortAddress } from "./format";
+import { friendlyError } from "@helpers/friendlyError";
+import { formatCountdown, formatXlm, shortAddress } from "@helpers/format";
+import { depositLink } from "@helpers/links";
 import { Alert, Button, Spinner } from "./primitives";
 
 type DepositCardProps = {
@@ -11,7 +12,6 @@ type DepositCardProps = {
   claimed: boolean;
   claiming: boolean;
   error: Error | null;
-  highlighted: boolean;
   onClaim: () => void;
 };
 
@@ -43,17 +43,16 @@ function describe(status: Status, isTenant: boolean, countdown: string): string 
   }
 }
 
-export default function DepositCard({ deposit, now, claimed, claiming, error, highlighted, onClaim }: DepositCardProps) {
+export default function DepositCard({ deposit, now, claimed, claiming, error, onClaim }: DepositCardProps) {
   const { status, canClaimNow, nextChangeAt } = deriveStatus(deposit, now, claimed);
   const isTenant = deposit.myRole === "tenant";
   const counterparty = isTenant ? deposit.landlord : deposit.tenant;
   const remaining = nextChangeAt === undefined ? null : nextChangeAt - now;
   const view = statusView[status];
-  const link = `${location.origin}${location.pathname}?deposit=${deposit.id}`;
 
   return (
     <article
-      className={`flex flex-col gap-4 rounded-xl border bg-surface/80 p-4 ${highlighted ? "border-accent/50" : "border-line"}`}
+      className="flex flex-col gap-4 rounded-xl border border-line bg-surface/80 p-4"
       aria-label={`Depósito de ${formatXlm(deposit.amountStroops)} XLM`}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -103,7 +102,7 @@ export default function DepositCard({ deposit, now, claimed, claiming, error, hi
       {isTenant && status !== "claimed" && (
         <div className="flex items-center justify-between gap-3 border-t border-line pt-3">
           <p className="text-xs text-faint">Link para que el arrendador encuentre este depósito.</p>
-          <CopyButton text={link} label="Copiar link del depósito" />
+          <CopyButton text={depositLink(deposit.id)} label="Copiar link del depósito" />
         </div>
       )}
     </article>

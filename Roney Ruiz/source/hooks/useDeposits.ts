@@ -1,28 +1,27 @@
 import { useEffect, useState } from "react";
 import { getDepositById } from "@bloc/stellar/getDeposit";
 import { listDepositsFor } from "@bloc/stellar/listDeposits";
-import { loadDepositIds, readSharedDepositId } from "@bloc/storage/deposits";
+import { loadDepositIds } from "@bloc/storage/deposits";
 import type { Deposit } from "@bloc/entity/types";
 
 type Result = { address: string; deposits: Deposit[]; partial: boolean; error: Error | null };
 
 async function loadDeposits(address: string): Promise<Omit<Result, "address">> {
-  const shared = readSharedDepositId();
-  const knownIds = [...new Set([...loadDepositIds(), ...(shared ? [shared] : [])])];
   const outcomes = await Promise.allSettled([
     listDepositsFor(address),
-    ...knownIds.map((id) => getDepositById(id, address)),
+    ...loadDepositIds().map((id) => getDepositById(id, address)),
   ]);
   const [listed, ...known] = outcomes;
 
-  if (outcomes.every((outcome) => outcome.status === "rejected")) throw listed.status === "rejected" ? listed.reason : new Error("Horizon request failed");
+  if (outcomes.every((outcome) => outcome.status === "rejected")) {
+    throw listed.status === "rejected" ? listed.reason : new Error("Horizon request failed");
+  }
 
   const found: Deposit[] = [];
   if (listed.status === "fulfilled") found.push(...listed.value);
   for (const outcome of known) if (outcome.status === "fulfilled" && outcome.value) found.push(outcome.value);
 
   const deposits = [...new Map(found.map((deposit) => [deposit.id, deposit])).values()];
-  deposits.sort((a, b) => Number(b.id === shared) - Number(a.id === shared));
   return { deposits, partial: listed.status === "rejected", error: null };
 }
 

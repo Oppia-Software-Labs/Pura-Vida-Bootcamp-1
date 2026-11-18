@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { Link } from "react-router";
 import { useBalance } from "@hooks/useBalance";
 import { useCreateDeposit } from "@hooks/useCreateDeposit";
 import { useNow } from "@hooks/useNow";
@@ -7,9 +8,10 @@ import { DEMO_MODE_DEFAULT } from "@config/network";
 import CopyButton from "./CopyButton";
 import DepositPreview from "./DepositPreview";
 import Field from "./Field";
-import { friendlyError, planErrorMessages } from "./friendlyError";
-import { formatEpoch, formatXlm, shortAddress } from "./format";
-import { cardClass } from "./classes";
+import { friendlyError, planErrorMessages } from "@helpers/friendlyError";
+import { formatEpoch, formatXlm, shortAddress } from "@helpers/format";
+import { depositLink } from "@helpers/links";
+import { buttonClass, cardClass } from "@helpers/classes";
 import { Alert, Button, Chip, Input, Spinner } from "./primitives";
 
 type FieldName = "landlord" | "amount" | "time" | "other";
@@ -86,7 +88,7 @@ export default function CreateDeposit({ address, refreshKey, onCreated }: Create
   }
 
   if (depositId && createdPlan) {
-    const link = `${location.origin}${location.pathname}?deposit=${depositId}`;
+    const link = depositLink(depositId);
     const recap = [
       ["Monto", `${formatXlm(createdPlan.totalStroops)} XLM`],
       ["Arrendador", shortAddress(createdPlan.landlord)],
@@ -123,9 +125,14 @@ export default function CreateDeposit({ address, refreshKey, onCreated }: Create
           </div>
           <p className="text-xs text-faint">Compártelo para que el arrendador encuentre el depósito.</p>
         </div>
-        <Button variant="ghost" onClick={reset}>
-          Crear otro depósito
-        </Button>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Link to="/depositos" className={`${buttonClass()} flex-1`}>
+            Ver mis depósitos
+          </Link>
+          <Button variant="ghost" className="flex-1" onClick={reset}>
+            Crear otro depósito
+          </Button>
+        </div>
       </section>
     );
   }
@@ -143,11 +150,6 @@ export default function CreateDeposit({ address, refreshKey, onCreated }: Create
         if (result.ok) void create(result.plan);
       }}
     >
-      <div className="flex flex-col gap-1">
-        <h2 className="text-xl font-semibold tracking-tight">Nuevo depósito</h2>
-        <p className="text-sm text-muted">Bloquea el monto en la red. Tú lo recuperas si el arrendador no actúa a tiempo.</p>
-      </div>
-
       <Section step={1} title="¿Quién es el arrendador?">
         <Field id="landlord" label="Dirección" hint="Su cuenta Stellar, empieza con G." error={errorFor("landlord")}>
           <Input

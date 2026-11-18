@@ -5,9 +5,12 @@ export function useWallet() {
   const [address, setAddress] = useState<string | null>(null);
   const [error, setError] = useState<Error | null>(null);
   const [connecting, setConnecting] = useState(false);
+  const [restoring, setRestoring] = useState(true);
 
   useEffect(() => {
-    getConnectedAddress().then(setAddress, () => {});
+    getConnectedAddress()
+      .then(setAddress, () => {})
+      .finally(() => setRestoring(false));
   }, []);
 
   const connect = useCallback(async () => {
@@ -22,5 +25,5 @@ export function useWallet() {
     }
   }, []);
 
-  return { address, error, connecting, connect };
+  return { address, error, connecting, restoring, connect };
 }

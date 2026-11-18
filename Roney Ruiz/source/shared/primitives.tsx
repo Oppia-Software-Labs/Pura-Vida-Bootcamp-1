@@ -1,5 +1,5 @@
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode } from "react";
-import { buttonClass, buttonSizes, buttonVariants } from "./classes";
+import { buttonClass, buttonSizes, buttonVariants } from "@helpers/classes";
 
 type ButtonProps = ButtonHTMLAttributes<HTMLButtonElement> & {
   variant?: keyof typeof buttonVariants;

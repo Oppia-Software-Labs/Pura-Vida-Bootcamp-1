@@ -1,17 +1,11 @@
 import { useBalance } from "@hooks/useBalance";
+import type { AppContext } from "@hooks/useAppContext";
 import { network } from "@config/network";
 import CopyButton from "./CopyButton";
-import { friendlyError } from "./friendlyError";
-import { avatarGradient, formatXlm, shortAddress } from "./format";
-import { buttonClass, cardClass } from "./classes";
+import { friendlyError } from "@helpers/friendlyError";
+import { avatarGradient, formatXlm, shortAddress } from "@helpers/format";
+import { buttonClass, cardClass } from "@helpers/classes";
 import { Alert, Button, Spinner } from "./primitives";
-
-type Wallet = {
-  address: string | null;
-  error: Error | null;
-  connecting: boolean;
-  connect: () => void;
-};
 
 function Balance({ address, refreshKey }: { address: string; refreshKey: number }) {
   const { balance, error, loading } = useBalance(address, refreshKey);
@@ -43,7 +37,7 @@ function Balance({ address, refreshKey }: { address: string; refreshKey: number 
   );
 }
 
-export default function ConnectWallet({ wallet, refreshKey }: { wallet: Wallet; refreshKey: number }) {
+export default function ConnectWallet({ wallet, refreshKey }: { wallet: AppContext["wallet"]; refreshKey: number }) {
   const { address, error, connecting, connect } = wallet;
 
   if (address) {

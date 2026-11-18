@@ -1,5 +1,5 @@
 import type { DepositPlan } from "@bloc/entity/types";
-import { formatDuration, formatEpoch, shortAddress } from "./format";
+import { formatDuration, formatEpoch, shortAddress } from "@helpers/format";
 
 export default function DepositPreview({ plan, amount, now }: { plan: DepositPlan; amount: string; now: number }) {
   const wait = Math.max(plan.endOfContract - now, 1);
