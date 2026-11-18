@@ -20,7 +20,14 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "erasableSyntaxOnly": true,
-    "noFallthroughCasesInSwitch": true
+    "noFallthroughCasesInSwitch": true,
+
+    "paths": {
+      "@shared/*": ["./source/shared/*"],
+      "@config/*": ["./source/config/*"],
+      "@hooks/*": ["./source/hooks/*"],
+      "@bloc/*": ["./source/bloc/*"],
+    },
   },
   "include": ["source"]
 }
