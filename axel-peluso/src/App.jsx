@@ -4,6 +4,7 @@ import {
   connectFreighter,
   disconnectWallet,
   getBalances,
+  getRecentPayments,
   isWalletOnTestnet,
   sendXlm,
 } from "./stellar.js";
@@ -36,6 +37,8 @@ export default function App() {
   const [trusting, setTrusting] = useState(false);
   const [trustStatus, setTrustStatus] = useState(null);
   const [onTestnet, setOnTestnet] = useState(true);
+  const [payments, setPayments] = useState(null);
+  const [historyError, setHistoryError] = useState(null);
 
   const checkNetwork = useCallback(async () => {
     try {
@@ -48,12 +51,16 @@ export default function App() {
   const refresh = useCallback(async (addr) => {
     setError(null);
     checkNetwork();
+    setHistoryError(null);
+    getRecentPayments(addr)
+      .then(setPayments)
+      .catch((e) => setHistoryError(`No se pudo leer el historial: ${e.message}`));
     try {
       setBalances(await getBalances(addr));
     } catch (e) {
       setError(`No se pudo leer el saldo: ${e.message}`);
     }
-  }, []);
+  }, [checkNetwork]);
 
   useEffect(() => {
     if (address) refresh(address);
@@ -82,6 +89,7 @@ export default function App() {
     await disconnectWallet();
     setAddress(null);
     setBalances(null);
+    setPayments(null);
     setStatus(null);
     setTrustStatus(null);
   };
@@ -222,6 +230,52 @@ export default function App() {
               </button>
             </form>
             {status && <StatusLine status={status} />}
+          </section>
+
+          <section className="card">
+            <h2>Últimos pagos</h2>
+            {historyError ? (
+              <p className="error">{historyError}</p>
+            ) : !payments ? (
+              <p className="muted">Cargando…</p>
+            ) : payments.length === 0 ? (
+              <p className="muted">Todavía no hay pagos en esta cuenta.</p>
+            ) : (
+              <ul className="history">
+                {payments.map((p) => (
+                  <li key={p.id}>
+                    <div className="row between">
+                      <span>
+                        {p.type} · <span className="muted">{p.outgoing ? "enviado" : "recibido"}</span>
+                      </span>
+                      <strong>{p.amount ? `${p.amount} ${p.asset}` : "—"}</strong>
+                    </div>
+                    <div className="row between muted small">
+                      <span>{p.date.toLocaleString()}</span>
+                      <span>
+                        Destino: {p.destination ? <code title={p.destination}>{short(p.destination)}</code> : "—"}
+                      </span>
+                    </div>
+                    <a
+                      className="small"
+                      href={`https://stellar.expert/explorer/testnet/tx/${p.txHash}`}
+                      target="_blank"
+                      rel="noreferrer"
+                    >
+                      Ver en Stellar Expert
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            )}
+            <a
+              className="small"
+              href={`https://stellar.expert/explorer/testnet/account/${address}`}
+              target="_blank"
+              rel="noreferrer"
+            >
+              Ver cuenta completa en Stellar Expert
+            </a>
           </section>
         </>
       )}

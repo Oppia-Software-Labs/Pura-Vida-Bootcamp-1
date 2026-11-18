@@ -64,6 +64,39 @@ export async function getBalances(address) {
   }
 }
 
+const TYPE_LABELS = {
+  payment: "Pago",
+  create_account: "Creación de cuenta",
+  account_merge: "Fusión de cuenta",
+  path_payment_strict_send: "Pago con conversión",
+  path_payment_strict_receive: "Pago con conversión",
+};
+
+// Últimos pagos de la cuenta (endpoint /accounts/{id}/payments de Horizon).
+export async function getRecentPayments(address, limit = 5) {
+  try {
+    const page = await horizon.payments().forAccount(address).order("desc").limit(limit).call();
+    return page.records.map((r) => {
+      const isCreate = r.type === "create_account";
+      const destination = isCreate ? r.account : r.type === "account_merge" ? r.into : r.to;
+      const asset = r.asset_type === "native" || isCreate || r.type === "account_merge" ? "XLM" : r.asset_code;
+      return {
+        id: r.id,
+        date: new Date(r.created_at),
+        type: TYPE_LABELS[r.type] ?? r.type,
+        amount: isCreate ? r.starting_balance : r.amount ?? null,
+        asset,
+        destination: destination ?? null,
+        outgoing: destination ? destination !== address : false,
+        txHash: r.transaction_hash,
+      };
+    });
+  } catch (err) {
+    if (err instanceof NotFoundError) return [];
+    throw err;
+  }
+}
+
 // Firma con Freighter y envía a Horizon una transacción ya construida.
 async function signAndSubmit(tx, address) {
   const { signedTxXdr } = await StellarWalletsKit.signTransaction(tx.toXDR(), {
