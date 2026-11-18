@@ -8,8 +8,8 @@ Estado: ✅ hecho · 🔄 en curso · ⬜ pendiente
 |---|---|---|
 | 0 | Base del proyecto y documentación | ✅ |
 | 1 | Conectar wallet (requisito mínimo) | ✅ |
-| 2 | Dominio con tests | ⬜ siguiente |
-| 3 | Crear depósito | ⬜ |
+| 2 | Dominio con tests | ✅ |
+| 3 | Crear depósito | ⬜ siguiente |
 | 4 | Listar y reclamar | ⬜ |
 | 5 | Cierre y entrega | ⬜ |
 | 6 | Reto: tope de reparaciones | ⬜ opcional |
@@ -36,16 +36,16 @@ Pantalla 1. Cumple el requisito mínimo de la tarea.
 - ✅ Mostrar dirección, saldo de XLM e indicador de red.
 - ✅ Verificar que Horizon responde en testnet con una llamada simple.
 
-## Fase 2 · Dominio con tests ⬜
+## Fase 2 · Dominio con tests ✅
 
 Lógica pura en `source/bloc/entity/`, sin React, wallet ni red. Cada archivo con su `*.test.ts` al lado.
 
-- ⬜ `types.ts`: `Deposit`, `DepositPlan`, `Role`, `Status`.
-- 🔄 `money.ts`: conversión a stroops con `BigInt` (hecha) y división con tope (falta).
-- ⬜ `predicates.ts` y `evaluate.ts`: predicados del arrendador y del inquilino, y `evalPred`.
-- ⬜ `status.ts`: estado y acción disponible por rol.
-- ⬜ `plan.ts`: validar el formulario y devolver un `DepositPlan`.
-- ⬜ Tests de los bordes: `t == E` y `t == D`.
+- ✅ `types.ts`: `Deposit`, `DepositPlan`, `Role`, `Status`.
+- ✅ `money.ts`: conversión a stroops con `BigInt` y división con tope.
+- ✅ `predicates.ts` y `evaluate.ts`: predicados del arrendador y del inquilino, y `evalPred`.
+- ✅ `status.ts`: estado y acción disponible por rol.
+- ✅ `plan.ts`: validar el formulario y devolver un `DepositPlan`.
+- ✅ Tests de los bordes: `t == E` y `t == D`.
 
 ## Fase 3 · Crear depósito ⬜
 
