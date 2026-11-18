@@ -7,3 +7,5 @@ export const network = {
   rpcUrl: "https://soroban-testnet.stellar.org",
   friendbotUrl: "https://friendbot.stellar.org",
 } as const;
+
+export const DEMO_MODE_DEFAULT = true;

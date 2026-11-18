@@ -1,13 +1,8 @@
 import { useBalance } from "@hooks/useBalance";
-import { useWallet } from "@hooks/useWallet";
 import { formatStroops } from "@bloc/entity/money";
 import { network } from "@config/network";
 
-const messages: Record<string, string> = {
-  "Varial extension not installed": "Instala la extensión Varial para continuar.",
-  "Wallet is not on testnet": "Cambia Varial a la red de prueba (testnet).",
-  "Horizon request failed": "No se pudo consultar el saldo. Intenta de nuevo en un momento.",
-};
+import { friendlyError } from "./friendlyError";
 
 function Balance({ address }: { address: string }) {
   const { balance, error, loading } = useBalance(address);
@@ -16,7 +11,7 @@ function Balance({ address }: { address: string }) {
   if (error) {
     return (
       <p role="alert" className="text-sm text-red-600">
-        {messages[error.message] ?? "No se pudo consultar el saldo."}
+        {friendlyError(error)}
       </p>
     );
   }
@@ -38,8 +33,15 @@ function Balance({ address }: { address: string }) {
   return <p className="text-sm">Saldo: {formatStroops(balance)} XLM</p>;
 }
 
-export default function ConnectWallet() {
-  const { address, error, connecting, connect } = useWallet();
+type Wallet = {
+  address: string | null;
+  error: Error | null;
+  connecting: boolean;
+  connect: () => void;
+};
+
+export default function ConnectWallet({ wallet }: { wallet: Wallet }) {
+  const { address, error, connecting, connect } = wallet;
 
   if (address) {
     return (
@@ -65,7 +67,7 @@ export default function ConnectWallet() {
       </button>
       {error && (
         <p role="alert" className="text-sm text-red-600">
-          {messages[error.message] ?? "No se pudo conectar la wallet."}
+          {friendlyError(error)}
         </p>
       )}
     </div>

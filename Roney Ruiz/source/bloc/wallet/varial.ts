@@ -38,6 +38,6 @@ export async function signXdr(xdr: string, address: string): Promise<string> {
     networkPassphrase: network.passphrase,
     address,
   });
-  if (error) throw new Error(error.message);
+  if (error) throw new Error(`Wallet signature failed: ${error.message}`);
   return signedTxXdr;
 }
