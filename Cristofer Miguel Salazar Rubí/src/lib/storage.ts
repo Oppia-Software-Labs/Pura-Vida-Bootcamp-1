@@ -1,9 +1,11 @@
 const ACCESS_KEY = "folio.access.v1";
 const PROGRESS_KEY = "folio.progress.v1";
 const READER_KEY = "folio.reader.v1";
+const PENDING_KEY = "folio.pending.v1";
 
 type AccessMap = Record<string, string>;
 type ProgressMap = Record<string, { chapter: number; updatedAt: string }>;
+type PendingMap = Record<string, string>;
 
 export interface ReaderPreferences {
   fontSize: number;
@@ -41,6 +43,22 @@ export function saveAccessToken(bookId: string, token: string): void {
   const access = readJson<AccessMap>(ACCESS_KEY, {});
   access[bookId] = token;
   writeJson(ACCESS_KEY, access);
+}
+
+export function getPendingTx(bookId: string): string | null {
+  return readJson<PendingMap>(PENDING_KEY, {})[bookId] ?? null;
+}
+
+export function savePendingTx(bookId: string, txHash: string): void {
+  const pending = readJson<PendingMap>(PENDING_KEY, {});
+  pending[bookId] = txHash;
+  writeJson(PENDING_KEY, pending);
+}
+
+export function clearPendingTx(bookId: string): void {
+  const pending = readJson<PendingMap>(PENDING_KEY, {});
+  delete pending[bookId];
+  writeJson(PENDING_KEY, pending);
 }
 
 export function listAccessBookIds(): string[] {

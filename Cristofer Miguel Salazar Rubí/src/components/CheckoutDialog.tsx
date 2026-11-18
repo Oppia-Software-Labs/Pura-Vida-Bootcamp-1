@@ -8,7 +8,7 @@ import {
   submitSignedXdr,
   explorerTxUrl,
 } from "../lib/stellar";
-import { saveAccessToken } from "../lib/storage";
+import { saveAccessToken, clearPendingTx, getPendingTx, savePendingTx } from "../lib/storage";
 import { BookCover } from "./BookCover";
 import {
   AlertIcon,
@@ -55,7 +55,9 @@ export function CheckoutDialog({
   const [balance, setBalance] = useState<string | null | undefined>(undefined);
   const [funding, setFunding] = useState(false);
   const [txHash, setTxHash] = useState<string | null>(null);
-  const [pendingTx, setPendingTx] = useState<string | null>(null);
+  const [pendingTx, setPendingTx] = useState<string | null>(() =>
+    getPendingTx(book.id),
+  );
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
   const busy = ["quoting", "signing", "submitting", "confirming"].includes(
@@ -135,6 +137,7 @@ export function CheckoutDialog({
         saveAccessToken(book.id, access.accessToken);
         setAccessToken(access.accessToken);
         setPendingTx(null);
+        clearPendingTx(book.id);
         setPhase("success");
         refreshLibrary();
       } catch (confirmError) {
@@ -157,6 +160,7 @@ export function CheckoutDialog({
       const submitted = await submitSignedXdr(signedXdr);
       setTxHash(submitted.hash);
       setPendingTx(submitted.hash);
+      savePendingTx(book.id, submitted.hash);
 
       setPhase("confirming");
       const access = await api.confirmPurchase(
@@ -168,6 +172,7 @@ export function CheckoutDialog({
       saveAccessToken(book.id, access.accessToken);
       setAccessToken(access.accessToken);
       setPendingTx(null);
+      clearPendingTx(book.id);
       setPhase("success");
       refreshLibrary();
     } catch (purchaseError) {
