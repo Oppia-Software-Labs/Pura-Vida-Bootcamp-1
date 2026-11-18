@@ -1,122 +1,61 @@
 import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import { connectWallet, disconnectWallet, shortAddress } from './lib/wallet'
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [address, setAddress] = useState(null)
+  const [error, setError] = useState('')
+
+  async function handleConnect() {
+    setError('')
+    try {
+      setAddress(await connectWallet())
+    } catch (err) {
+      setError(err?.message || 'No se pudo conectar la wallet.')
+    }
+  }
+
+  async function handleDisconnect() {
+    await disconnectWallet()
+    setAddress(null)
+  }
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="page">
+      <header className="bar container">
+        <span className="logo">Pura Vida Wallet</span>
+        <span className="network">Testnet</span>
+      </header>
 
-      <div className="ticks"></div>
+      <main className="container">
+        <h1>Tu primera app en Stellar</h1>
+        <p className="lead">
+          Conecta tu wallet de Stellar, revisa tu saldo, carga XLM de prueba y envía pagos en la testnet.
+        </p>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+        <section className="card">
+          <h2>Wallet</h2>
+          {address ? (
+            <>
+              <p className="muted">Cuenta conectada</p>
+              <p className="address" title={address}>{shortAddress(address)}</p>
+              <div className="row">
+                <button className="secondary" onClick={() => navigator.clipboard.writeText(address)}>
+                  Copiar dirección
+                </button>
+                <button className="secondary" onClick={handleDisconnect}>Desconectar</button>
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="muted">Conecta Freighter, xBull, Albedo u otra wallet compatible.</p>
+              <button onClick={handleConnect}>Conectar wallet</button>
+            </>
+          )}
+          {error && <p className="error">{error}</p>}
+        </section>
+      </main>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      <footer className="container footer">Pura Vida Bootcamp · Hecho con Stellar Raven</footer>
+    </div>
   )
 }
-
-export default App
