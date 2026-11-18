@@ -4,25 +4,6 @@
 > Los bloques de código son **bocetos orientativos**: confirmar nombres exactos de métodos y paquetes con Stellar Raven (ver [sección 12](#12-verificar-con-raven-antes-de-dar-algo-por-cierto)).
 > Contexto en [`approach.md`](approach.md); arquitectura en [`structure.md`](structure.md).
 
-## Contenido
-
-1. [Stellar en 5 minutos](#1-stellar-en-5-minutos)
-2. [Cuentas, reserva y sponsorship](#2-cuentas-reserva-y-sponsorship)
-3. [Transacciones y operaciones](#3-transacciones-y-operaciones)
-4. [Wallets](#4-wallets)
-5. [Claimable balances](#5-claimable-balances)
-6. [Predicados](#6-predicados)
-7. [El tiempo en Stellar](#7-el-tiempo-en-stellar)
-8. [Dinero y precisión](#8-dinero-y-precisión)
-9. [Horizon vs RPC](#9-consultar-el-estado-horizon-vs-rpc)
-10. [Errores comunes](#10-errores-comunes-y-cómo-mostrarlos)
-11. [Seguridad mínima](#11-seguridad-mínima)
-12. [Verificar con Raven](#12-verificar-con-raven-antes-de-dar-algo-por-cierto)
-13. [Glosario](#13-glosario)
-14. [Fuentes](#14-fuentes)
-
----
-
 ## 1. Stellar en 5 minutos
 
 | Concepto | Qué es |
@@ -225,7 +206,7 @@ Es una función pura: se prueba con tests unitarios sin red ni wallet.
 | `tx_bad_seq` | secuencia desactualizada | "Intenta de nuevo." |
 | Firma rechazada | el usuario canceló, o red equivocada en la wallet | "La wallet no firmó. Verifica que esté en testnet." |
 
-Los mensajes de la tabla son para la UI; los que produzca el código llevan el idioma que fije la regla de código del proyecto. Confirmar los códigos exactos con Raven y con respuestas reales de testnet.
+Los mensajes de la tabla son texto de la UI (español). El código lanza errores en inglés y `friendlyError` los traduce. Confirmar los códigos exactos con Raven y con respuestas reales de testnet.
 
 ## 11. Seguridad mínima
 

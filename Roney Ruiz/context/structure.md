@@ -3,29 +3,12 @@
 > Tipo de aplicación, arquitectura, librerías y flujos.
 > Los nombres de archivos y funciones son **una propuesta orientativa**, no un contrato. La idea está en [`approach.md`](approach.md) y los tecnicismos en [`expertise.md`](expertise.md).
 
-## Contenido
-
-1. [Tipo de aplicación](#1-tipo-de-aplicación)
-2. [Stack](#2-stack-y-librerías)
-3. [Red](#3-configuración-de-red)
-4. [Arquitectura](#4-arquitectura-en-capas)
-5. [Modelo de datos](#5-modelo-de-datos)
-6. [Funciones clave](#6-funciones-clave)
-7. [Flujos](#7-flujos)
-8. [Pantallas](#8-pantallas)
-9. [Plan de commits](#9-plan-de-commits)
-10. [Plan de tiempo](#10-plan-de-tiempo)
-11. [Riesgos y decisiones abiertas](#11-riesgos-y-decisiones-abiertas)
-12. [Checklist del README / PR](#12-checklist-del-readme--pr)
-
----
-
 ## 1. Tipo de aplicación
 
 **SPA solo frontend, sin backend propio.** La fuente de verdad es la red Stellar (testnet).
 
 - Sin base de datos ni servidor: menos piezas, y refuerza que nadie custodia nada.
-- `localStorage` solo por comodidad (IDs de depósitos vistos, idioma). Nunca guarda nada crítico.
+- `localStorage` solo por comodidad (IDs de depósitos vistos). Nunca guarda nada crítico.
 - El despliegue es opcional: el entregable es el código en el PR.
 
 ## 2. Stack y librerías
@@ -40,7 +23,7 @@
 | Tests | **Vitest** (solo dominio) | lógica pura, sin red ni wallet |
 | Gestor | **Bun** | scripts: `dev`, `build`, `lint`, `test` |
 
-**Convenciones de código:** comillas dobles por defecto; identificadores y mensajes de error en inglés.
+**Convenciones de código:** comillas dobles por defecto; identificadores y errores en inglés; solo el texto visible de la UI va en español (el código lanza errores en inglés y la UI los traduce).
 
 Confirmar nombres de paquete e imports con Raven antes de codificar (ver [`expertise.md`](expertise.md#12-verificar-con-raven-antes-de-dar-algo-por-cierto)).
 
@@ -98,8 +81,7 @@ plazo/
    │  ├─ buildCreateDeposit.ts   # DepositPlan → XDR
    │  ├─ buildClaim.ts           # balanceId → XDR
    │  ├─ submit.ts               # enviar XDR firmado, extraer IDs
-   │  ├─ listDeposits.ts         # consulta por claimant → Deposit[]
-   │  └─ errors.ts               # códigos → mensajes legibles
+   │  └─ listDeposits.ts         # consulta por claimant → Deposit[]
    ├─ wallet/
    │  └─ varial.ts               # conectar, firmar
    └─ ui/
@@ -107,6 +89,7 @@ plazo/
       ├─ CreateDeposit.tsx       # pantalla 2
       ├─ MyDeposits.tsx          # pantalla 3
       ├─ DepositCard.tsx         # rol, estado, acción
+      ├─ friendlyError.ts        # error en inglés → mensaje en español
       └─ hooks/                  # useWallet, useDeposits, useNow
 ```
 
@@ -160,7 +143,7 @@ Los identificadores van en inglés; la UI los muestra traducidos.
 | stellar | `submit(signedXdr)` | envía y devuelve resultado e IDs de balance |
 | stellar | `listDepositsFor(address)` | consulta por claimant y mapea a `Deposit[]` |
 | stellar | `getDepositById(id)` | lectura por ID (RPC; plan B de Horizon) |
-| stellar | `friendlyError(err)` | traduce códigos a mensajes |
+| ui | `friendlyError(err)` | traduce un error en inglés a un mensaje en español |
 
 ## 7. Flujos
 
@@ -225,12 +208,12 @@ flowchart LR
 
 ## 9. Plan de commits
 
-Mínimo 5 propios. Mensajes en inglés, formato Conventional Commits.
+Mínimo 5 propios. Mensajes en inglés, formato Conventional Commits. El commit 1 ya está hecho (más `chore`, `build`, `style` y `docs` de apoyo).
 
 | # | Mensaje sugerido | Contenido |
 |---|---|---|
-| 1 | `chore: scaffold vite app with varial sdk` | proyecto base, `network.ts` |
-| 2 | `feat(wallet): connect varial on testnet` | **requisito mínimo:** dirección + saldo |
+| 1 ✅ | `chore: scaffold vite app with varial sdk` | proyecto base |
+| 2 | `feat(wallet): connect varial on testnet` | `network.ts`, `varial.ts`, pantalla 1: **requisito mínimo**, dirección + saldo |
 | 3 | `feat(domain): add deadline predicates and tests` | `predicates`, `evaluate`, `money`, tests |
 | 4 | `feat(deposit): create deposit and sign` | `plan`, `buildCreateDeposit`, `submit`, pantalla 2 |
 | 5 | `feat(deposit): list and claim deposits` | `listDeposits`, `buildClaim`, pantalla 3 |
@@ -243,15 +226,15 @@ Estimación aproximada.
 
 | Cuándo | Qué |
 |---|---|
-| Esta noche (~2 h) | commits 1 y 2, y empezar el 3. El PR puede abrirse al terminar el 2 (o como draft). |
-| Mañana temprano | commits 3 a 6, con prueba end-to-end en modo demo. |
-| Antes de las 19:00 | PR final revisado y link pegado en la plataforma. No dejarlo para el último momento. |
+| Hoy, martes 17 (~2 h) | commits 1 y 2, y empezar el 3. El PR puede abrirse al terminar el 2 (o como draft). |
+| Miércoles 18, temprano | commits 3 a 6, con prueba end-to-end en modo demo. |
+| Miércoles 18, antes de las 19:00 | PR final revisado y link pegado en la plataforma. No dejarlo para el último momento. |
 
-## 11. Riesgos y decisiones abiertas
+## 11. Riesgos
 
 | # | Riesgo | Mitigación |
 |---|---|---|
-| 1 | **Horizon puede dejar de responder.** | Verificarlo en el commit 2 con una llamada simple; `getDepositById` por RPC y el link `?deposit=<id>` como camino alterno. Pendiente: ¿el link pasa a ser el mecanismo principal? |
+| 1 | **Horizon puede dejar de responder.** | Verificarlo en el commit 2 con una llamada simple; `getDepositById` por RPC y el link `?deposit=<id>` como camino alterno. Decidido: Horizon para listar y el link como respaldo. |
 | 2 | **Dos cuentas para probar.** | Segunda cuenta en Varial (si permite varias) o segundo perfil de navegador. Fondear ambas con Friendbot. |
 | 3 | **Tiempo en los bordes.** | No prometer precisión al segundo; probar con ventanas de minutos. |
 | 4 | **Nombres del SDK de Varial.** | Confirmar con Raven antes de codificar, no después. |

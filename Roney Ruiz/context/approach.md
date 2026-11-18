@@ -2,23 +2,9 @@
 
 > Práctica de aprendizaje y entrega de la Tarea 1 del Pura Vida Bootcamp (Stellar).
 > **No es un producto real:** opera solo en testnet, con dinero de prueba, y no sustituye ningún contrato.
-> **Estado:** borrador v0 · nombre de trabajo provisional.
+> **Estado:** borrador v1. Las decisiones de diseño están cerradas (sección 9).
 
 **Dónde leer qué:** este archivo explica *qué* y *por qué*; [`structure.md`](structure.md) explica *cómo se construye*; [`expertise.md`](expertise.md) explica *los tecnicismos de Stellar*.
-
-## Contenido
-
-1. [La idea en una frase](#1-la-idea-en-una-frase)
-2. [El problema](#2-el-problema)
-3. [La solución: invertir el default](#3-la-solución-invertir-el-default)
-4. [Por qué blockchain](#4-por-qué-blockchain)
-5. [Límites honestos](#5-límites-honestos)
-6. [Alcance](#6-alcance)
-7. [Entrega de la Tarea 1](#7-entrega-de-la-tarea-1)
-8. [Criterio de éxito](#8-criterio-de-éxito)
-9. [Decisiones abiertas](#9-decisiones-abiertas)
-
----
 
 ## 1. La idea en una frase
 
@@ -57,15 +43,20 @@ El depósito no lo tiene ninguna de las dos partes. Se bloquea en la red Stellar
 | `t ≥ D` | no puede | **puede** |
 
 ```mermaid
-stateDiagram-v2
-    direction LR
-    [*] --> Esperando: se crea el depósito
-    Esperando --> VentanaArrendador: t = E
-    VentanaArrendador --> ReclamableInquilino: t = D
-    VentanaArrendador --> Reclamado: el arrendador reclama
-    ReclamableInquilino --> Reclamado: el inquilino reclama
-    Reclamado --> [*]
+flowchart LR
+    A(["Depósito creado"]) --> B["Antes de E<br/>nadie puede reclamar"]
+    B -->|"llega E"| C["Entre E y D<br/>solo el arrendador"]
+    C -->|"llega D"| D["Desde D<br/>solo el inquilino"]
+
+    classDef wait fill:#e5e7eb,stroke:#6b7280,color:#111827
+    classDef landlord fill:#fde68a,stroke:#b45309,color:#111827
+    classDef tenant fill:#bbf7d0,stroke:#15803d,color:#111827
+    class B wait
+    class C landlord
+    class D tenant
 ```
+
+Quien reclama primero cierra el depósito: el balance se elimina y nadie más puede cobrarlo.
 
 **Regla de oro:** si el arrendador no hace nada entre `E` y `D`, el inquilino puede recuperar el depósito después de `D`, sin pedir permiso a nadie.
 
@@ -111,7 +102,7 @@ Material directo para el README del PR.
 Construida sobre Stellar, con Stellar Raven como asistente (documentar su uso en el README). La pantalla 1 de la app cumple el requisito de conectar la wallet.
 
 1. Fork de `Oppia-Software-Labs/Pura-Vida-Bootcamp-1`.
-2. Carpeta con el nombre completo en la raíz del fork.
+2. Carpeta con el nombre completo en la raíz del fork, con una copia del proyecto.
 3. Rama `feature/<nombre>`.
 4. Al menos 5 commits propios.
 5. PR a `main` del repo original, con el nombre completo en la descripción.
@@ -126,10 +117,13 @@ Construida sobre Stellar, con Stellar Raven como asistente (documentar su uso en
 3. **Corrida B:** nadie reclama; pasado `D`, el inquilino recupera el depósito.
 4. Quien construyó la app explica cada predicado y cada decisión sin mirar el código.
 
-## 9. Decisiones abiertas
+## 9. Decisiones tomadas
 
-- [ ] **Nombre:** ¿Plazo, Vence, Fianza o Arras?
-- [ ] **Tope de reparaciones:** ¿en v1 o como reto?
-- [ ] **Activo:** XLM nativo (más simple) o token de prueba (enseña trustlines).
-- [ ] **Idioma de la UI:** solo español o bilingüe.
-- [ ] **Descubrimiento del depósito:** listar con Horizon (puede dejar de existir) o hacer del link compartible el mecanismo principal. Ver riesgos en [`structure.md`](structure.md#11-riesgos-y-decisiones-abiertas).
+| Tema | Decisión | Por qué |
+|---|---|---|
+| Nombre | **Plazo** | Ya está en el repo y describe la idea: el plazo es el juez. |
+| Tope de reparaciones | **Reto**, después del MVP | Primero el flujo completo con un solo balance. |
+| Activo | **XLM nativo** | Sin trustlines; Friendbot lo da gratis. |
+| Idioma de la UI | **Solo español** | El código y sus errores siguen en inglés; la UI traduce. |
+| Descubrir depósitos | **Horizon + link `?deposit=<id>`** | Se lista con Horizon mientras responda; el link lee por RPC si Horizon falla. |
+| Entrega | **Repo propio, copiado al fork al final** | Historial limpio aquí; al cerrar se copia a la carpeta con el nombre completo (paso 2 de la sección 7). |
