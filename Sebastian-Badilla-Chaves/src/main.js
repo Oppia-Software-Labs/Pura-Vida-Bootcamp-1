@@ -1,11 +1,13 @@
 import { connectWallet, getConnectedAddress, getWalletNetwork } from "./wallet.js";
-import { NETWORK_PASSPHRASE } from "./config.js";
+import { getXlmBalance, fundWithFriendbot } from "./stellar.js";
+import { NETWORK_PASSPHRASE, EXPLORER_ACCOUNT_URL } from "./config.js";
 
 const app = document.querySelector("#app");
 
 const state = {
   address: null,
   networkOk: true,
+  balance: undefined, // undefined = cargando, null = cuenta sin fondear
 };
 
 function shortAddress(addr) {
@@ -36,10 +38,60 @@ function render() {
       }
       <p id="wallet-msg" class="msg"></p>
     </section>
+    ${state.address ? renderBalance() : ""}
   `;
 
   document.querySelector("#connect")?.addEventListener("click", onConnect);
   document.querySelector("#disconnect")?.addEventListener("click", onDisconnect);
+  document.querySelector("#refresh")?.addEventListener("click", loadBalance);
+  document.querySelector("#fund")?.addEventListener("click", onFund);
+}
+
+function renderBalance() {
+  let body;
+  if (state.balance === undefined) {
+    body = `<p class="balance">Cargando…</p>`;
+  } else if (state.balance === null) {
+    body = `
+      <p>Esta cuenta todavía no existe en Testnet.</p>
+      <button id="fund">Fondear con Friendbot (10 000 XLM de prueba)</button>
+    `;
+  } else {
+    body = `
+      <p class="balance">${Number(state.balance).toLocaleString("es-CR", { maximumFractionDigits: 7 })} <span>XLM</span></p>
+      <div class="row">
+        <button id="refresh" class="secondary">Actualizar saldo</button>
+        <a class="link" href="${EXPLORER_ACCOUNT_URL}${state.address}" target="_blank" rel="noopener">Ver en Stellar Expert ↗</a>
+      </div>
+    `;
+  }
+  return `
+    <section class="card">
+      <h2>2 · Tu saldo</h2>
+      ${body}
+      <p id="balance-msg" class="msg"></p>
+    </section>
+  `;
+}
+
+async function loadBalance() {
+  if (!state.address) return;
+  try {
+    state.balance = await getXlmBalance(state.address);
+    render();
+  } catch (err) {
+    setMessage("balance-msg", `No se pudo leer el saldo: ${err.message}`, "error");
+  }
+}
+
+async function onFund() {
+  setMessage("balance-msg", "Pidiendo XLM a Friendbot…");
+  try {
+    await fundWithFriendbot(state.address);
+    await loadBalance();
+  } catch (err) {
+    setMessage("balance-msg", err.message, "error");
+  }
 }
 
 function setMessage(id, text, type = "") {
@@ -64,6 +116,7 @@ async function onConnect() {
     state.address = await connectWallet();
     await checkNetwork();
     render();
+    await loadBalance();
   } catch (err) {
     setMessage("wallet-msg", err.message, "error");
   }
@@ -72,6 +125,7 @@ async function onConnect() {
 function onDisconnect() {
   // Freighter no expone un "logout": olvidamos la dirección en la app.
   state.address = null;
+  state.balance = undefined;
   render();
 }
 
@@ -82,6 +136,7 @@ async function init() {
     state.address = addr;
     await checkNetwork();
     render();
+    await loadBalance();
   }
 }
 
