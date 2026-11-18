@@ -3,6 +3,8 @@ import { network } from "@config/network";
 import CopyButton from "./CopyButton";
 import { friendlyError } from "./friendlyError";
 import { avatarGradient, formatXlm, shortAddress } from "./format";
+import { buttonClass, cardClass } from "./classes";
+import { Alert, Button, Spinner } from "./primitives";
 
 type Wallet = {
   address: string | null;
@@ -15,19 +17,13 @@ function Balance({ address }: { address: string }) {
   const { balance, error, loading } = useBalance(address);
 
   if (loading) return <div className="h-12 w-48 animate-pulse rounded-lg bg-raised motion-reduce:animate-none" />;
-  if (error) {
-    return (
-      <p role="alert" className="alert">
-        {friendlyError(error)}
-      </p>
-    );
-  }
+  if (error) return <Alert>{friendlyError(error)}</Alert>;
   if (balance === null) {
     return (
       <div className="flex flex-col items-start gap-3 rounded-xl border border-warn/30 bg-warn/10 p-4">
         <p className="text-sm text-warn">Esta cuenta aún no tiene fondos en testnet.</p>
         <a
-          className="btn btn-ghost"
+          className={buttonClass({ variant: "ghost" })}
           href={`${network.friendbotUrl}/?addr=${address}`}
           target="_blank"
           rel="noreferrer"
@@ -39,7 +35,7 @@ function Balance({ address }: { address: string }) {
   }
   return (
     <div>
-      <p className="hint">Saldo disponible</p>
+      <p className="text-xs text-faint">Saldo disponible</p>
       <p className="text-4xl font-semibold tracking-tight">
         {formatXlm(balance)} <span className="text-lg font-medium text-muted">XLM</span>
       </p>
@@ -52,10 +48,7 @@ export default function ConnectWallet({ wallet }: { wallet: Wallet }) {
 
   if (address) {
     return (
-      <section
-        className="card flex flex-col gap-5 border-accent/25 bg-linear-to-br from-accent/15 via-surface/80 to-surface/80"
-        aria-label="Wallet"
-      >
+      <section className={`${cardClass({ tone: "accent" })} flex flex-col gap-5`} aria-label="Wallet">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <span
@@ -74,7 +67,9 @@ export default function ConnectWallet({ wallet }: { wallet: Wallet }) {
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            <span className="badge capitalize">{network.name}</span>
+            <span className="rounded-full border border-warn/30 bg-warn/10 px-2.5 py-0.5 text-xs font-semibold tracking-wide text-warn capitalize">
+              {network.name}
+            </span>
             <CopyButton text={address} label="Copiar dirección" />
           </div>
         </div>
@@ -84,9 +79,9 @@ export default function ConnectWallet({ wallet }: { wallet: Wallet }) {
   }
 
   return (
-    <section className="card flex flex-col items-start gap-6 py-8 sm:py-10" aria-label="Wallet">
+    <section className={`${cardClass({ padding: "roomy" })} flex flex-col items-start gap-6`} aria-label="Wallet">
       <div className="flex flex-col gap-3">
-        <p className="eyebrow">Depósito de garantía</p>
+        <p className="text-xs font-semibold tracking-widest text-accent-strong uppercase">Depósito de garantía</p>
         <h2 className="text-3xl font-semibold tracking-tight sm:text-4xl">
           Tu depósito, sin que <span className="text-accent-strong">nadie lo custodie</span>.
         </h2>
@@ -95,15 +90,11 @@ export default function ConnectWallet({ wallet }: { wallet: Wallet }) {
           empezar.
         </p>
       </div>
-      <button type="button" onClick={connect} disabled={connecting} className="btn btn-primary px-6 py-3">
-        {connecting && <span aria-hidden className="spinner" />}
+      <Button size="lg" onClick={connect} disabled={connecting}>
+        {connecting && <Spinner />}
         {connecting ? "Esperando a Varial..." : "Conectar Varial"}
-      </button>
-      {error && (
-        <p role="alert" className="alert">
-          {friendlyError(error)}
-        </p>
-      )}
+      </Button>
+      {error && <Alert>{friendlyError(error)}</Alert>}
     </section>
   );
 }

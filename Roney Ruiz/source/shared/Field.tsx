@@ -11,7 +11,7 @@ type FieldProps = {
 export default function Field({ id, label, hint, error, children }: FieldProps) {
   return (
     <div className="flex flex-col gap-1.5">
-      <label htmlFor={id} className="label">
+      <label htmlFor={id} className="text-sm font-medium">
         {label}
       </label>
       {children}
@@ -21,7 +21,7 @@ export default function Field({ id, label, hint, error, children }: FieldProps) 
         </p>
       ) : (
         hint && (
-          <p id={`${id}-message`} className="hint">
+          <p id={`${id}-message`} className="text-xs text-faint">
             {hint}
           </p>
         )

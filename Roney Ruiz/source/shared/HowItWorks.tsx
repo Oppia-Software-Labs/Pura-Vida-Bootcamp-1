@@ -19,7 +19,7 @@ const steps = [
 export default function HowItWorks() {
   return (
     <section aria-label="Cómo funciona" className="flex flex-col gap-3">
-      <p className="eyebrow">Cómo funciona</p>
+      <p className="text-xs font-semibold tracking-widest text-accent-strong uppercase">Cómo funciona</p>
       <ol className="grid gap-3 sm:grid-cols-3">
         {steps.map((step, index) => (
           <li key={step.title} className="rounded-xl border border-line bg-surface/60 p-4">

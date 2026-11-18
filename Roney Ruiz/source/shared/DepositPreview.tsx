@@ -57,7 +57,7 @@ export default function DepositPreview({ plan, amount, now }: { plan: DepositPla
         Si {shortAddress(plan.landlord)} no reclama entre {end} y {deadline}, podrás recuperar{" "}
         <span className="font-semibold text-fg">{amount} XLM</span> después de {deadline}.
       </p>
-      <p className="hint">
+      <p className="text-xs text-faint">
         La red decide con la hora de cierre de su ledger, no con tu reloj: deja 15 a 30 segundos de margen.
       </p>
     </div>

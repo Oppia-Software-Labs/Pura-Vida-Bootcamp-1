@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Button } from "./primitives";
 
 export default function CopyButton({ text, label }: { text: string; label: string }) {
   const [copied, setCopied] = useState(false);
@@ -14,8 +15,8 @@ export default function CopyButton({ text, label }: { text: string; label: strin
   }
 
   return (
-    <button type="button" onClick={copy} aria-label={label} className="btn btn-ghost px-3 py-1.5 text-xs">
+    <Button variant="ghost" size="sm" onClick={copy} aria-label={label}>
       {copied ? "Copiado" : "Copiar"}
-    </button>
+    </Button>
   );
 }

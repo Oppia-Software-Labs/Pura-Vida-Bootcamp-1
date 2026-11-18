@@ -9,6 +9,8 @@ import DepositPreview from "./DepositPreview";
 import Field from "./Field";
 import { friendlyError, planErrorMessages } from "./friendlyError";
 import { formatEpoch, formatXlm, shortAddress } from "./format";
+import { cardClass } from "./classes";
+import { Alert, Button, Chip, Input, Spinner } from "./primitives";
 
 type FieldName = "landlord" | "amount" | "time" | "other";
 
@@ -29,6 +31,9 @@ const demoPresets = [
   { end: "5", deadline: "10" },
   { end: "10", deadline: "30" },
 ];
+
+const segmentClass =
+  "cursor-pointer rounded-md px-3 py-2 text-sm font-medium text-muted transition-colors hover:text-fg aria-pressed:bg-raised aria-pressed:text-fg aria-pressed:shadow-[inset_0_0_0_1px_var(--color-line-strong)]";
 
 function toEpoch(localDateTime: string): number {
   return localDateTime ? Math.floor(new Date(localDateTime).getTime() / 1000) : NaN;
@@ -87,7 +92,7 @@ export default function CreateDeposit({ address }: { address: string }) {
       ["Recuperas desde", formatEpoch(createdPlan.deadline)],
     ];
     return (
-      <section className="card flex flex-col gap-6" aria-label="Depósito creado">
+      <section className={`${cardClass()} flex flex-col gap-6`} aria-label="Depósito creado">
         <div className="flex items-center gap-4">
           <span
             aria-hidden
@@ -103,22 +108,22 @@ export default function CreateDeposit({ address }: { address: string }) {
         <dl className="grid gap-px overflow-hidden rounded-xl border border-line bg-line sm:grid-cols-2">
           {recap.map(([term, value]) => (
             <div key={term} className="bg-surface px-4 py-3">
-              <dt className="hint">{term}</dt>
+              <dt className="text-xs text-faint">{term}</dt>
               <dd className="text-sm font-medium">{value}</dd>
             </div>
           ))}
         </dl>
         <div className="flex flex-col gap-1.5">
-          <p className="label">Link para el arrendador</p>
+          <p className="text-sm font-medium">Link para el arrendador</p>
           <div className="flex items-center gap-2 rounded-lg border border-line-strong bg-canvas/70 p-2">
-            <p className="min-w-0 flex-1 break-all font-mono text-xs text-muted">{link}</p>
+            <p className="min-w-0 flex-1 font-mono text-xs break-all text-muted">{link}</p>
             <CopyButton text={link} label="Copiar link" />
           </div>
-          <p className="hint">Compártelo para que el arrendador encuentre el depósito.</p>
+          <p className="text-xs text-faint">Compártelo para que el arrendador encuentre el depósito.</p>
         </div>
-        <button type="button" onClick={reset} className="btn btn-ghost">
+        <Button variant="ghost" onClick={reset}>
           Crear otro depósito
-        </button>
+        </Button>
       </section>
     );
   }
@@ -127,7 +132,7 @@ export default function CreateDeposit({ address }: { address: string }) {
 
   return (
     <form
-      className="card flex flex-col gap-7"
+      className={`${cardClass()} flex flex-col gap-7`}
       aria-label="Crear depósito"
       noValidate
       onSubmit={(event) => {
@@ -143,9 +148,10 @@ export default function CreateDeposit({ address }: { address: string }) {
 
       <Section step={1} title="¿Quién es el arrendador?">
         <Field id="landlord" label="Dirección" hint="Su cuenta Stellar, empieza con G." error={errorFor("landlord")}>
-          <input
+          <Input
             id="landlord"
-            className="input font-mono text-xs sm:text-sm"
+            compact
+            className="font-mono"
             value={landlord}
             onChange={(event) => setLandlord(event.target.value)}
             placeholder="G..."
@@ -165,9 +171,9 @@ export default function CreateDeposit({ address }: { address: string }) {
           error={errorFor("amount")}
         >
           <div className="relative">
-            <input
+            <Input
               id="amount"
-              className="input pr-14"
+              className="pr-14"
               inputMode="decimal"
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
@@ -183,25 +189,23 @@ export default function CreateDeposit({ address }: { address: string }) {
         </Field>
         <div className="flex flex-wrap gap-2">
           {amountPresets.map((preset) => (
-            <button
-              key={preset}
-              type="button"
-              className="chip"
-              aria-pressed={amount.trim() === preset}
-              onClick={() => setAmount(preset)}
-            >
+            <Chip key={preset} pressed={amount.trim() === preset} onClick={() => setAmount(preset)}>
               {preset} XLM
-            </button>
+            </Chip>
           ))}
         </div>
       </Section>
 
       <Section step={3} title="¿Cuándo puede reclamar cada uno?">
-        <div className="segmented" role="group" aria-label="Tipo de plazos">
-          <button type="button" className="segment" aria-pressed={demo} onClick={() => setDemo(true)}>
+        <div
+          className="grid grid-cols-2 gap-1 rounded-lg border border-line bg-canvas/70 p-1"
+          role="group"
+          aria-label="Tipo de plazos"
+        >
+          <button type="button" className={segmentClass} aria-pressed={demo} onClick={() => setDemo(true)}>
             Modo demo
           </button>
-          <button type="button" className="segment" aria-pressed={!demo} onClick={() => setDemo(false)}>
+          <button type="button" className={segmentClass} aria-pressed={!demo} onClick={() => setDemo(false)}>
             Fechas exactas
           </button>
         </div>
@@ -209,18 +213,16 @@ export default function CreateDeposit({ address }: { address: string }) {
         {demo && (
           <div className="flex flex-wrap gap-2">
             {demoPresets.map((preset) => (
-              <button
+              <Chip
                 key={preset.end}
-                type="button"
-                className="chip"
-                aria-pressed={endMinutes === preset.end && deadlineMinutes === preset.deadline}
+                pressed={endMinutes === preset.end && deadlineMinutes === preset.deadline}
                 onClick={() => {
                   setEndMinutes(preset.end);
                   setDeadlineMinutes(preset.deadline);
                 }}
               >
                 {preset.end} y {preset.deadline} min
-              </button>
+              </Chip>
             ))}
           </div>
         )}
@@ -230,9 +232,8 @@ export default function CreateDeposit({ address }: { address: string }) {
             {demo ? (
               <>
                 <Field id="end" label="Fin del contrato" hint="Minutos desde ahora.">
-                  <input
+                  <Input
                     id="end"
-                    className="input"
                     inputMode="numeric"
                     value={endMinutes}
                     onChange={(event) => setEndMinutes(event.target.value)}
@@ -241,9 +242,8 @@ export default function CreateDeposit({ address }: { address: string }) {
                   />
                 </Field>
                 <Field id="deadline" label="Plazo" hint="Minutos desde ahora.">
-                  <input
+                  <Input
                     id="deadline"
-                    className="input"
                     inputMode="numeric"
                     value={deadlineMinutes}
                     onChange={(event) => setDeadlineMinutes(event.target.value)}
@@ -255,9 +255,8 @@ export default function CreateDeposit({ address }: { address: string }) {
             ) : (
               <>
                 <Field id="end" label="Fin del contrato">
-                  <input
+                  <Input
                     id="end"
-                    className="input"
                     type="datetime-local"
                     value={endAt}
                     onChange={(event) => setEndAt(event.target.value)}
@@ -265,9 +264,8 @@ export default function CreateDeposit({ address }: { address: string }) {
                   />
                 </Field>
                 <Field id="deadline" label="Plazo">
-                  <input
+                  <Input
                     id="deadline"
-                    className="input"
                     type="datetime-local"
                     value={deadlineAt}
                     onChange={(event) => setDeadlineAt(event.target.value)}
@@ -287,24 +285,15 @@ export default function CreateDeposit({ address }: { address: string }) {
 
       {result.ok && <DepositPreview plan={result.plan} amount={amount.trim()} now={now} />}
 
-      {errorFor("other") && (
-        <p role="alert" className="alert">
-          {errorFor("other")}
-        </p>
-      )}
-
-      {error && (
-        <p role="alert" className="alert">
-          {friendlyError(error)}
-        </p>
-      )}
+      {errorFor("other") && <Alert>{errorFor("other")}</Alert>}
+      {error && <Alert>{friendlyError(error)}</Alert>}
 
       <div className="flex flex-col gap-2">
-        <button type="submit" disabled={creating} className="btn btn-primary w-full py-3">
-          {creating && <span aria-hidden className="spinner" />}
+        <Button type="submit" size="lg" className="w-full" disabled={creating}>
+          {creating && <Spinner />}
           {creating ? "Esperando tu firma en Varial..." : "Firmar y crear depósito"}
-        </button>
-        <p className="text-center hint">Se abrirá Varial para que confirmes la transacción.</p>
+        </Button>
+        <p className="text-center text-xs text-faint">Se abrirá Varial para que confirmes la transacción.</p>
       </div>
     </form>
   );
