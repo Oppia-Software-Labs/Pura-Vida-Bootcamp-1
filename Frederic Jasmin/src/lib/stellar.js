@@ -19,3 +19,13 @@ export async function getXlmBalance(address) {
 export function formatXlm(value) {
   return Number(value).toLocaleString('es-CR', { maximumFractionDigits: 7 })
 }
+
+// Friendbot es el servicio de la testnet que regala 10.000 XLM de prueba para crear o fondear una cuenta.
+export async function fundWithFriendbot(address) {
+  const res = await fetch(`https://friendbot.stellar.org/?addr=${encodeURIComponent(address)}`)
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}))
+    throw new Error(body.detail || 'Friendbot no pudo fondear la cuenta (puede que ya tenga fondos).')
+  }
+  return res.json()
+}

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { connectWallet, disconnectWallet, shortAddress } from './lib/wallet'
-import { formatXlm, getXlmBalance } from './lib/stellar'
+import { formatXlm, fundWithFriendbot, getXlmBalance } from './lib/stellar'
 
 export default function App() {
   const [address, setAddress] = useState(null)
@@ -19,6 +19,24 @@ export default function App() {
       setLoadingBalance(false)
     }
   }, [address])
+
+  const [funding, setFunding] = useState(false)
+  const [fundMsg, setFundMsg] = useState('')
+
+  async function handleFund() {
+    setFunding(true)
+    setFundMsg('')
+    setError('')
+    try {
+      await fundWithFriendbot(address)
+      setFundMsg('Listo: Friendbot depositó 10.000 XLM de prueba.')
+      await refreshBalance()
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setFunding(false)
+    }
+  }
 
   useEffect(() => {
     refreshBalance()
@@ -85,9 +103,15 @@ export default function App() {
             ) : (
               <p className="balance">{formatXlm(balance)} XLM</p>
             )}
-            <button className="secondary" onClick={refreshBalance} disabled={loadingBalance}>
-              {loadingBalance ? 'Actualizando...' : 'Actualizar saldo'}
-            </button>
+            <div className="row">
+              <button className="secondary" onClick={refreshBalance} disabled={loadingBalance}>
+                {loadingBalance ? 'Actualizando...' : 'Actualizar saldo'}
+              </button>
+              <button onClick={handleFund} disabled={funding}>
+                {funding ? 'Fondeando...' : 'Cargar XLM de prueba'}
+              </button>
+            </div>
+            {fundMsg && <p className="ok">{fundMsg}</p>}
           </section>
         )}
         </div>
