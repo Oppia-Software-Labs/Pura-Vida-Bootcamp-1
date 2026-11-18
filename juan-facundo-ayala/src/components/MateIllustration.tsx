@@ -24,7 +24,14 @@ export function MateIllustration({ className }: Props) {
       </g>
 
       {/* Sombra en el piso */}
-      <ellipse cx="120" cy="250" rx="72" ry="10" fill="var(--foreground)" opacity="0.1" />
+      <ellipse
+        cx="120"
+        cy="250"
+        rx="72"
+        ry="10"
+        fill="var(--foreground)"
+        opacity="0.1"
+      />
 
       {/* Bombilla */}
       <path
@@ -41,10 +48,7 @@ export function MateIllustration({ className }: Props) {
       />
 
       {/* Calabaza */}
-      <path
-        d="M56 128c-6 70 18 120 64 120s70-50 64-120z"
-        fill="var(--wood)"
-      />
+      <path d="M56 128c-6 70 18 120 64 120s70-50 64-120z" fill="var(--wood)" />
       <path
         d="M70 190c8 30 26 48 50 48s42-18 50-48c-12 20-30 30-50 30s-38-10-50-30z"
         fill="var(--foreground)"

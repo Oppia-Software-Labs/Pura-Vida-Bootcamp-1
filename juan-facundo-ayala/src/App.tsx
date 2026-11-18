@@ -1,5 +1,8 @@
+import { useState } from 'react'
 import { AccountBalance } from '@/components/AccountBalance'
 import { HowItWorks } from '@/components/HowItWorks'
+import { MateForm } from '@/components/MateForm'
+import { MateHistory } from '@/components/MateHistory'
 import { MateIllustration } from '@/components/MateIllustration'
 import { Badge } from '@/components/ui/badge'
 import { WalletSection } from '@/components/WalletSection'
@@ -9,6 +12,13 @@ import { useWallet } from '@/hooks/useWallet'
 function App() {
   const wallet = useWallet()
   const account = useAccount(wallet.address)
+  // Sube con cada envío para que el historial se vuelva a cargar.
+  const [sentCount, setSentCount] = useState(0)
+
+  const handleSent = () => {
+    setSentCount((count) => count + 1)
+    void account.refresh()
+  }
 
   // En pantallas chicas el orden es: portada, tarjetas, "cómo funciona".
   // En pantallas grandes las tarjetas pasan a la columna derecha.
@@ -59,9 +69,20 @@ function App() {
             onFund={account.fund}
           />
         </WalletSection>
+        <MateForm
+          address={wallet.address}
+          account={account.info}
+          onSent={handleSent}
+        />
+        {wallet.address && (
+          <MateHistory address={wallet.address} version={sentCount} />
+        )}
       </main>
 
-      <section aria-labelledby="como-funciona" className="grid content-start gap-4">
+      <section
+        aria-labelledby="como-funciona"
+        className="grid content-start gap-4"
+      >
         <h2
           id="como-funciona"
           className="text-xs font-semibold tracking-wide text-muted-foreground uppercase"

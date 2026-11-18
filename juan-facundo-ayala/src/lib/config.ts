@@ -9,9 +9,6 @@ const EXPLORER_URL = 'https://stellar.expert/explorer/testnet'
 
 export const horizon = new Horizon.Server(HORIZON_URL)
 
-export const explorerAccountUrl = (address: string) =>
-  `${EXPLORER_URL}/account/${address}`
-
 export const explorerTxUrl = (hash: string) => `${EXPLORER_URL}/tx/${hash}`
 
 export const shortAddress = (address: string) =>

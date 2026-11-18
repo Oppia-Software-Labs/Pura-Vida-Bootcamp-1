@@ -73,13 +73,19 @@ export function WalletSection({
               disabled={connecting}
             >
               {connecting ? (
-                <LoaderCircle className="animate-spin" data-icon="inline-start" />
+                <LoaderCircle
+                  className="animate-spin"
+                  data-icon="inline-start"
+                />
               ) : (
                 <Wallet data-icon="inline-start" />
               )}
               {connecting ? 'Abriendo wallets…' : 'Conectar wallet'}
             </Button>
-            <ul className="flex flex-wrap gap-1.5" aria-label="Wallets compatibles">
+            <ul
+              className="flex flex-wrap gap-1.5"
+              aria-label="Wallets compatibles"
+            >
               {SUPPORTED_WALLETS.map((name) => (
                 <li key={name}>
                   <Badge variant="secondary">{name}</Badge>
@@ -92,7 +98,10 @@ export function WalletSection({
             <div className="flex items-center justify-between gap-3 rounded-lg bg-muted px-3 py-2.5">
               <div className="min-w-0">
                 <p className="flex items-center gap-1.5 text-xs font-medium text-primary">
-                  <span className="size-2 rounded-full bg-primary" aria-hidden="true" />
+                  <span
+                    className="size-2 rounded-full bg-primary"
+                    aria-hidden="true"
+                  />
                   Conectada · {NETWORK_NAME}
                 </p>
                 <p className="font-mono text-sm" title={address}>

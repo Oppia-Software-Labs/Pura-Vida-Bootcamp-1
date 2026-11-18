@@ -79,5 +79,9 @@ export function walletErrorMessage(error: unknown): string {
   if (/reject|denied|declin|cancel/i.test(message)) {
     return 'Cancelaste la operación en la wallet.'
   }
+  // La sesión se restauró pero la wallet ya no está disponible para firmar.
+  if (/set the wallet first|no active address/i.test(message)) {
+    return 'Se perdió la conexión con tu wallet. Desconectá y volvé a conectarla.'
+  }
   return message || 'La wallet no respondió. Probá de nuevo.'
 }

@@ -50,8 +50,8 @@ export function AccountBalance({
               <span className="font-medium text-foreground tabular-nums">
                 {formatXlm(info.available)} XLM
               </span>
-              . El resto ({formatXlm(info.reserved)} XLM) es la reserva mínima de
-              la cuenta.
+              . El resto ({formatXlm(info.reserved)} XLM) es la reserva mínima
+              de la cuenta.
             </p>
           </div>
           <Button

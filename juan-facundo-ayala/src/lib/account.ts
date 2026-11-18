@@ -57,7 +57,9 @@ export async function fundWithFriendbot(address: string): Promise<void> {
   )
   if (response.ok) return
   if (response.status === 429) {
-    throw new Error('Friendbot está saturado. Esperá un minuto y probá de nuevo.')
+    throw new Error(
+      'Friendbot está saturado. Esperá un minuto y probá de nuevo.',
+    )
   }
   throw new Error('Friendbot no pudo fondear la cuenta. Probá de nuevo.')
 }
