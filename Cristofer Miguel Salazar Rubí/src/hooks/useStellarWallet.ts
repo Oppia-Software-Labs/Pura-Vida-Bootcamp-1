@@ -54,7 +54,6 @@ export interface StellarWallet {
   connect: () => Promise<void>;
   disconnect: () => Promise<void>;
   signTransaction: (xdr: string) => Promise<string>;
-  clearError: () => void;
 }
 
 export function useStellarWallet(): StellarWallet {
@@ -70,10 +69,18 @@ export function useStellarWallet(): StellarWallet {
 
     StellarWalletsKit.getAddress()
       .then(({ address: storedAddress }) => {
-        if (active && storedAddress) setAddress(storedAddress);
+        if (!active || !storedAddress) return;
+        setAddress(storedAddress);
+        StellarWalletsKit.getNetwork()
+          .then(({ networkPassphrase: restoredNetwork }) => {
+            if (active) setNetworkPassphrase(restoredNetwork);
+          })
+          .catch(() => {
+            // Some wallets do not expose the network until a signature.
+          });
       })
       .catch(() => {
-        // No saved session yet: the user simply connects when ready.
+        // No saved session yet.
       });
 
     const unsubscribeState = StellarWalletsKit.on(
@@ -167,6 +174,5 @@ export function useStellarWallet(): StellarWallet {
     connect,
     disconnect,
     signTransaction,
-    clearError: () => setError(null),
   };
 }
