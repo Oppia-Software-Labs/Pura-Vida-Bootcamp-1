@@ -1,4 +1,5 @@
 import { useVarial } from "../hooks/useVarial.js";
+import { useTestnetBalance } from "../hooks/useTestnetBalance.js";
 
 function formatNetworkName(network) {
   if (!network) return "Sin detectar";
@@ -11,6 +12,16 @@ function formatNetworkName(network) {
   return network;
 }
 
+function formatXlmBalance(balance) {
+  if (balance === null || balance === undefined) return "— XLM";
+  const numeric = Number(balance);
+  if (Number.isNaN(numeric)) return `${balance} XLM`;
+  return `${numeric.toLocaleString("es-CR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 7,
+  })} XLM`;
+}
+
 export function WalletSection() {
   const {
     connected,
@@ -18,13 +29,20 @@ export function WalletSection() {
     network,
     isTestnet,
     connecting,
-    error,
+    error: walletError,
     connect,
     disconnect,
   } = useVarial();
 
-  // El balance real en Horizon se integrará en el siguiente paso
-  const xlmBalance = null;
+  const {
+    balance,
+    funded,
+    loading: loadingBalance,
+    funding,
+    error: balanceError,
+    refreshBalance,
+    fundWithFriendbot,
+  } = useTestnetBalance(connected ? address : null);
 
   return (
     <section className="wallet-card" aria-labelledby="wallet-section-title">
@@ -48,7 +66,8 @@ export function WalletSection() {
 
       <p className="wallet-card__description">
         Conecta tu wallet de navegador en <strong>Testnet</strong> para ver tu
-        llave pública y la red activa mediante <code>@stellar/varial-sdk</code>.
+        llave pública, la red activa y tu saldo real de XLM desde{" "}
+        <code>Horizon Testnet</code>.
       </p>
 
       <div className="wallet-card__actions">
@@ -62,19 +81,36 @@ export function WalletSection() {
             {connecting ? "Conectando..." : "Conectar wallet"}
           </button>
         ) : (
-          <button
-            type="button"
-            className="btn-secondary"
-            onClick={disconnect}
-          >
-            Desconectar wallet
-          </button>
+          <>
+            <button
+              type="button"
+              className="btn-outline"
+              onClick={refreshBalance}
+              disabled={loadingBalance || funding}
+            >
+              {loadingBalance ? "Actualizando..." : "Refrescar balance"}
+            </button>
+            <button
+              type="button"
+              className="btn-secondary"
+              onClick={disconnect}
+              disabled={funding}
+            >
+              Desconectar wallet
+            </button>
+          </>
         )}
       </div>
 
-      {error && (
+      {walletError && (
         <div className="wallet-alert wallet-alert--error" role="alert">
-          {error}
+          {walletError}
+        </div>
+      )}
+
+      {balanceError && (
+        <div className="wallet-alert wallet-alert--error" role="alert">
+          {balanceError}
         </div>
       )}
 
@@ -82,7 +118,27 @@ export function WalletSection() {
         <div className="wallet-alert wallet-alert--warning" role="status">
           Tu wallet está en <strong>{formatNetworkName(network)}</strong>.
           Cambia a <strong>Test Net</strong> en la configuración de Freighter /
-          Varial para trabajar en Stellar Testnet.
+          Varial para operar en Stellar Testnet.
+        </div>
+      )}
+
+      {connected && !loadingBalance && !funded && (
+        <div className="friendbot-banner" role="status">
+          <div className="friendbot-banner__text">
+            <strong>Cuenta no fondeada en Testnet (404)</strong>
+            <p>
+              Esta cuenta aún no está activada en Stellar Testnet. Puedes
+              fondearla gratis con XLM de prueba usando Friendbot.
+            </p>
+          </div>
+          <button
+            type="button"
+            className="btn-primary"
+            onClick={fundWithFriendbot}
+            disabled={funding}
+          >
+            {funding ? "Fondeando con Friendbot..." : "Fondear con Friendbot"}
+          </button>
         </div>
       )}
 
@@ -110,7 +166,13 @@ export function WalletSection() {
         <div className="info-tile">
           <span className="info-tile__label">Balance en Testnet</span>
           <p className="info-tile__value info-tile__value--balance">
-            {xlmBalance !== null ? `${xlmBalance} XLM` : "— XLM"}
+            {!connected
+              ? "— XLM"
+              : loadingBalance
+                ? "Consultando..."
+                : !funded
+                  ? "0 XLM (sin activar)"
+                  : formatXlmBalance(balance)}
           </p>
         </div>
       </div>

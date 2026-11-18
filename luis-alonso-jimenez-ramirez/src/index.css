@@ -166,6 +166,7 @@ body {
 .wallet-card__actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.75rem;
   margin-bottom: 1.25rem;
 }
@@ -215,6 +216,67 @@ body {
 
 .btn-secondary:active {
   transform: translateY(1px);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.btn-outline {
+  appearance: none;
+  border: 1px solid rgba(56, 189, 248, 0.38);
+  border-radius: 10px;
+  padding: 0.75rem 1.25rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #bae6fd;
+  background: rgba(56, 189, 248, 0.1);
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.btn-outline:hover:not(:disabled) {
+  background: rgba(56, 189, 248, 0.2);
+}
+
+.btn-outline:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.btn-outline:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.friendbot-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.15rem;
+  border-radius: 12px;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+}
+
+.friendbot-banner__text {
+  flex: 1 1 260px;
+}
+
+.friendbot-banner__text strong {
+  display: block;
+  font-size: 0.92rem;
+  color: #e0f2fe;
+  margin-bottom: 0.2rem;
+}
+
+.friendbot-banner__text p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #bae6fd;
 }
 
 .wallet-alert {
