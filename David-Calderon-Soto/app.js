@@ -47,24 +47,47 @@ function truncateKey(key) {
   return `${key.slice(0, 6)}...${key.slice(-6)}`;
 }
 
+// Animate the hero balance counting up to its fetched value
+function animateBalanceTo(targetAmount) {
+  const targetNum = parseFloat(targetAmount);
+  if (isNaN(targetNum)) {
+    mainBalance.textContent = "0.00";
+    return;
+  }
+
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    mainBalance.textContent = formatAmount(targetNum);
+    return;
+  }
+
+  const startNum = 0;
+  const durationMs = 700;
+  const startTime = performance.now();
+
+  function step(now) {
+    const progress = Math.min((now - startTime) / durationMs, 1);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    mainBalance.textContent = formatAmount(startNum + (targetNum - startNum) * eased);
+    if (progress < 1) requestAnimationFrame(step);
+  }
+
+  requestAnimationFrame(step);
+}
+
 // 1. Connect Freighter Wallet
 async function connectFreighter() {
   try {
     showAlert("Conectando con Freighter...", "warning");
-    
-    // Check if installed
-    const isInstalled = await freighter.isConnected();
-    if (!isInstalled) {
+
+    const { isConnected } = await freighter.isConnected();
+    if (!isConnected) {
       showAlert("La extensión Freighter no está instalada o no está activa en tu navegador.", "error");
       return;
     }
 
-    // Request public key access
-    const pubKeyObj = await freighter.requestAccess();
-    const publicKey = typeof pubKeyObj === "string" ? pubKeyObj : pubKeyObj?.address;
-
-    if (!publicKey) {
-      showAlert("No se concedió acceso a la billetera Freighter.", "warning");
+    const { address: publicKey, error } = await freighter.requestAccess();
+    if (error || !publicKey) {
+      showAlert(error ? `Freighter rechazó la conexión: ${error}` : "No se concedió acceso a la billetera Freighter.", "warning");
       return;
     }
 
@@ -104,11 +127,11 @@ async function connectAlbedo() {
 // 3. Generate Random Testnet Keypair
 function generateTestnetKeypair() {
   try {
-    if (!window.stellarSdk) {
+    if (!window.StellarSdk) {
       showAlert("Stellar SDK no está listo.", "error");
       return;
     }
-    const pair = window.stellarSdk.Keypair.random();
+    const pair = window.StellarSdk.Keypair.random();
     const publicKey = pair.publicKey();
     const secretKey = pair.secret();
 
@@ -125,7 +148,7 @@ function generateTestnetKeypair() {
 // Set Account in UI
 function setConnectedAccount(publicKey, provider) {
   activePublicKey = publicKey;
-  accountArea.style.display = "block";
+  accountArea.hidden = false;
   accountAddressDisplay.textContent = publicKey;
   walletProviderBadge.textContent = provider;
   linkExplorer.href = `https://stellar.expert/explorer/testnet/account/${publicKey}`;
@@ -140,13 +163,13 @@ async function fetchAccountData(publicKey) {
 
   try {
     const res = await fetch(`${HORIZON_TESTNET_URL}/accounts/${publicKey}`);
-    
+
     if (res.status === 404) {
       mainBalance.textContent = "0.00";
-      accountStatusText.innerHTML = `⚠️ La cuenta aún no existe en Testnet. Haz clic en <strong>Recargar con Friendbot</strong> para activarla con 10,000 XLM de prueba.`;
+      accountStatusText.textContent = "La cuenta aún no existe en Testnet. Usa Recargar con Friendbot para activarla con 10,000 XLM de prueba.";
       accountSequence.textContent = "Sin inicializar";
       accountSubentries.textContent = "0";
-      txListContainer.innerHTML = `<div style="color: var(--text-muted); text-align: center; padding: 12px;">Cuenta sin transacciones aún. Fondea la cuenta para comenzar.</div>`;
+      renderEmptyTxState("Cuenta sin transacciones aún. Fondea la cuenta para comenzar.");
       return;
     }
 
@@ -155,12 +178,12 @@ async function fetchAccountData(publicKey) {
     }
 
     const data = await res.json();
-    
+
     // Extract native XLM balance
     const nativeBal = data.balances.find(b => b.asset_type === "native");
     const xlmAmount = nativeBal ? nativeBal.balance : "0.00";
 
-    mainBalance.textContent = formatAmount(xlmAmount);
+    animateBalanceTo(xlmAmount);
     accountStatusText.textContent = `Cuenta activa en Stellar Testnet (${data.balances.length} activos)`;
     accountSequence.textContent = data.sequence || "—";
     accountSubentries.textContent = data.subentry_count || "0";
@@ -202,6 +225,15 @@ async function requestFriendbot() {
   }
 }
 
+// Render an empty-state message inside the transaction log
+function renderEmptyTxState(message) {
+  txListContainer.replaceChildren();
+  const empty = document.createElement("p");
+  empty.className = "tx-empty";
+  empty.textContent = message;
+  txListContainer.appendChild(empty);
+}
+
 // 6. Load Recent Transactions
 async function loadRecentTransactions(publicKey) {
   try {
@@ -212,35 +244,50 @@ async function loadRecentTransactions(publicKey) {
     const records = data._embedded?.records || [];
 
     if (records.length === 0) {
-      txListContainer.innerHTML = `<div style="color: var(--text-muted); text-align: center; padding: 12px;">Sin transacciones recientes registradas.</div>`;
+      renderEmptyTxState("Sin transacciones recientes registradas.");
       return;
     }
 
-    txListContainer.innerHTML = "";
+    txListContainer.replaceChildren();
     records.forEach(tx => {
-      const item = document.createElement("div");
-      item.className = "tx-item";
-      
-      const createdDate = new Date(tx.created_at).toLocaleTimeString("es-CR", {
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit"
-      });
-
-      item.innerHTML = `
-        <div>
-          <a class="tx-hash" href="${tx._links?.self?.href || '#'}" target="_blank" rel="noopener">
-            Hash: ${truncateKey(tx.id)}
-          </a>
-          <div style="font-size: 11px; color: var(--text-muted);">Op count: ${tx.operation_count} · Fee: ${tx.fee_charged} stroops</div>
-        </div>
-        <div class="tx-time">${createdDate}</div>
-      `;
-      txListContainer.appendChild(item);
+      txListContainer.appendChild(buildTxEntry(tx));
     });
   } catch (err) {
     console.error("Error cargando transacciones:", err);
   }
+}
+
+// Build one transaction-log row as real DOM nodes (no innerHTML)
+function buildTxEntry(tx) {
+  const entry = document.createElement("div");
+  entry.className = "tx-entry";
+
+  const main = document.createElement("div");
+  main.className = "tx-main";
+
+  const hashLink = document.createElement("a");
+  hashLink.className = "tx-hash";
+  hashLink.href = tx._links?.self?.href || "#";
+  hashLink.target = "_blank";
+  hashLink.rel = "noopener";
+  hashLink.textContent = truncateKey(tx.id);
+
+  const detail = document.createElement("span");
+  detail.className = "tx-detail";
+  detail.textContent = `${tx.operation_count} ops, ${tx.fee_charged} stroops`;
+
+  main.append(hashLink, detail);
+
+  const time = document.createElement("span");
+  time.className = "tx-time";
+  time.textContent = new Date(tx.created_at).toLocaleTimeString("es-CR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+
+  entry.append(main, time);
+  return entry;
 }
 
 // Event Listeners
@@ -250,12 +297,20 @@ btnGenerateKeypair.addEventListener("click", generateTestnetKeypair);
 btnFriendbot.addEventListener("click", requestFriendbot);
 btnRefresh.addEventListener("click", () => fetchAccountData(activePublicKey));
 
-btnLookup.addEventListener("click", () => {
-  const val = manualInput.value.trim();
-  if (!val.startsWith("G") || val.length !== 56) {
+function lookupAccount(candidateKey) {
+  if (!candidateKey.startsWith("G") || candidateKey.length !== 56) {
     showAlert("Ingresa una clave pública Stellar válida (debe empezar con 'G' y tener 56 caracteres).", "error");
     return;
   }
-  setConnectedAccount(val, "Manual Lookup");
-  fetchAccountData(val);
-});
+  setConnectedAccount(candidateKey, "Manual Lookup");
+  fetchAccountData(candidateKey);
+}
+
+btnLookup.addEventListener("click", () => lookupAccount(manualInput.value.trim()));
+
+// Allow sharing a direct link to a given account, e.g. ?cuenta=G...
+const sharedAccount = new URLSearchParams(window.location.search).get("cuenta");
+if (sharedAccount) {
+  manualInput.value = sharedAccount;
+  lookupAccount(sharedAccount.trim());
+}
