@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { connectWallet, disconnectWallet, shortAddress } from './lib/wallet'
+import SendForm from './components/SendForm'
 import { formatXlm, fundWithFriendbot, getXlmBalance } from './lib/stellar'
 
 export default function App() {
@@ -114,6 +115,8 @@ export default function App() {
             {fundMsg && <p className="ok">{fundMsg}</p>}
           </section>
         )}
+
+        {address && balance && <SendForm address={address} onSent={refreshBalance} />}
         </div>
       </main>
 

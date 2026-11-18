@@ -1,4 +1,13 @@
-import { Horizon } from '@stellar/stellar-sdk'
+import {
+  Asset,
+  BASE_FEE,
+  Horizon,
+  Memo,
+  Networks,
+  Operation,
+  StrKey,
+  TransactionBuilder,
+} from '@stellar/stellar-sdk'
 
 export const HORIZON_URL = 'https://horizon-testnet.stellar.org'
 export const server = new Horizon.Server(HORIZON_URL)
@@ -28,4 +37,45 @@ export async function fundWithFriendbot(address) {
     throw new Error(body.detail || 'Friendbot no pudo fondear la cuenta (puede que ya tenga fondos).')
   }
   return res.json()
+}
+
+export const NETWORK_PASSPHRASE = Networks.TESTNET
+
+export function txExplorerUrl(hash) {
+  return `https://stellar.expert/explorer/testnet/tx/${hash}`
+}
+
+// Arma un pago de XLM, lo firma la wallet del usuario y lo envía a Horizon.
+// Si la cuenta destino todavía no existe, se usa createAccount (mínimo 1 XLM) en vez de payment.
+export async function sendXlm({ from, to, amount, memo, sign }) {
+  if (!StrKey.isValidEd25519PublicKey(to)) throw new Error('La dirección destino no es válida (debe empezar con G).')
+  if (to === from) throw new Error('No puedes enviarte XLM a tu misma cuenta.')
+  const value = Number(amount)
+  if (!(value > 0)) throw new Error('El monto debe ser mayor que 0.')
+
+  const source = await server.loadAccount(from)
+  const destinationExists = (await getXlmBalance(to)) !== null
+  if (!destinationExists && value < 1) {
+    throw new Error('La cuenta destino no existe todavía: el primer envío tiene que ser de al menos 1 XLM.')
+  }
+
+  const op = destinationExists
+    ? Operation.payment({ destination: to, asset: Asset.native(), amount: value.toFixed(7) })
+    : Operation.createAccount({ destination: to, startingBalance: value.toFixed(7) })
+
+  let builder = new TransactionBuilder(source, { fee: BASE_FEE, networkPassphrase: NETWORK_PASSPHRASE })
+    .addOperation(op)
+    .setTimeout(180)
+  if (memo) builder = builder.addMemo(Memo.text(memo.slice(0, 28)))
+  const tx = builder.build()
+
+  const signedXdr = await sign(tx.toXDR())
+  const signed = TransactionBuilder.fromXDR(signedXdr, NETWORK_PASSPHRASE)
+  try {
+    const result = await server.submitTransaction(signed)
+    return result.hash
+  } catch (err) {
+    const codes = err?.response?.data?.extras?.result_codes
+    throw new Error(codes ? `Horizon rechazó la transacción: ${JSON.stringify(codes)}` : err.message)
+  }
 }

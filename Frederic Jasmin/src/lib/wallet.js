@@ -19,6 +19,15 @@ export async function disconnectWallet() {
   await StellarWalletsKit.disconnect()
 }
 
+// Pide a la wallet que firme la transacción (el usuario la aprueba en su extensión).
+export async function signXdr(xdr, address) {
+  const { signedTxXdr } = await StellarWalletsKit.signTransaction(xdr, {
+    networkPassphrase: Networks.TESTNET,
+    address,
+  })
+  return signedTxXdr
+}
+
 export function shortAddress(address) {
   return `${address.slice(0, 6)}...${address.slice(-6)}`
 }
