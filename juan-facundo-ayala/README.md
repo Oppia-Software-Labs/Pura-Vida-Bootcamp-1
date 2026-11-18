@@ -114,7 +114,7 @@ Otros comandos:
 
 ## Cómo se usó Stellar Raven
 
-Desarrollada con asistentes de IA de programación, entre ellos Claude Code, con
+Desarrollada con asistentes de IA de programación (Claude Code y Devin), con
 Stellar Raven como fuente sobre Stellar.
 
 Raven es el MCP oficial de Stellar: una herramienta de consulta sobre la
