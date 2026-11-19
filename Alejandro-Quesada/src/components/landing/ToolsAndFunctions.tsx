@@ -1,3 +1,5 @@
+"use client";
+
 import {
   LineChart,
   Line,
@@ -50,7 +52,13 @@ const HERRAMIENTAS = [
   },
 ];
 
-const TooltipPersonalizado = ({ active, payload, label }) => {
+interface TooltipProps {
+  active?: boolean;
+  payload?: { value: number }[];
+  label?: string | number;
+}
+
+const TooltipPersonalizado = ({ active, payload, label }: TooltipProps) => {
   if (active && payload?.length) {
     return (
       <div className="bg-[#1e1e1e] border border-border rounded-xl px-4 py-3 shadow-xl">

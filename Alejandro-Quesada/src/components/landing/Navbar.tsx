@@ -1,3 +1,5 @@
+"use client";
+
 import { useState } from "react";
 
 const NAV_LINKS = [
@@ -9,7 +11,14 @@ const NAV_LINKS = [
   { label: "Contacto", href: "#contacto" },
 ];
 
-export default function Navbar({ onConnect, isConnected, truncatedKey, isConnecting }) {
+interface NavbarProps {
+  onConnect: () => void;
+  isConnected: boolean;
+  truncatedKey: string | null;
+  isConnecting: boolean;
+}
+
+export default function Navbar({ onConnect, isConnected, truncatedKey, isConnecting }: NavbarProps) {
   const [menuOpen, setMenuOpen] = useState(false);
 
   return (

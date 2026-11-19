@@ -1,3 +1,5 @@
+"use client";
+
 /* Reproduce fielmente el mockup de las imágenes de referencia */
 function HeroMockup() {
   return (
@@ -77,7 +79,7 @@ function HeroMockup() {
   );
 }
 
-export default function Hero({ onGetStarted }) {
+export default function Hero({ onGetStarted }: { onGetStarted: () => void }) {
   return (
     <section
       id="inicio"

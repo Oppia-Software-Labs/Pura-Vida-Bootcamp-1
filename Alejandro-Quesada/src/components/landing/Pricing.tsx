@@ -40,7 +40,7 @@ const PLANES = [
   },
 ];
 
-function FilaCaracteristica({ texto, incluido }) {
+function FilaCaracteristica({ texto, incluido }: { texto: string; incluido: boolean }) {
   return (
     <div className="flex items-center gap-3">
       <div
