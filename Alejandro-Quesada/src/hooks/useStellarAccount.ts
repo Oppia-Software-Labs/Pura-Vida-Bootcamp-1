@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect, useCallback } from "react";
 import {
   fetchAccount,
@@ -5,28 +7,32 @@ import {
   fetchVaultInfo,
   fetchVaultPosition,
   fundAccountWithFriendbot,
-} from "../lib/stellar.js";
+  type AccountInfo,
+  type PaymentRecord,
+  type VaultInfo,
+  type VaultPosition,
+} from "@/lib/stellar";
 
 const REFRESH_INTERVAL = 15_000;
-const EMPTY_POSITION = { shares: "0", usdc: "0" };
-const EMPTY_VAULT = { tvl: "0", invested: "0", idle: "0", totalShares: "0", sharePrice: "1" };
+const EMPTY_POSITION: VaultPosition = { shares: "0", usdc: "0" };
+const EMPTY_VAULT: VaultInfo = { tvl: "0", invested: "0", idle: "0", totalShares: "0", sharePrice: "1" };
 
-export function useStellarAccount(publicKey) {
-  const [account, setAccount] = useState(null);
-  const [payments, setPayments] = useState([]);
-  const [vault, setVault] = useState(EMPTY_VAULT);
-  const [position, setPosition] = useState(EMPTY_POSITION);
+export function useStellarAccount(publicKey: string | null) {
+  const [account, setAccount] = useState<AccountInfo | null>(null);
+  const [payments, setPayments] = useState<PaymentRecord[]>([]);
+  const [vault, setVault] = useState<VaultInfo>(EMPTY_VAULT);
+  const [position, setPosition] = useState<VaultPosition>(EMPTY_POSITION);
   const [loading, setLoading] = useState(false);
   const [fundingLoading, setFundingLoading] = useState(false);
   const [accountNotFound, setAccountNotFound] = useState(false);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     if (!publicKey) return;
     setLoading(true);
     setError(null);
     try {
-      const [acc, hist, pool, pos] = await Promise.all([
+      const [acc, hist, info, pos] = await Promise.all([
         fetchAccount(publicKey),
         fetchPaymentHistory(publicKey, 20),
         fetchVaultInfo().catch(() => EMPTY_VAULT),
@@ -34,15 +40,13 @@ export function useStellarAccount(publicKey) {
       ]);
       setAccount(acc);
       setPayments(hist);
-      setVault(pool);
+      setVault(info);
       setPosition(pos);
       setAccountNotFound(false);
     } catch (err) {
-      if (err.response?.status === 404) {
-        setAccountNotFound(true);
-      } else {
-        setError(err.message ?? "Failed to load account");
-      }
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      if (status === 404) setAccountNotFound(true);
+      else setError(err instanceof Error ? err.message : "No se pudo cargar la cuenta");
     } finally {
       setLoading(false);
     }
@@ -62,7 +66,7 @@ export function useStellarAccount(publicKey) {
       await fundAccountWithFriendbot(publicKey);
       await refresh();
     } catch (err) {
-      setError(err.message ?? "Friendbot funding failed");
+      setError(err instanceof Error ? err.message : "Friendbot falló");
     } finally {
       setFundingLoading(false);
     }
@@ -72,7 +76,6 @@ export function useStellarAccount(publicKey) {
     account,
     payments,
     vault,
-    poolBalance: vault.tvl,
     position,
     loading,
     fundingLoading,
