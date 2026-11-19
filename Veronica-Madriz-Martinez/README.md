@@ -1,8 +1,8 @@
-# Pura Vida Tips · Verónica Madriz Martínez
+# Sakura Tips · Verónica Madriz Martínez
 
 Entregable 1 del **Pura Vida Bootcamp**: mi primera app en Stellar, construida con **Stellar Raven** (https://raven.stellar.org/) como asistente.
 
-**Pura Vida Tips** es un "tip jar" en Stellar Testnet: conectas tu wallet, ves tu balance de XLM, fondeas la cuenta con Friendbot y envías propinas en XLM a cualquier dirección, firmando con tu wallet.
+**Sakura Tips** es un "tip jar" en Stellar Testnet: conectas tu wallet, ves tu balance de XLM, fondeas la cuenta con Friendbot y envías propinas en XLM a cualquier dirección, firmando con tu wallet.
 
 ## Funcionalidades
 
