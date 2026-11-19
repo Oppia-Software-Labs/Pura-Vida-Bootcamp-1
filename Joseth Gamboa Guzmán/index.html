@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#090817" />
+  <title>Stellar Wallet Explorer | Joseth Gamboa Guzmán</title>
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <div class="brand"><span class="brand-mark">✦</span> stellar<span>explorer</span></div>
+      <span class="network"><span class="dot"></span> TESTNET</span>
+    </header>
+    <section class="hero">
+      <span class="eyebrow">PURA VIDA BOOTCAMP · STELLAR</span>
+      <h1>Tu wallet Stellar,<br /><span>en un solo lugar.</span></h1>
+      <p>Conectá tu wallet Freighter y consultá tu saldo de XLM en la red de pruebas de Stellar. Sin transacciones ni fondos reales.</p>
+    </section>
+    <section class="dashboard" aria-label="Panel de wallet">
+      <div class="wallet-panel">
+        <div class="panel-top"><span class="panel-label">MI WALLET</span><span id="status" class="status">● Desconectada</span></div>
+        <div class="wallet-art" aria-hidden="true"><span>✦</span></div>
+        <p class="subheading">Dirección pública</p>
+        <p id="address" class="address">Conectá una wallet para comenzar</p>
+        <div class="actions">
+          <button id="connect" class="primary">Conectar Freighter <span>↗</span></button>
+          <button id="disconnect" class="secondary" hidden>Desconectar</button>
+          <button id="copy" class="secondary" hidden>Copiar dirección</button>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat-card"><span class="panel-label">SALDO DISPONIBLE EN TESTNET</span><div class="balance"><strong id="balance">—</strong><span>XLM</span></div><p id="balanceInfo">Tu saldo aparecerá aquí.</p></div>
+        <div class="stat-card lower"><span class="panel-label">EXPLORADOR</span><h2>Transparente por diseño.</h2><p>Consultá tu cuenta en el explorador público de Stellar.</p><a id="explorer" href="https://stellar.expert/explorer/testnet" target="_blank" rel="noopener noreferrer">Abrir Stellar Expert ↗</a><button id="refresh" class="refresh" disabled>↻ Actualizar saldo</button></div>
+      </div>
+    </section>
+    <p class="message" id="message" role="status" aria-live="polite">Para comenzar, instalá Freighter y seleccioná la red Testnet.</p>
+    <footer>Hecho por <strong>Joseth Gamboa Guzmán</strong> · Stellar x BAF · 2026</footer>
+  </main>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>
