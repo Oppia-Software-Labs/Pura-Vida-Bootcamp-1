@@ -191,6 +191,7 @@ export function WalletSection({
             </div>
             {showQr && (
               <MateQr
+                address={address}
                 link={buildMateLink(
                   window.location.origin + window.location.pathname,
                   address,

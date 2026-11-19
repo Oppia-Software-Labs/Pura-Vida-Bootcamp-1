@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildMateLink, parseMateLink } from '@/lib/link'
+import { buildMateLink, buildSep7PayUri, parseMateLink } from '@/lib/link'
 import { DEMO_RECIPIENT } from '@/lib/mate'
 
 const BASE = 'https://mate.example/app/'
@@ -125,5 +125,25 @@ describe('parseMateLink', () => {
     const search =
       '?' + new URLSearchParams({ para: DEMO_RECIPIENT, activo: 'DOGE' })
     expect(parseMateLink(search)?.asset).toBe('XLM')
+  })
+})
+
+describe('buildSep7PayUri', () => {
+  it('arma un pedido de pago SEP-7 para Testnet', () => {
+    const uri = buildSep7PayUri(DEMO_RECIPIENT)
+    expect(uri.startsWith('web+stellar:pay?')).toBe(true)
+    const params = new URLSearchParams(uri.slice('web+stellar:pay?'.length))
+    expect(params.get('destination')).toBe(DEMO_RECIPIENT)
+    expect(params.get('msg')).toBe('Convidame un mate')
+    expect(params.get('network_passphrase')).toBe(
+      'Test SDF Network ; September 2015',
+    )
+  })
+
+  it('codifica los espacios como %20', () => {
+    const uri = buildSep7PayUri(DEMO_RECIPIENT, 'un mate')
+    expect(uri).toContain('msg=un%20mate')
+    // El "+" de web+stellar es parte del esquema; en los valores no va.
+    expect(uri.slice('web+stellar:pay?'.length)).not.toContain('+')
   })
 })

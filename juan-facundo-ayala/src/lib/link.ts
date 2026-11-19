@@ -1,4 +1,5 @@
 import { type AssetCode, getAsset } from '@/lib/assets'
+import { NETWORK_PASSPHRASE } from '@/lib/config'
 import {
   isValidAddress,
   MEMO_MAX_BYTES,
@@ -43,4 +44,26 @@ export function parseMateLink(search: string): MateLink | null {
     amount: parseAmount(amount) === null ? '' : amount,
     message: memoBytes(message) <= MEMO_MAX_BYTES ? message : '',
   }
+}
+
+/**
+ * Arma un pedido de pago con el estándar SEP-7 (web+stellar:pay), que las
+ * wallets de Stellar saben leer: al escanearlo abren el pago con tu dirección
+ * ya cargada. Como la app corre en Testnet, el pedido incluye la frase de red
+ * (network_passphrase); sin ella la wallet asumiría la red principal.
+ */
+export function buildSep7PayUri(
+  destination: string,
+  message = 'Convidame un mate',
+): string {
+  const params: [string, string][] = [
+    ['destination', destination],
+    ['msg', message],
+    ['network_passphrase', NETWORK_PASSPHRASE],
+  ]
+  // SEP-7 pide los valores codificados como URL: espacios como %20, no como +.
+  const query = params
+    .map(([key, value]) => `${key}=${encodeURIComponent(value)}`)
+    .join('&')
+  return `web+stellar:pay?${query}`
 }
