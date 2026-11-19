@@ -66,6 +66,7 @@ async function onConnect() {
   const btn = $("connect-btn");
   btn.disabled = true;
   btn.textContent = "Conectando…";
+  showStatus("Buscando tu wallet…", "info");
   try {
     const { address, network } = await wallet.connect();
     state.address = address;
@@ -141,7 +142,7 @@ $("send-form").addEventListener("submit", async (e) => {
   const amount = Number($("amount").value);
   const memo = $("memo").value.trim();
 
-  if (!isValidAddress(dest)) return showStatus("La dirección destino no es una cuenta Stellar válida (G…).", "error");
+  if (!(await isValidAddress(dest))) return showStatus("La dirección destino no es una cuenta Stellar válida (G…).", "error");
   if (dest === state.address) return showStatus("No puedes enviarte una propina a ti misma/o.", "error");
   if (!(amount > 0)) return showStatus("Escribe un monto mayor a 0.", "error");
   // Reserva mínima de 1 XLM + comisión.
@@ -183,5 +184,14 @@ $("send-form").addEventListener("submit", async (e) => {
   }
 });
 
+// --- Errores visibles --------------------------------------------------------
+// Cualquier error no atrapado se muestra en pantalla, no solo en la consola.
+window.addEventListener("unhandledrejection", (e) => {
+  console.error(e.reason);
+  showStatus(`Error inesperado: ${e.reason?.message || e.reason}`, "error");
+});
+window.addEventListener("error", (e) => showStatus(`Error inesperado: ${e.message}`, "error"));
+
+window.__appReady = true;
 render();
 restoreSession();
