@@ -1,6 +1,9 @@
 node_modules/
+.next/
+out/
+next-env.d.ts
+*.tsbuildinfo
 dist/
-.vite/
 .claude/settings.local.json
 .env
 .env.*
