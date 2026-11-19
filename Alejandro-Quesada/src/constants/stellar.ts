@@ -6,22 +6,15 @@ export const NETWORK = "TESTNET";
 
 // DeFindex USDC vault (PaltaLabs, testnet) — invierte en la estrategia USDC de Blend.
 // Fuente: https://github.com/paltalabs/defindex/blob/main/public/testnet.contracts.json
-export const VAULT_ADDRESS =
-  "CBMVK2JK6NTOT2O4HNQAIQFJY232BHKGLIMXDVQVHIIZKDACXDFZDWHN";
+export const VAULT_ADDRESS = "CBMVK2JK6NTOT2O4HNQAIQFJY232BHKGLIMXDVQVHIIZKDACXDFZDWHN";
 
 // USDC de prueba de Blend (activo clásico + su Stellar Asset Contract)
 export const USDC_CODE = "USDC";
 export const USDC_ISSUER = "GATALTGTWIOT6BUDBCZM3Q4OQ4BO2COLOAZ7IYSKPLC2PMSOPPGF5V56";
-export const USDC_CONTRACT =
-  "CAQCFVLOBK5GIULPNZRGATJJMIZL5BSP7X5YJVMGCPTUEPFM4AVSRCJU";
+export const USDC_CONTRACT = "CAQCFVLOBK5GIULPNZRGATJJMIZL5BSP7X5YJVMGCPTUEPFM4AVSRCJU";
 export const USDC_DECIMALS = 7;
 
-// Faucet de Blend testnet (USDC, BLND, wETH, wBTC). No envía CORS, así que
-// en dev se llama a través del proxy de Vite (ver vite.config.js).
-export const BLEND_FAUCET_URL = "/blend-faucet/getAssets";
-
-// Alias para código existente: el "pool" ahora es el vault de DeFindex.
-export const POOL_ADDRESS = VAULT_ADDRESS;
-
-export const MIN_CONTRIBUTION = "1";
-export const MAX_CONTRIBUTION = "1000";
+// Faucet de Blend testnet (USDC, BLND, wETH, wBTC). No envía CORS, así que el
+// navegador lo llama a través de la ruta /api/faucet de Next.js.
+export const BLEND_FAUCET_UPSTREAM = "https://ewqw4hx7oa.execute-api.us-east-1.amazonaws.com/getAssets";
+export const BLEND_FAUCET_URL = "/api/faucet";
