@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Factura Pura Vida · factoring de facturas electrónicas en Stellar</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <div class="marca">
+      <span class="logo">₡→$</span>
+      <div>
+        <h1>Factura Pura Vida</h1>
+        <p>Tu factura electrónica hoy es efectivo. Financiada en USDC sobre Stellar.</p>
+      </div>
+    </div>
+    <div class="wallet">
+      <button id="btn-wallet">Conectar wallet</button>
+      <small id="wallet-info">Freighter · Testnet</small>
+    </div>
+  </header>
+
+  <main>
+    <section class="tarjeta" id="paso-1">
+      <h2><span>1</span> La PYME registra su factura electrónica</h2>
+      <p class="ayuda">En Costa Rica cada factura ya es un dato digital verificable en Hacienda. La clave numérica de 50 dígitos la identifica.</p>
+      <form id="form-factura">
+        <label>Clave numérica (50 dígitos)
+          <input id="clave" required maxlength="50" pattern="\d{50}" placeholder="50601..." />
+        </label>
+        <button type="button" class="secundario" id="btn-ejemplo">Usar factura de ejemplo</button>
+        <div class="fila">
+          <label>Emisor (PYME)
+            <input id="emisor" required placeholder="Panadería La Esquina S.A." />
+          </label>
+          <label>Receptor (quien paga)
+            <input id="receptor" required placeholder="Supermercados Grandes S.A." />
+          </label>
+        </div>
+        <div class="fila">
+          <label>Monto (₡)
+            <input id="monto" type="number" min="1" required placeholder="2500000" />
+          </label>
+          <label>Días para cobrar
+            <input id="dias" type="number" min="1" max="120" required value="60" />
+          </label>
+        </div>
+        <button type="submit">Verificar con Hacienda y tokenizar</button>
+      </form>
+    </section>
+
+    <section class="tarjeta" id="paso-2">
+      <h2><span>2</span> Mercado: el inversionista financia en USDC</h2>
+      <p class="ayuda">Cada factura tokenizada se puede financiar. El inversionista paga hoy el adelanto y al vencer recibe el monto completo.</p>
+      <div id="mercado"><p class="vacio">Todavía no hay facturas tokenizadas.</p></div>
+    </section>
+
+    <section class="tarjeta" id="paso-3">
+      <h2><span>3</span> Movimientos</h2>
+      <ol id="bitacora"></ol>
+    </section>
+  </main>
+
+  <footer>
+    Demo educativa · Pura Vida Bootcamp · Oswald Reid Villalobos.
+    La wallet es real (Freighter en Testnet); Hacienda, SINPE y el contrato están simulados en el navegador.
+    El contrato Soroban real está en <code>../contrato</code>.
+  </footer>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
