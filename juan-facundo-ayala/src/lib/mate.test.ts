@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   DEMO_RECIPIENT,
   horizonErrorMessage,
+  isAmountTooLarge,
   isValidAddress,
   MEMO_MAX_BYTES,
   memoBytes,
@@ -95,6 +96,18 @@ describe('parseAmount', () => {
   it('acepta hasta 7 decimales', () => {
     expect(parseAmount('0.0000001')).toBe(0.0000001)
     expect(parseAmount('1,1234567')).toBe(1.1234567)
+  })
+
+  it('acepta hasta el máximo y rechaza lo que lo pasa', () => {
+    expect(parseAmount('100000000')).toBe(100_000_000)
+    expect(parseAmount('100000000,0000001')).toBeNull()
+    expect(parseAmount('9999999999999')).toBeNull()
+  })
+
+  it('distingue un monto demasiado grande de uno mal escrito', () => {
+    expect(isAmountTooLarge('9999999999999')).toBe(true)
+    expect(isAmountTooLarge('100000000')).toBe(false)
+    expect(isAmountTooLarge('abc')).toBe(false)
   })
 
   it('rechaza 8 decimales', () => {

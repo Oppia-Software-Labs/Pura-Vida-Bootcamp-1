@@ -25,8 +25,10 @@ import {
   buildMateTx,
   DEMO_RECIPIENT,
   horizonErrorMessage,
+  isAmountTooLarge,
   isValidAddress,
   MateError,
+  MAX_AMOUNT,
   maxCost,
   MEMO_MAX_BYTES,
   memoBytes,
@@ -171,7 +173,9 @@ export function MateForm({
         : ''
   const amountError =
     amount === null
-      ? 'Ingresá un monto mayor a 0, con hasta 7 decimales (por ejemplo, 1,5).'
+      ? isAmountTooLarge(amountText)
+        ? `El máximo por envío es ${formatXlm(MAX_AMOUNT)}.`
+        : 'Ingresá un monto mayor a 0, con hasta 7 decimales (por ejemplo, 1,5).'
       : isXlm
         ? total > maxXlm + 1e-9
           ? share > 0

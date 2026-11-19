@@ -108,15 +108,31 @@ export const isValidAddress = (address: string) =>
   StrKey.isValidEd25519PublicKey(address)
 
 /**
+ * Monto máximo por envío. Con 7 decimales, hasta acá JavaScript guarda el
+ * número exacto: más arriba el monto firmado podría no ser el que se escribió.
+ */
+export const MAX_AMOUNT = 100_000_000
+
+const AMOUNT_PATTERN = /^\d+([.,]\d{1,7})?$/
+
+const toNumber = (clean: string) => Number(clean.replace(',', '.'))
+
+/**
  * Convierte lo que escribió la persona en un monto. Acepta coma o punto y
  * hasta 7 decimales, que es la precisión de Stellar. Devuelve null si el
- * texto no es un monto válido mayor a cero.
+ * texto no es un monto válido mayor a cero y hasta MAX_AMOUNT.
  */
 export function parseAmount(text: string): number | null {
   const clean = text.trim()
-  if (!/^\d+([.,]\d{1,7})?$/.test(clean)) return null
-  const amount = Number(clean.replace(',', '.'))
-  return amount > 0 ? amount : null
+  if (!AMOUNT_PATTERN.test(clean)) return null
+  const amount = toNumber(clean)
+  return amount > 0 && amount <= MAX_AMOUNT ? amount : null
+}
+
+/** El texto es un monto bien escrito, pero pasa el máximo permitido. */
+export function isAmountTooLarge(text: string): boolean {
+  const clean = text.trim()
+  return AMOUNT_PATTERN.test(clean) && toNumber(clean) > MAX_AMOUNT
 }
 
 /** Stellar trabaja con 7 decimales. */
