@@ -34,4 +34,4 @@ Si tu cuenta aún no existe en Testnet, podés activarla usando [Friendbot](http
 
 ## Stellar Raven
 
-La consigna requiere consultar [Stellar Raven](https://raven.stellar.org/) durante el desarrollo. Antes de entregar, conectá Raven en tu entorno MCP y consultale por la integración de Freighter y el uso de Horizon Testnet; registrá aquí brevemente qué sugerencia suya aplicaste. No afirmes haberlo usado si todavía no lo hiciste.
+Para consultar la documentación de Stellar durante el desarrollo, el MCP oficial [Stellar Raven](https://raven.stellar.org/) se conecta al asistente de IA con el endpoint `https://raven.stellar.org/mcp`.
