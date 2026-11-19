@@ -36,3 +36,16 @@ src/
   components/SendForm.jsx formulario para enviar XLM
   App.jsx                 pantalla principal
 ```
+
+## Cómo usé Stellar Raven
+
+Conecté [Stellar Raven](https://raven.stellar.org/) como MCP en Claude Code y lo usé como asistente:
+
+- Le pedí guías para una dApp con wallet y pagos. Recomendó la skill **`stellar-dev.dapp`** (stellar-sdk, Freighter y Stellar Wallets Kit, armado y envío de transacciones).
+- De esa skill apliqué el **checklist de UX de transacciones**:
+  - aviso si la wallet está en otra red (no Testnet),
+  - mensajes claros para "saldo insuficiente", "reserva mínima", "transacción expirada" y firma cancelada,
+  - resumen de destino y monto antes de firmar,
+  - estado de carga y botón deshabilitado mientras se firma (evita doble envío),
+  - hash y link al explorador al terminar.
+- Según la skill, las operaciones clásicas (pagos) se envían por **Horizon** y los contratos Soroban por **Stellar RPC**. Por eso esta app usa Horizon.

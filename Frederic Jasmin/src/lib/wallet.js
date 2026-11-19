@@ -19,6 +19,20 @@ export async function disconnectWallet() {
   await StellarWalletsKit.disconnect()
 }
 
+// Checklist de Stellar Raven (skill stellar-dev.dapp): avisar si la wallet está en otra red.
+// Algunas wallets no informan la red; en ese caso no se bloquea el envío.
+export async function assertTestnet() {
+  let passphrase
+  try {
+    ;({ networkPassphrase: passphrase } = await StellarWalletsKit.getNetwork())
+  } catch {
+    return
+  }
+  if (passphrase && passphrase !== Networks.TESTNET) {
+    throw new Error('Tu wallet está en otra red. Cámbiala a Testnet y vuelve a intentar.')
+  }
+}
+
 // Pide a la wallet que firme la transacción (el usuario la aprueba en su extensión).
 export async function signXdr(xdr, address) {
   const { signedTxXdr } = await StellarWalletsKit.signTransaction(xdr, {

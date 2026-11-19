@@ -75,7 +75,23 @@ export async function sendXlm({ from, to, amount, memo, sign }) {
     const result = await server.submitTransaction(signed)
     return result.hash
   } catch (err) {
-    const codes = err?.response?.data?.extras?.result_codes
-    throw new Error(codes ? `Horizon rechazó la transacción: ${JSON.stringify(codes)}` : err.message)
+    throw new Error(friendlyError(err?.response?.data?.extras?.result_codes) || err.message)
   }
+}
+
+// Mensajes claros para los errores comunes que lista el checklist de Stellar Raven.
+const ERRORS = {
+  op_underfunded: 'No tienes saldo suficiente para ese monto (recuerda que la cuenta debe guardar una reserva mínima de XLM).',
+  tx_insufficient_balance: 'No tienes saldo suficiente para pagar el monto y la comisión.',
+  op_low_reserve: 'El monto no alcanza para la reserva mínima de la cuenta destino.',
+  tx_bad_seq: 'La transacción quedó desactualizada. Intenta de nuevo.',
+  tx_too_late: 'La transacción expiró antes de enviarse. Intenta de nuevo.',
+  op_no_destination: 'La cuenta destino no existe.',
+}
+
+function friendlyError(codes) {
+  if (!codes) return null
+  const all = [codes.transaction, ...(codes.operations || [])]
+  const known = all.find((c) => ERRORS[c])
+  return known ? ERRORS[known] : `Horizon rechazó la transacción (${all.filter(Boolean).join(', ')}).`
 }
