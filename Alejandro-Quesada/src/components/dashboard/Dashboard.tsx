@@ -1,32 +1,57 @@
-import { useState } from "react";
-import { Navigate, useNavigate } from "react-router-dom";
+"use client";
+
+import { useEffect, useState, type FormEvent, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
 } from "recharts";
-import { useWalletContext } from "../contexts/WalletContext.jsx";
-import { useStellarAccount } from "../hooks/useStellarAccount.js";
-import { sendContribution, withdrawFromVault, getTestUsdc } from "../lib/stellar.js";
-import { VAULT_ADDRESS } from "../constants/stellar.js";
+import { useWalletContext } from "@/contexts/WalletContext";
+import { useStellarAccount } from "@/hooks/useStellarAccount";
+import {
+  depositToVault,
+  withdrawFromVault,
+  getTestUsdc,
+  type AccountInfo,
+  type PaymentKind,
+  type PaymentRecord,
+  type SignXDR,
+  type VaultInfo,
+  type VaultPosition,
+} from "@/lib/stellar";
+import { VAULT_ADDRESS } from "@/constants/stellar";
+
+type Tab = "resumen" | "contribuir" | "historial";
+type Modo = "depositar" | "retirar";
+
+type TxOutcome =
+  | { hash: string; title: string; detail: string; error?: undefined }
+  | { error: string; hash?: undefined };
 
 // ─── helpers ─────────────────────────────────────────────────────────────────
 
-const num = (n) => parseFloat(n ?? "0") || 0;
-const fmt = (n, d = 2) =>
+const num = (n: string | number | null | undefined): number => parseFloat(String(n ?? "0")) || 0;
+const fmt = (n: string | number | null | undefined, d = 2): string =>
   num(n).toLocaleString("es-CR", { minimumFractionDigits: d, maximumFractionDigits: d });
-const trunc = (str, a = 8, b = 6) => (str ? `${str.slice(0, a)}…${str.slice(-b)}` : "—");
-const explorer = (kind, id) => `https://stellar.expert/explorer/testnet/${kind}/${id}`;
+const trunc = (str: string | null | undefined, a = 8, b = 6): string => (str ? `${str.slice(0, a)}…${str.slice(-b)}` : "—");
+const explorer = (kind: "tx" | "account" | "contract", id: string): string => `https://stellar.expert/explorer/testnet/${kind}/${id}`;
 
-function errorMessage(err) {
-  const codes = err?.response?.data?.extras?.result_codes;
+interface HorizonError {
+  response?: { data?: { extras?: { result_codes?: { transaction?: string; operations?: string[] } } } };
+  message?: string;
+}
+
+function errorMessage(err: unknown): string {
+  const e = err as HorizonError;
+  const codes = e?.response?.data?.extras?.result_codes;
   if (codes) return [codes.transaction, ...(codes.operations ?? [])].filter(Boolean).join(" · ");
-  const msg = err?.message ?? "La transacción falló";
+  const msg = e?.message ?? String(err ?? "La transacción falló");
   if (/reject|declin|cancel/i.test(msg)) return "Cancelaste la firma en tu wallet.";
   return msg;
 }
 
 // ─── icons ───────────────────────────────────────────────────────────────────
 
-const Svg = ({ d, className = "w-4 h-4", sw = 1.8 }) => (
+const Svg = ({ d, className = "w-4 h-4", sw = 1.8 }: { d: string; className?: string; sw?: number }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={sw} d={d} />
   </svg>
@@ -49,13 +74,21 @@ const I = {
 
 // ─── sidebar ─────────────────────────────────────────────────────────────────
 
-const NAV = [
+const NAV: { id: Tab; label: string; desc: string; icon: string }[] = [
   { id: "resumen", label: "Mi pensión", desc: "Tu saldo y el vault", icon: I.home },
   { id: "contribuir", label: "Depositar / Retirar", desc: "Mueve tus USDC", icon: I.swap },
   { id: "historial", label: "Historial", desc: "Todas tus operaciones", icon: I.list },
 ];
 
-function Sidebar({ activeTab, setActiveTab, onDisconnect, truncatedKey, walletId }) {
+interface SidebarProps {
+  activeTab: Tab;
+  setActiveTab: (tab: Tab) => void;
+  onDisconnect: () => void;
+  truncatedKey: string | null;
+  walletId: string | null;
+}
+
+function Sidebar({ activeTab, setActiveTab, onDisconnect, truncatedKey, walletId }: SidebarProps) {
   return (
     <aside className="w-60 flex-shrink-0 bg-[#0a0a0a] border-r border-border flex flex-col">
       <div className="h-14 flex items-center gap-2.5 px-4 border-b border-border">
@@ -110,11 +143,11 @@ function Sidebar({ activeTab, setActiveTab, onDisconnect, truncatedKey, walletId
 
 // ─── shared bits ─────────────────────────────────────────────────────────────
 
-function Card({ children, className = "" }) {
+function Card({ children, className = "" }: { children: ReactNode; className?: string }) {
   return <div className={`bg-[#111] border border-border rounded-2xl ${className}`}>{children}</div>;
 }
 
-function Hint({ children }) {
+function Hint({ children }: { children: ReactNode }) {
   return (
     <p className="flex gap-1.5 text-muted/80 text-[11px] leading-relaxed">
       <Svg d={I.info} className="w-3.5 h-3.5 flex-shrink-0 mt-px" />
@@ -123,11 +156,11 @@ function Hint({ children }) {
   );
 }
 
-function Skeleton({ loading, children }) {
+function Skeleton({ loading, children }: { loading: boolean; children: ReactNode }) {
   return loading ? <span className="inline-block w-20 h-[1em] rounded bg-white/5 animate-pulse align-middle" /> : children;
 }
 
-function TxResult({ result, onClose }) {
+function TxResult({ result, onClose }: { result: TxOutcome | null; onClose: () => void }) {
   if (!result) return null;
   if (result.hash) {
     return (
@@ -160,7 +193,18 @@ function TxResult({ result, onClose }) {
 
 // ─── onboarding ──────────────────────────────────────────────────────────────
 
-function PrimerosPasos({ accountNotFound, account, position, fundingLoading, faucetLoading, onFund, onFaucet, onGoDeposit }) {
+interface PrimerosPasosProps {
+  accountNotFound: boolean;
+  account: AccountInfo | null;
+  position: VaultPosition;
+  fundingLoading: boolean;
+  faucetLoading: boolean;
+  onFund: () => void;
+  onFaucet: () => void;
+  onGoDeposit: () => void;
+}
+
+function PrimerosPasos({ accountNotFound, account, position, fundingLoading, faucetLoading, onFund, onFaucet, onGoDeposit }: PrimerosPasosProps) {
   const step1 = !accountNotFound && !!account;
   const step2 = num(account?.usdcBalance) > 0 || num(position.usdc) > 0;
   const step3 = num(position.usdc) > 0;
@@ -231,7 +275,7 @@ function PrimerosPasos({ accountNotFound, account, position, fundingLoading, fau
 
 // ─── vault hero ──────────────────────────────────────────────────────────────
 
-function FlowStep({ icon, title, sub, tone }) {
+function FlowStep({ icon, title, sub, tone }: { icon: string; title: string; sub: string; tone: string }) {
   return (
     <div className="flex-1 min-w-0 flex items-center gap-3 bg-[#0d0d0d] border border-border rounded-xl p-3">
       <div className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${tone}`}>
@@ -245,7 +289,15 @@ function FlowStep({ icon, title, sub, tone }) {
   );
 }
 
-function VaultHero({ position, vault, loading, onDeposit, onWithdraw }) {
+interface VaultHeroProps {
+  position: VaultPosition;
+  vault: VaultInfo;
+  loading: boolean;
+  onDeposit: () => void;
+  onWithdraw: () => void;
+}
+
+function VaultHero({ position, vault, loading, onDeposit, onWithdraw }: VaultHeroProps) {
   const share = num(vault.totalShares) > 0 ? (num(position.shares) / num(vault.totalShares)) * 100 : 0;
 
   return (
@@ -297,7 +349,7 @@ function VaultHero({ position, vault, loading, onDeposit, onWithdraw }) {
 
 // ─── vault details ───────────────────────────────────────────────────────────
 
-function VaultDetalles({ vault, loading }) {
+function VaultDetalles({ vault, loading }: { vault: VaultInfo; loading: boolean }) {
   const tvl = num(vault.tvl);
   const investedPct = tvl > 0 ? (num(vault.invested) / tvl) * 100 : 0;
 
@@ -357,7 +409,7 @@ function VaultDetalles({ vault, loading }) {
 
 // ─── tab: resumen ────────────────────────────────────────────────────────────
 
-function ChartTooltip({ active, payload, label }) {
+function ChartTooltip({ active, payload, label }: { active?: boolean; payload?: { value: number }[]; label?: string | number }) {
   if (!active || !payload?.length) return null;
   return (
     <div className="bg-[#1a1a1a] border border-border rounded-xl px-3 py-2 text-xs shadow-xl">
@@ -367,7 +419,7 @@ function ChartTooltip({ active, payload, label }) {
   );
 }
 
-const KIND = {
+const KIND: Record<PaymentKind, { label: string; dot: string; sign: string }> = {
   deposit: { label: "Depósito al vault", dot: "bg-accent", sign: "−" },
   withdraw: { label: "Retiro del vault", dot: "bg-orange-400", sign: "+" },
   received: { label: "Recibido", dot: "bg-green-400", sign: "+" },
@@ -376,7 +428,18 @@ const KIND = {
   contract: { label: "Llamada a contrato", dot: "bg-muted", sign: "" },
 };
 
-function TabResumen({ account, payments, vault, position, loading, onboarding, onDeposit, onWithdraw }) {
+interface TabResumenProps {
+  account: AccountInfo | null;
+  payments: PaymentRecord[];
+  vault: VaultInfo;
+  position: VaultPosition;
+  loading: boolean;
+  onboarding: ReactNode;
+  onDeposit: () => void;
+  onWithdraw: () => void;
+}
+
+function TabResumen({ account, payments, vault, position, loading, onboarding, onDeposit, onWithdraw }: TabResumenProps) {
   const depositos = payments.filter((p) => p.kind === "deposit");
   const retiros = payments.filter((p) => p.kind === "withdraw");
   const totalDepositado = depositos.reduce((s, p) => s + num(p.amount), 0);
@@ -472,7 +535,7 @@ function TabResumen({ account, payments, vault, position, loading, onboarding, o
   );
 }
 
-function ActivityRow({ p }) {
+function ActivityRow({ p }: { p: PaymentRecord }) {
   const k = KIND[p.kind] ?? KIND.contract;
   return (
     <a href={explorer("tx", p.transactionHash)} target="_blank" rel="noreferrer"
@@ -499,10 +562,24 @@ function ActivityRow({ p }) {
 
 const PRESETS = [5, 10, 25, 50, 100];
 
-function TabContribuir({ publicKey, account, position, vault, accountNotFound, signXDR, onRefresh, modo, setModo, onFaucet, faucetLoading }) {
+interface TabContribuirProps {
+  publicKey: string;
+  account: AccountInfo | null;
+  position: VaultPosition;
+  vault: VaultInfo;
+  accountNotFound: boolean;
+  signXDR: SignXDR;
+  onRefresh: () => void;
+  modo: Modo;
+  setModo: (m: Modo) => void;
+  onFaucet: () => void;
+  faucetLoading: boolean;
+}
+
+function TabContribuir({ publicKey, account, position, vault, accountNotFound, signXDR, onRefresh, modo, setModo, onFaucet, faucetLoading }: TabContribuirProps) {
   const [monto, setMonto] = useState("10");
   const [enviando, setEnviando] = useState(false);
-  const [result, setResult] = useState(null);
+  const [result, setResult] = useState<TxOutcome | null>(null);
 
   const depositar = modo === "depositar";
   const usdcWallet = num(account?.usdcBalance);
@@ -511,7 +588,7 @@ function TabContribuir({ publicKey, account, position, vault, accountNotFound, s
   const montoNum = num(monto);
   const price = num(vault.sharePrice) || 1;
 
-  let problema = null;
+  let problema: string | null = null;
   if (accountNotFound) problema = "Primero activa tu cuenta desde “Mi pensión”.";
   else if (!(montoNum > 0)) problema = "Escribe un monto mayor a 0.";
   else if (montoNum > maximo + 1e-7)
@@ -522,19 +599,19 @@ function TabContribuir({ publicKey, account, position, vault, accountNotFound, s
   const pensionDespues = depositar ? enVault + montoNum : Math.max(enVault - montoNum, 0);
   const walletDespues = depositar ? Math.max(usdcWallet - montoNum, 0) : usdcWallet + montoNum;
 
-  function cambiarModo(m) {
+  function cambiarModo(m: Modo) {
     setModo(m);
     setResult(null);
   }
 
-  async function handleSubmit(e) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (problema) return;
     setResult(null);
     setEnviando(true);
     try {
       const r = depositar
-        ? await sendContribution(publicKey, monto, signXDR)
+        ? await depositToVault(publicKey, monto, signXDR)
         : await withdrawFromVault(publicKey, monto, position, signXDR);
       setResult({
         hash: r.hash,
@@ -556,7 +633,7 @@ function TabContribuir({ publicKey, account, position, vault, accountNotFound, s
       <div className="space-y-5">
         {/* modo */}
         <div className="grid grid-cols-2 gap-1 bg-[#111] border border-border rounded-xl p-1">
-          {[["depositar", "Depositar", I.arrowDown], ["retirar", "Retirar", I.arrowUp]].map(([id, label, icon]) => (
+          {([["depositar", "Depositar", I.arrowDown], ["retirar", "Retirar", I.arrowUp]] as const).map(([id, label, icon]) => (
             <button key={id} type="button" onClick={() => cambiarModo(id)}
               className={`flex items-center justify-center gap-1.5 py-2.5 rounded-lg text-sm font-medium transition-all ${
                 modo === id ? "bg-accent text-white" : "text-muted hover:text-white"
@@ -697,7 +774,7 @@ function TabContribuir({ publicKey, account, position, vault, accountNotFound, s
 
 // ─── tab: historial ──────────────────────────────────────────────────────────
 
-function TabHistorial({ payments, loading, publicKey }) {
+function TabHistorial({ payments, loading, publicKey }: { payments: PaymentRecord[]; loading: boolean; publicKey: string }) {
   return (
     <div className="space-y-5 max-w-6xl">
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -769,20 +846,20 @@ function TabHistorial({ payments, loading, publicKey }) {
 
 // ─── main page ───────────────────────────────────────────────────────────────
 
-const TITLES = {
+const TITLES: Record<Tab, [string, string]> = {
   resumen: ["Mi pensión", "Cuánto tienes ahorrado y cómo está el vault"],
   contribuir: ["Depositar / Retirar", "Mueve USDC entre tu wallet y el vault"],
   historial: ["Historial", "Todas tus operaciones on-chain"],
 };
 
-export default function AppPage() {
-  const { publicKey, truncatedKey, walletId, disconnect, signXDR, isConnected } = useWalletContext();
-  const navigate = useNavigate();
+export default function Dashboard() {
+  const { publicKey, truncatedKey, walletId, disconnect, signXDR, isConnected, ready } = useWalletContext();
+  const router = useRouter();
 
-  const [activeTab, setActiveTab] = useState("resumen");
-  const [modo, setModo] = useState("depositar");
+  const [activeTab, setActiveTab] = useState<Tab>("resumen");
+  const [modo, setModo] = useState<Modo>("depositar");
   const [faucetLoading, setFaucetLoading] = useState(false);
-  const [faucetResult, setFaucetResult] = useState(null);
+  const [faucetResult, setFaucetResult] = useState<TxOutcome | null>(null);
 
   const {
     account, payments, vault, position, loading,
@@ -790,14 +867,26 @@ export default function AppPage() {
     refresh, fundAccount,
   } = useStellarAccount(publicKey);
 
-  if (!isConnected) return <Navigate to="/" replace />;
+  // Not connected (once the saved session has been read) → back to the landing
+  useEffect(() => {
+    if (ready && !isConnected) router.replace("/");
+  }, [ready, isConnected, router]);
+
+  if (!ready || !isConnected || !publicKey) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-[#080808]">
+        <div className="w-5 h-5 border-2 border-accent border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+  const pk = publicKey;
 
   function handleDisconnect() {
     disconnect();
-    navigate("/");
+    router.replace("/");
   }
 
-  function irA(tab, m) {
+  function irA(tab: Tab, m?: Modo) {
     if (m) setModo(m);
     setActiveTab(tab);
   }
@@ -806,7 +895,7 @@ export default function AppPage() {
     setFaucetResult(null);
     setFaucetLoading(true);
     try {
-      const r = await getTestUsdc(publicKey, signXDR);
+      const r = await getTestUsdc(pk, signXDR);
       setFaucetResult({ hash: r.hash, title: "Recibiste 1000 USDC de prueba", detail: "Ya puedes depositarlos en el vault." });
       refresh();
     } catch (err) {
