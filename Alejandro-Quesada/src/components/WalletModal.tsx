@@ -1,6 +1,18 @@
-import { useEffect } from "react";
+"use client";
 
-const WALLETS = [
+import { useEffect } from "react";
+import type { ISupportedWallet } from "@/lib/walletKit";
+
+interface WalletOption {
+  id: string;
+  name: string;
+  desc: string;
+  icon: string;
+  installUrl: string;
+  needsExtension: boolean;
+}
+
+const WALLETS: WalletOption[] = [
   {
     id: "varial",
     name: "Freighter",
@@ -35,7 +47,14 @@ const WALLETS = [
   },
 ];
 
-function WalletRow({ wallet, available, onClick, cargando }) {
+interface WalletRowProps {
+  wallet: WalletOption;
+  available: boolean | undefined;
+  onClick: (walletId: string) => void;
+  cargando: boolean;
+}
+
+function WalletRow({ wallet, available, onClick, cargando }: WalletRowProps) {
   const unavailable = wallet.needsExtension && available !== undefined && !available;
 
   return (
@@ -52,7 +71,7 @@ function WalletRow({ wallet, available, onClick, cargando }) {
         src={wallet.icon}
         alt={wallet.name}
         className="w-9 h-9 rounded-xl flex-shrink-0 object-contain bg-white/5 p-0.5"
-        onError={(e) => { e.target.style.display = "none"; }}
+        onError={(e) => { e.currentTarget.style.display = "none"; }}
       />
 
       <div className="ml-3 flex-1 min-w-0">
@@ -95,14 +114,24 @@ function WalletRow({ wallet, available, onClick, cargando }) {
   );
 }
 
-export default function WalletModal({ onConnect, onClose, isConnecting, error, availableWallets = [] }) {
+interface WalletModalProps {
+  onConnect: (walletId: string) => void;
+  onClose: () => void;
+  isConnecting: string | null;
+  error: string | null;
+  availableWallets?: ISupportedWallet[];
+}
+
+export default function WalletModal({ onConnect, onClose, isConnecting, error, availableWallets = [] }: WalletModalProps) {
   useEffect(() => {
-    const handleKey = (e) => e.key === "Escape" && onClose();
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
   }, [onClose]);
 
-  function isAvailable(walletId) {
+  function isAvailable(walletId: string): boolean | undefined {
     if (availableWallets.length === 0) return undefined;
     return availableWallets.find((w) => w.id === walletId)?.isAvailable;
   }
