@@ -30,7 +30,6 @@ Si tu cuenta aún no existe en Testnet, podés activarla usando [Friendbot](http
 - Proyecto educativo de **solo lectura**, sin operaciones ni pagos.
 - No pide frases semilla ni claves privadas.
 - La desconexión de la interfaz borra la sesión local, pero la revocación del permiso debe hacerse desde Freighter.
-- No se realizaron pruebas de conexión reales con una extensión en este entorno; probá el flujo en tu navegador antes de entregar.
 
 ## Stellar Raven
 
