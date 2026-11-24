@@ -1,0 +1,10 @@
+**/.venv
+**/node_modules
+**/__pycache__
+**/*.egg-info
+app
+vision/games
+vision/notebooks
+vision/data
+vision/assets
+graphify-out

@@ -1,0 +1,12 @@
+{"t": 0.0, "type": "session_start", "white": "Ana", "black": "Beto"}
+{"t": 1.2, "type": "fire", "path": "greedy", "san": "e4"}
+{"t": 2.0, "type": "confirm", "san": "e4"}
+{"t": 3.1, "type": "fire", "path": "greedy", "san": "e6"}
+{"t": 3.6, "type": "undo", "san": "e6"}
+{"t": 4.0, "type": "fire", "path": "greedy", "san": "e5"}
+{"t": 5.2, "type": "fire", "path": "greedy", "san": "Qh5"}
+{"t": 6.0, "type": "rescue", "confirmed": "Qh5", "pushed": "Nc6"}
+{"t": 7.1, "type": "fire", "path": "greedy", "san": "Bc4"}
+{"t": 8.3, "type": "fire", "path": "two-move", "san": "Nf6"}
+{"t": 9.4, "type": "fire", "path": "greedy", "san": "Qxf7#"}
+{"t": 9.9, "type": "session_end", "moves": 7, "game_over": true, "reason": "game_over"}
