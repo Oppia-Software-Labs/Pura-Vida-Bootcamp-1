@@ -1,0 +1,110 @@
+.lab {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(15, 25, 55, 0.55);
+  border: 1px solid rgba(140, 180, 255, 0.15);
+}
+
+.meter {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 5px;
+  padding-bottom: 8px;
+}
+
+.node {
+  aspect-ratio: 1;
+  min-width: 0;
+  padding: 0;
+  border-radius: 50%;
+  border: 1px solid rgba(140, 180, 255, 0.3);
+  background: #1c2440;
+  cursor: pointer;
+  transition: background 0.25s, box-shadow 0.25s, transform 0.15s;
+}
+
+.node:hover {
+  transform: scale(1.12);
+}
+
+.node.on {
+  background: #bfd8ff;
+  box-shadow: 0 0 8px rgba(191, 216, 255, 0.8);
+}
+
+.node.selected {
+  outline: 2px solid #b07cff;
+  outline-offset: 2px;
+}
+
+.threshold {
+  position: absolute;
+  bottom: 0;
+  width: 2px;
+  height: 6px;
+  margin-left: -1px;
+  background: #ffc857;
+}
+
+.counts {
+  margin: 0;
+  font-size: 12.5px;
+  color: #a9b8e6;
+}
+
+.counts b {
+  color: #fff;
+  font-size: 14px;
+}
+
+.selectedInfo {
+  margin: 0;
+  font-size: 13px;
+  color: #cfdaff;
+}
+
+.selectedInfo b {
+  color: #fff;
+}
+
+.verdict {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border-left: 3px solid currentColor;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.verdict b {
+  color: #fff;
+}
+
+.ok {
+  color: #ffe3a1;
+}
+
+.halt {
+  color: #ffb3bb;
+}
+
+.hint {
+  margin: 0;
+  font-size: 12px;
+  color: #8fa8ff;
+}
+
+.link {
+  font: inherit;
+  padding: 0;
+  color: #b07cff;
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+}

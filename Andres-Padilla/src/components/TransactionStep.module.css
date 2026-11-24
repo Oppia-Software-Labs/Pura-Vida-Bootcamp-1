@@ -1,0 +1,84 @@
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  min-width: 0;
+}
+
+.field span {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8fa8ff;
+}
+
+.input {
+  font: inherit;
+  font-size: 13px;
+  width: 100%;
+  padding: 8px 10px;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(140, 180, 255, 0.3);
+  border-radius: 8px;
+}
+
+.input:focus {
+  outline: 2px solid rgba(176, 124, 255, 0.6);
+  outline-offset: 1px;
+}
+
+.input:disabled {
+  opacity: 0.6;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 8px;
+  width: 100%;
+}
+
+.note {
+  font-size: 12px;
+  color: #9fd8ff;
+}
+
+.steps {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 12.5px;
+  line-height: 1.8;
+  color: rgba(207, 218, 255, 0.45);
+}
+
+.steps .now {
+  color: #fff;
+  font-weight: 600;
+}
+
+.steps .now::marker {
+  color: #b07cff;
+}
+
+.steps .done {
+  color: #ffe3a1;
+}
+
+.success {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #b6f0c4;
+}
+
+.success a {
+  color: inherit;
+}
+
+@media (max-width: 640px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}
