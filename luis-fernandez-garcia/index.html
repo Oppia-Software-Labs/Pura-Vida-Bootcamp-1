@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StellarTickets - Entradas para eventos</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+  <header>
+    <h1>🎟️ StellarTickets</h1>
+    <section id="wallet">
+      <span id="wallet-info">Wallet no conectada</span>
+      <button id="connect-btn">Conectar wallet</button>
+    </section>
+  </header>
+  <main>
+    <p class="sub">Compra entradas para recitales y eventos con XLM en Stellar Testnet.</p>
+    <div id="status"></div>
+    <div id="events" class="grid"></div>
+    <h2>Mis entradas</h2>
+    <ul id="my-tickets"></ul>
+  </main>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
