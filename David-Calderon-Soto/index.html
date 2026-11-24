@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bitácora Stellar · David Calderon Soto</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,680&family=Space+Grotesk:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <!-- StellarSdk CDN for client-side keypair generation and horizon helper -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/stellar-sdk/12.3.0/stellar-sdk.min.js"></script>
+  <!-- Albedo CDN for instant web wallet connection -->
+  <script src="https://unpkg.com/@albedo-link/intent/lib/albedo.intent.js"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Masthead -->
+    <header class="masthead">
+      <div class="masthead-mark">
+        <svg class="mark-glyph" width="26" height="26" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 1.5l2.4 7.3 7.6 1.2-5.6 5.2 1.5 7.6L12 19.1l-6.9 3.7 1.5-7.6-5.6-5.2 7.6-1.2z"/></svg>
+        <div>
+          <h1>Bitácora Stellar</h1>
+          <p class="masthead-sub">
+            David Calderón Soto, Pura Vida Bootcamp
+            <svg class="flag-icon" width="20" height="14" viewBox="0 0 30 21" role="img" aria-label="Costa Rica">
+              <rect width="30" height="21" fill="#002b7f"/>
+              <rect y="3.5" width="30" height="14" fill="#fff"/>
+              <rect y="7" width="30" height="7" fill="#ce1126"/>
+            </svg>
+          </p>
+        </div>
+      </div>
+      <div class="network-indicator">
+        <span class="indicator-dot" aria-hidden="true"></span>
+        <span id="networkLabel">Testnet activa</span>
+      </div>
+    </header>
+
+    <!-- Notification Alert -->
+    <div id="alertBox" class="alert-box" role="status">
+      <span id="alertMsg"></span>
+    </div>
+
+    <!-- Hero: Saldo -->
+    <section class="ledger-hero">
+      <div class="hero-balance">
+        <span class="hero-label">Saldo</span>
+        <div class="hero-figure">
+          <span id="mainBalance" class="hero-amount">0.00</span>
+          <span class="hero-unit">XLM</span>
+        </div>
+        <p id="accountStatusText" class="hero-status">
+          Esperando conexión de wallet o consulta de cuenta.
+        </p>
+      </div>
+      <dl class="hero-meta">
+        <div class="hero-meta-row">
+          <dt>Red</dt>
+          <dd>Horizon Testnet</dd>
+        </div>
+        <div class="hero-meta-row">
+          <dt>Secuencia de cuenta</dt>
+          <dd id="accountSequence">—</dd>
+        </div>
+        <div class="hero-meta-row">
+          <dt>Sub-entradas</dt>
+          <dd id="accountSubentries">—</dd>
+        </div>
+      </dl>
+    </section>
+
+    <main class="panel-grid">
+      <!-- Panel: Conexión de Wallet -->
+      <section class="panel panel-wallet">
+        <h2 class="panel-title">Conectar billetera</h2>
+        <p class="panel-hint">
+          Conecta Freighter o Albedo para operar tu cuenta en Testnet, o solo consulta una clave pública ajena.
+        </p>
+
+        <div class="wallet-buttons">
+          <button id="btnFreighter" class="btn btn-primary" type="button">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+            Conectar con Freighter
+          </button>
+          <button id="btnAlbedo" class="btn btn-secondary" type="button">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m4.93 4.93 4.24 4.24M14.83 9.17l4.24-4.24M14.83 14.83l4.24 4.24M9.17 14.83l-4.24 4.24"/></svg>
+            Conectar con Albedo
+          </button>
+          <button id="btnGenerateKeypair" class="btn btn-outline" type="button">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-2-2l2 2M3 13l2-2 5 5-2 2-5-5zM14 4l6 6-4 4-6-6 4-4z"/></svg>
+            Generar claves de prueba
+          </button>
+        </div>
+
+        <div class="lookup-row">
+          <label for="manualInput">Inspeccionar cualquier clave pública de Stellar (Testnet)</label>
+          <div class="lookup-box">
+            <input type="text" id="manualInput" class="input-stellar" placeholder="G... (56 caracteres)">
+            <button id="btnLookup" class="btn btn-secondary btn-sm" type="button">Buscar</button>
+          </div>
+        </div>
+
+        <div id="accountArea" class="account-strip" hidden>
+          <span id="walletProviderBadge" class="provider-chip">Freighter</span>
+          <code id="accountAddressDisplay" class="account-address">G...</code>
+        </div>
+      </section>
+
+      <!-- Panel: Acciones Rápidas -->
+      <section class="panel panel-actions">
+        <h2 class="panel-title">Acciones en Testnet</h2>
+        <ul class="ledger-list">
+          <li>
+            <button id="btnFriendbot" class="ledger-row" type="button">
+              <span class="row-marker" aria-hidden="true">›</span>
+              <span class="row-body">
+                <strong>Recargar con Friendbot</strong>
+                <span class="row-desc">+10,000 XLM de prueba automáticos</span>
+              </span>
+              <svg class="row-icon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8z"/></svg>
+            </button>
+          </li>
+          <li>
+            <a id="linkExplorer" class="ledger-row" href="https://stellar.expert/explorer/testnet" target="_blank" rel="noopener noreferrer">
+              <span class="row-marker" aria-hidden="true">›</span>
+              <span class="row-body">
+                <strong>Ver en Stellar Expert</strong>
+                <span class="row-desc">Explorador de bloques en Testnet</span>
+              </span>
+              <svg class="row-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7 17 17 7M9 7h8v8"/></svg>
+            </a>
+          </li>
+          <li>
+            <button id="btnRefresh" class="ledger-row" type="button">
+              <span class="row-marker" aria-hidden="true">›</span>
+              <span class="row-body">
+                <strong>Actualizar saldo</strong>
+                <span class="row-desc">Sincronizar con Horizon</span>
+              </span>
+              <svg class="row-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12a9 9 0 1 1-2.64-6.36M21 3v6h-6"/></svg>
+            </button>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Panel: Transacciones Recientes -->
+      <section class="panel panel-history">
+        <h2 class="panel-title">Bitácora de transacciones</h2>
+        <div id="txListContainer" class="tx-log">
+          <p class="tx-empty">Conecta tu cuenta para ver el historial de transacciones en Testnet.</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer>
+      <p>Entregable 1, <strong>David Calderon Soto</strong>, desarrollado con asistencia de <a href="https://raven.stellar.org/" target="_blank" rel="noopener">Stellar Raven</a></p>
+      <p class="footer-fine">Pura Vida Bootcamp 2026, Stellar Development Foundation</p>
+    </footer>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
