@@ -1,0 +1,16 @@
+# Dependencies and build outputs
+node_modules/
+dist/
+dist-ssr/
+*.log
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# OS and Editor files
+.DS_Store
+.idea/
+.vscode/
+.vercel
