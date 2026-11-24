@@ -1,0 +1,127 @@
+:root {
+  --fondo: #0f1720;
+  --tarjeta: #17212d;
+  --borde: #263445;
+  --texto: #e6edf3;
+  --suave: #8b9bb0;
+  --verde: #2fbf71;
+  --azul: #3b82f6;
+  --ambar: #f5a524;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: var(--fondo);
+  color: var(--texto);
+  line-height: 1.5;
+}
+
+header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 1.25rem 2rem;
+  border-bottom: 1px solid var(--borde);
+}
+
+.marca { display: flex; align-items: center; gap: .9rem; }
+.logo {
+  background: var(--verde);
+  color: #06210f;
+  font-weight: 800;
+  border-radius: 10px;
+  padding: .5rem .7rem;
+}
+h1 { margin: 0; font-size: 1.35rem; }
+header p { margin: 0; color: var(--suave); font-size: .9rem; }
+
+.wallet { text-align: right; }
+.wallet small { display: block; color: var(--suave); margin-top: .3rem; word-break: break-all; }
+
+main {
+  max-width: 920px;
+  margin: 1.5rem auto;
+  padding: 0 1rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.tarjeta {
+  background: var(--tarjeta);
+  border: 1px solid var(--borde);
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+}
+
+h2 { margin: 0 0 .25rem; font-size: 1.1rem; display: flex; align-items: center; gap: .6rem; }
+h2 span {
+  background: var(--azul);
+  border-radius: 50%;
+  width: 1.7rem;
+  height: 1.7rem;
+  display: inline-grid;
+  place-items: center;
+  font-size: .9rem;
+}
+.ayuda { color: var(--suave); margin-top: 0; font-size: .92rem; }
+
+form { display: grid; gap: .8rem; }
+.fila { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; }
+label { display: grid; gap: .3rem; font-size: .88rem; color: var(--suave); }
+input {
+  background: var(--fondo);
+  border: 1px solid var(--borde);
+  color: var(--texto);
+  border-radius: 8px;
+  padding: .6rem .7rem;
+  font-size: .95rem;
+}
+
+button {
+  background: var(--verde);
+  color: #06210f;
+  border: 0;
+  border-radius: 8px;
+  padding: .65rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+button:disabled { opacity: .45; cursor: not-allowed; }
+button.secundario { background: transparent; color: var(--azul); border: 1px solid var(--azul); justify-self: start; }
+
+.factura {
+  border: 1px solid var(--borde);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: .8rem;
+  display: grid;
+  gap: .4rem;
+}
+.factura .top { display: flex; justify-content: space-between; gap: .5rem; flex-wrap: wrap; }
+.factura .datos { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: .4rem; font-size: .88rem; }
+.factura .datos b { display: block; color: var(--texto); font-size: 1rem; }
+.factura .datos div { color: var(--suave); }
+.factura .acciones { display: flex; gap: .5rem; flex-wrap: wrap; margin-top: .4rem; }
+
+.estado { font-size: .78rem; font-weight: 700; border-radius: 999px; padding: .15rem .6rem; }
+.estado.Registrada { background: #3b82f633; color: #93c5fd; }
+.estado.Financiada { background: #f5a52433; color: #fcd34d; }
+.estado.Pagada { background: #2fbf7133; color: #86efac; }
+
+code { font-size: .82rem; color: var(--suave); word-break: break-all; }
+.vacio { color: var(--suave); font-style: italic; }
+
+#bitacora { margin: 0; padding-left: 1.2rem; display: grid; gap: .35rem; font-size: .92rem; }
+#bitacora li span { color: var(--suave); }
+
+footer { text-align: center; color: var(--suave); font-size: .8rem; padding: 1.5rem 1rem 2.5rem; }
+
+@media (max-width: 600px) {
+  .fila { grid-template-columns: 1fr; }
+  header { padding: 1rem; }
+}
