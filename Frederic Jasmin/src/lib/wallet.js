@@ -1,0 +1,49 @@
+import { StellarWalletsKit } from '@creit.tech/stellar-wallets-kit/sdk'
+import { defaultModules } from '@creit.tech/stellar-wallets-kit/modules/utils'
+import { Networks } from '@creit.tech/stellar-wallets-kit/types'
+
+// La app trabaja en testnet: nada de lo que se haga aquí mueve dinero real.
+StellarWalletsKit.init({
+  modules: defaultModules(),
+  network: Networks.TESTNET,
+})
+
+// Abre el modal del kit para que el usuario elija su wallet (Freighter, xBull, Albedo...)
+// y devuelve la dirección pública (G...) de la cuenta conectada.
+export async function connectWallet() {
+  const { address } = await StellarWalletsKit.authModal()
+  return address
+}
+
+export async function disconnectWallet() {
+  await StellarWalletsKit.disconnect()
+}
+
+// Checklist de Stellar Raven (skill stellar-dev.dapp): avisar si la wallet está en otra red.
+// Algunas wallets no informan la red; en ese caso no se bloquea el envío.
+export async function assertTestnet() {
+  let passphrase
+  try {
+    ;({ networkPassphrase: passphrase } = await StellarWalletsKit.getNetwork())
+  } catch {
+    return
+  }
+  if (passphrase && passphrase !== Networks.TESTNET) {
+    throw new Error('Tu wallet está en otra red. Cámbiala a Testnet y vuelve a intentar.')
+  }
+}
+
+// Pide a la wallet que firme la transacción (el usuario la aprueba en su extensión).
+export async function signXdr(xdr, address) {
+  const { signedTxXdr } = await StellarWalletsKit.signTransaction(xdr, {
+    networkPassphrase: Networks.TESTNET,
+    address,
+  })
+  return signedTxXdr
+}
+
+export function shortAddress(address) {
+  return `${address.slice(0, 6)}...${address.slice(-6)}`
+}
+
+export { StellarWalletsKit }
