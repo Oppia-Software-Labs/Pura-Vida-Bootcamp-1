@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>La Cuenta — Dividí y cobrá al instante sin bancos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=Space+Mono:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <!-- BARRA SUPERIOR -->
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="brand">
+          <div class="brand-stamp">LC</div>
+          <div class="brand-meta">
+            <span class="brand-title">La Cuenta<span class="red-dot">.</span></span>
+            <span class="brand-subtitle">Pagaste vos, cobrales en un toque</span>
+          </div>
+        </div>
+
+        <!-- CONEXION DE BILLETERA STELLAR -->
+        <div class="wallet-bar" id="wallet-section">
+          <div id="wallet-disconnected" class="wallet-actions">
+            <button id="btn-connect-freighter" class="btn btn-primary">
+              Conectar Freighter
+            </button>
+            <button
+              id="btn-connect-instant"
+              class="btn btn-secondary"
+              title="Activa una billetera lista para usar desde el celular o navegador"
+            >
+              Billetera Rápida (Móvil / Web)
+            </button>
+          </div>
+
+          <div id="wallet-connected" class="wallet-connected hidden">
+            <div class="wallet-pill">
+              <span class="status-dot"></span>
+              <span id="wallet-mode-label" class="wallet-mode">ACTIVA</span>
+              <code id="wallet-address-short" class="wallet-addr">G...</code>
+              <button id="btn-copy-address" class="icon-btn" title="Copiar dirección">
+                Copiar
+              </button>
+            </div>
+            <div class="balance-pill">
+              <span id="wallet-balance" class="font-num">0.00 XLM</span>
+              <button
+                id="btn-fund-friendbot"
+                class="btn btn-xs btn-red-outline"
+                title="Recargar saldo de prueba (+10,000 XLM)"
+              >
+                + Recargar
+              </button>
+              <button id="btn-refresh-balance" class="icon-btn" title="Actualizar saldo">
+                Actualizar
+              </button>
+            </div>
+            <button id="btn-disconnect-wallet" class="btn btn-ghost btn-xs">
+              Salir
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <main class="container">
+      <!-- ENCABEZADO EDITORIAL -->
+      <section class="editorial-hero">
+        <div class="hero-copy">
+          <span class="kicker">DIVISOR DE GASTOS ENTRE COMPAS</span>
+          <h1>¿Quién pagó la mesa hoy?</h1>
+          <p>
+            Armá el tiquete de la salida, repartí la cuenta en partes iguales y mandale a cada
+            compa su link por WhatsApp. Ellos abren el link en el celular, tocan
+            <strong>Pagar mi parte</strong> y la plata te cae directo.
+          </p>
+        </div>
+
+        <nav class="mode-switcher" aria-label="Cambiar vista">
+          <button id="tab-host-mode" class="tab-btn active">
+            Armar La Cuenta
+          </button>
+          <button id="tab-payer-mode" class="tab-btn">
+            Tiquete del Compa
+          </button>
+        </nav>
+      </section>
+
+      <!-- BANNER DE AVISOS -->
+      <div id="status-banner" class="status-banner hidden"></div>
+
+      <!-- VISTA 1: ARMAR LA CUENTA -->
+      <section id="view-host" class="grid-layout">
+        <!-- Columna Izquierda: Armar el Tiquete -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <span class="section-tag">PASO 01 · EL TIQUETE</span>
+              <h2>¿Qué salieron a comer o hacer?</h2>
+            </div>
+            <div class="preset-group">
+              <button type="button" class="chip" data-preset="0">Pizza & Birras</button>
+              <button type="button" class="chip" data-preset="1">Café & Empanadas</button>
+              <button type="button" class="chip" data-preset="2">Viaje a Chirripó</button>
+            </div>
+          </div>
+
+          <form id="form-create-split" class="split-form">
+            <div class="form-group">
+              <label for="input-bill-title">Lugar o plan</label>
+              <input
+                type="text"
+                id="input-bill-title"
+                placeholder="Ej. Pizza & Birras del viernes"
+                value="Pizza & Birras con el Squad"
+                required
+              />
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="input-bill-total">Total de la factura (XLM)</label>
+                <input
+                  type="number"
+                  id="input-bill-total"
+                  class="font-num"
+                  step="0.01"
+                  min="1"
+                  value="100"
+                  required
+                />
+              </div>
+
+              <div class="form-group checkbox-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="input-include-me" checked />
+                  <span>Contarme a mí en la división</span>
+                </label>
+                <div class="hint font-num" id="live-math-preview">
+                  4 personas → 25.00 XLM c/u
+                </div>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="input-friend-name">¿Quiénes estaban en la mesa?</label>
+              <div class="add-friend-row">
+                <input
+                  type="text"
+                  id="input-friend-name"
+                  placeholder="Nombre del compa (ej. Kevin)"
+                />
+                <button type="button" id="btn-add-friend" class="btn btn-secondary">
+                  + Sumar a la mesa
+                </button>
+              </div>
+              <div id="friends-tags-list" class="tags-container"></div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block btn-lg">
+              Sacar Tiquetes y Links de Cobro
+            </button>
+          </form>
+        </div>
+
+        <!-- Columna Derecha: Tiquetes por Compa -->
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <span class="section-tag">PASO 02 · COBRAR LA MESA</span>
+              <h2>Links individuales por persona</h2>
+            </div>
+            <button id="btn-verify-onchain" class="btn btn-secondary btn-sm">
+              Revisar quién ya pagó
+            </button>
+          </div>
+
+          <div id="split-results-empty" class="empty-state">
+            <div class="empty-title">Mesa vacía por ahora</div>
+            <p>
+              Conectá tu billetera arriba y dale a
+              <strong>"Sacar Tiquetes y Links de Cobro"</strong> para generar el link de WhatsApp
+              de cada amigo.
+            </p>
+          </div>
+
+          <div id="split-results-content" class="hidden">
+            <div class="split-summary-box">
+              <div class="summary-cell">
+                <span class="summary-label">Plan / Salida</span>
+                <strong id="summary-bill-title">-</strong>
+              </div>
+              <div class="summary-cell">
+                <span class="summary-label">Recibe la plata</span>
+                <code id="summary-host-wallet">G...</code>
+              </div>
+              <div class="summary-cell">
+                <span class="summary-label">Toca poner</span>
+                <strong id="summary-share-amount" class="highlight-xlm font-num">0.00 XLM</strong>
+              </div>
+            </div>
+
+            <div id="friend-links-list" class="friend-links-list"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VISTA 2: TIQUETE DEL COMPA (CELULAR / LINK DE PAGO) -->
+      <section id="view-payer" class="payer-container hidden">
+        <div class="receipt-ticket">
+          <div class="ticket-notch ticket-notch-left"></div>
+          <div class="ticket-notch ticket-notch-right"></div>
+
+          <div class="ticket-top">
+            <span class="payer-badge">TIQUETE DE COBRO</span>
+            <h2 id="payer-greeting">Te toca poner tu parte</h2>
+            <p class="payer-subtitle">
+              Revisá tu parte de la cuenta y tocá el botón rojo para cancelarla al instante.
+            </p>
+          </div>
+
+          <div class="invoice-box">
+            <div class="invoice-row">
+              <span>SALIDA / PLAN</span>
+              <strong id="payer-bill-title">Pizza & Birras con el Squad</strong>
+            </div>
+            <div class="invoice-row">
+              <span>A NOMBRE DE</span>
+              <strong id="payer-friend-name">Kevin</strong>
+            </div>
+            <div class="invoice-row">
+              <span>LE CAE A (BILLETERA)</span>
+              <code id="payer-destination">G...</code>
+            </div>
+            <div class="invoice-row">
+              <span>CÓDIGO DE MESA</span>
+              <code id="payer-memo">SPLIT:101:Kevin</code>
+            </div>
+            <div class="invoice-divider"></div>
+            <div class="invoice-row invoice-total">
+              <span>TU PARTE</span>
+              <strong id="payer-amount-display" class="font-num">25.00 XLM</strong>
+            </div>
+          </div>
+
+          <div class="payer-actions">
+            <button id="btn-execute-split-payment" class="btn btn-primary btn-lg btn-block">
+              Pagar mi parte ahora
+            </button>
+            <a
+              id="btn-sep7-wallet-uri"
+              href="#"
+              class="btn btn-secondary btn-block"
+              title="Abrir en app de billetera móvil compatible con Stellar"
+            >
+              Abrir en App de Billetera Móvil
+            </a>
+          </div>
+
+          <div id="payment-receipt-box" class="receipt-box hidden">
+            <div class="receipt-header">¡LISTO! CUENTA CANCELADA</div>
+            <p>Tu pago ya cayó y tu parte quedó marcada como pagada en la mesa.</p>
+            <div class="receipt-details">
+              <div class="receipt-hash-row">
+                <span>COMPROBANTE:</span>
+                <code id="receipt-tx-hash">-</code>
+              </div>
+              <a
+                id="receipt-explorer-link"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="btn btn-red-outline btn-sm"
+              >
+                Ver comprobante oficial ↗
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        <span><strong>La Cuenta.</strong> · Creado por Johann Fonseca</span>
+        <span>Impulsado por Stellar Network & Stellar Raven</span>
+      </div>
+    </footer>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
