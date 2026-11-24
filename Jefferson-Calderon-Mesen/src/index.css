@@ -1,0 +1,65 @@
+/* ===== Colores y letras de Pura Vida Tips =====
+   Inspirados en la carreta pintada de Sarchí, Costa Rica. */
+:root {
+  --rojo: #b3202a; /* rojo carreta: ruedas y botón principal */
+  --amarillo: #f2b705; /* amarillo Sarchí: detalles de las ruedas */
+  --azul: #1f4e9c; /* azul pintura: links, dirección y foco del teclado */
+  --verde: #2e6b3f; /* verde cafetal: mensaje de gracias */
+  --celeste: #ddeff3; /* celeste mañana: fondo */
+  --tinta: #1b1b2f; /* texto y contornos */
+  --blanco: #ffffff;
+
+  --rotulo: "Lilita One", "Arial Rounded MT Bold", sans-serif;
+  --texto: "Atkinson Hyperlegible", system-ui, sans-serif;
+
+  color-scheme: light;
+  font: 400 1.0625rem/1.55 var(--texto);
+  color: var(--tinta);
+  background: var(--celeste);
+  -webkit-font-smoothing: antialiased;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100svh;
+  padding: 2.5rem 16px;
+}
+
+h1,
+h2,
+p {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--azul);
+  font-weight: 700;
+  text-underline-offset: 3px;
+}
+
+/* Foco visible para quien navega con el teclado (tecla Tab) */
+:focus-visible {
+  outline: 3px solid var(--azul);
+  outline-offset: 4px;
+}
+
+/* Si la persona desactivó las animaciones en su compu, las respetamos */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

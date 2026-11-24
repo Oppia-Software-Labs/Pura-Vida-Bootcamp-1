@@ -1,0 +1,259 @@
+/* ===== El panel: como un rótulo pintado, con borde grueso y sombra sólida ===== */
+.panel {
+  max-width: 34rem;
+  margin: 0 auto;
+  padding: 2rem 1.75rem;
+  background: var(--blanco);
+  border: 3px solid var(--tinta);
+  border-radius: 28px;
+  box-shadow: 8px 8px 0 var(--tinta);
+  display: grid;
+  gap: 1.75rem;
+}
+
+@media (max-width: 480px) {
+  .panel {
+    padding: 1.5rem 1.1rem;
+    box-shadow: 5px 5px 0 var(--tinta);
+  }
+}
+
+/* ===== Encabezado ===== */
+.titulo {
+  font-family: var(--rotulo);
+  font-weight: 400;
+  font-size: clamp(2.6rem, 9vw, 3.75rem);
+  line-height: 1;
+  color: var(--rojo);
+  /* sombra amarilla desplazada: el efecto de letra pintada a mano */
+  text-shadow: 3px 3px 0 var(--amarillo);
+}
+
+.intro {
+  margin-top: 0.75rem;
+  max-width: 36ch;
+  font-size: 1.15rem;
+}
+
+/* ===== Botones ===== */
+.boton-principal {
+  justify-self: start;
+  font-family: var(--rotulo);
+  font-size: 1.3rem;
+  color: var(--blanco);
+  background: var(--rojo);
+  border: 3px solid var(--tinta);
+  border-radius: 999px;
+  padding: 0.7rem 1.6rem;
+  box-shadow: 4px 4px 0 var(--tinta);
+  cursor: pointer;
+  transition: transform 0.12s, box-shadow 0.12s;
+}
+
+/* al apretar, el botón "se hunde" sobre su sombra */
+.boton-principal:active:not(:disabled) {
+  transform: translate(3px, 3px);
+  box-shadow: 1px 1px 0 var(--tinta);
+}
+
+.boton-suave {
+  background: transparent;
+  border: 2px solid var(--tinta);
+  border-radius: 999px;
+  padding: 0.3rem 0.9rem;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.boton-suave:hover:not(:disabled) {
+  background: var(--celeste);
+}
+
+.boton-principal:disabled,
+.boton-suave:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* ===== Tu cuenta ===== */
+.cuenta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px dashed var(--tinta);
+}
+
+.cuenta-direccion {
+  font-weight: 700;
+  color: var(--azul);
+}
+
+.cuenta-saldo {
+  font-family: var(--rotulo);
+  font-size: 1.9rem;
+  line-height: 1.2;
+}
+
+.cuenta-acciones {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.fondear {
+  display: grid;
+  gap: 0.75rem;
+}
+
+/* ===== Las ruedas de carreta (el elemento memorable) ===== */
+.propinas {
+  display: grid;
+  gap: 1rem;
+}
+
+.propinas-titulo {
+  font-family: var(--rotulo);
+  font-weight: 400;
+  font-size: 1.6rem;
+}
+
+.ruedas {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  justify-items: center;
+  gap: 0.5rem;
+}
+
+.rueda {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  background: none;
+  border: 0;
+  border-radius: 16px;
+  padding: 0.25rem;
+  cursor: pointer;
+}
+
+.rueda-dibujo {
+  position: relative;
+  width: clamp(5.25rem, 24vw, 7.5rem);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+
+/* La parte pintada de la rueda: es la ÚNICA que gira (el número queda quieto) */
+.rueda-dibujo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: repeating-conic-gradient(var(--amarillo) 0deg 15deg, var(--azul) 15deg 30deg);
+  border: 7px solid var(--rojo);
+  box-shadow:
+    inset 0 0 0 4px var(--amarillo),
+    0 0 0 3px var(--tinta);
+  transition: transform 0.5s ease-out;
+}
+
+/* El centro de la rueda (la maza), con el monto */
+.rueda-numero {
+  position: relative;
+  width: 48%;
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--rojo);
+  color: var(--blanco);
+  font-family: var(--rotulo);
+  font-size: clamp(1.4rem, 6vw, 2rem);
+  box-shadow:
+    0 0 0 3px var(--amarillo),
+    0 0 0 5px var(--tinta);
+}
+
+.rueda-monto {
+  font-weight: 700;
+}
+
+/* Al pasar el mouse, la rueda avanza un poquito: invita a tocarla */
+.rueda:hover:not(:disabled) .rueda-dibujo::before {
+  transform: rotate(45deg);
+}
+
+/* Mientras se firma y se envía, la rueda gira sin parar */
+.rueda.girando .rueda-dibujo::before {
+  animation: girar 0.9s linear infinite;
+}
+
+/* Cuando la propina llegó, da una última vuelta */
+.rueda.lista .rueda-dibujo::before {
+  animation: girar 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) 1;
+}
+
+.rueda:disabled {
+  cursor: not-allowed;
+}
+
+/* Mientras UNA rueda gira, las otras se apagan para que se note cuál se está enviando.
+   (Sin wallet conectada, las ruedas siguen a todo color: son la cara de la app.) */
+.ruedas.ocupadas .rueda:not(.girando) .rueda-dibujo {
+  opacity: 0.4;
+  filter: grayscale(0.7);
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.propinas-destino,
+.propinas-pista {
+  font-size: 0.95rem;
+}
+
+/* ===== Mensajes ===== */
+.gracias,
+.aviso-error {
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  border-left: 7px solid;
+}
+
+.gracias {
+  display: grid;
+  gap: 0.35rem;
+  background: #e2f0e5;
+  border-color: var(--verde);
+  animation: aparecer 0.4s ease-out;
+}
+
+.gracias-titulo {
+  font-family: var(--rotulo);
+  font-size: 1.5rem;
+  color: var(--verde);
+}
+
+.aviso-error {
+  background: #fbe5e6;
+  border-color: var(--rojo);
+}
+
+@keyframes aparecer {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+/* ===== Pie ===== */
+.pie {
+  font-size: 0.85rem;
+  opacity: 0.75;
+}
