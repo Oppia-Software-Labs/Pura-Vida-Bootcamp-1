@@ -1,0 +1,175 @@
+body {
+  background-color: #f3f7fd;
+  color: #555;
+  font: 400 1rem/1.625rem "Open Sans", sans-serif;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 8vw;
+  background-color: #5f4dee;
+  box-shadow: 0 0.0625rem 0.375rem 0 rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  color: #fff;
+  font: 700 2rem/1.5rem "Open Sans", sans-serif;
+}
+
+.nav-note {
+  color: #f7f5f5;
+  font: 700 0.875rem/1 "Open Sans", sans-serif;
+  letter-spacing: 0.08em;
+}
+
+.header {
+  background-color: #5f4dee;
+}
+
+.header-content {
+  max-width: 40rem;
+  margin: 0 auto;
+  padding: 4rem 1.5rem 2.5rem;
+  text-align: center;
+}
+
+.above-heading {
+  margin: 0 0 0.75rem;
+  color: #f3f7fd;
+  font: 700 0.75rem/0.875rem "Open Sans", sans-serif;
+  letter-spacing: 0.08em;
+}
+
+.header h1 {
+  margin: 0 0 1rem;
+  color: #fff;
+  font: 700 2.5rem/3.125rem "Open Sans", sans-serif;
+  letter-spacing: -0.2px;
+}
+
+.p-large {
+  margin: 0 0 2rem;
+  color: #f3f7fd;
+  font: 400 1.125rem/1.75rem "Open Sans", sans-serif;
+}
+
+.header-frame {
+  display: block;
+  width: 100%;
+  height: 4.5rem;
+  margin-top: -1px;
+}
+
+.account {
+  max-width: 32rem;
+  margin: 0 auto 3rem;
+  padding: 2rem 1.5rem;
+  text-align: center;
+}
+
+.account-card {
+  padding: 2rem 1.5rem;
+  border-radius: 1.5rem;
+  background: #fff;
+  box-shadow: 0 0.5rem 1.5rem rgba(95, 77, 238, 0.12);
+}
+
+.address {
+  margin: 0 0 1.5rem;
+  color: #333;
+  font: 700 0.95rem/1.5rem "Open Sans", sans-serif;
+  word-break: break-all;
+}
+
+.funds {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.funds p {
+  margin: 0;
+}
+
+.fund-label {
+  display: block;
+  color: #5f4dee;
+  font: 700 0.75rem/1 "Open Sans", sans-serif;
+  letter-spacing: 0.06em;
+}
+
+.fund-value {
+  color: #333;
+  font: 700 1.375rem/1.75rem "Open Sans", sans-serif;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.btn-solid-reg,
+.btn-solid-lg,
+.btn-outline-reg {
+  border-radius: 2rem;
+  font: 700 0.875rem/0 "Open Sans", sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-solid-reg,
+.btn-outline-reg {
+  padding: 1.1875rem 2.125rem;
+  border: 0.125rem solid #5f4dee;
+}
+
+.btn-solid-lg {
+  padding: 1.375rem 2.625rem;
+  border: 0.125rem solid #f3f7fd;
+  background-color: #f3f7fd;
+  color: #5f4dee;
+}
+
+.btn-solid-lg:hover {
+  background: transparent;
+  color: #f3f7fd;
+}
+
+.btn-solid-reg {
+  background-color: #5f4dee;
+  color: #fff;
+}
+
+.btn-solid-reg:hover {
+  background-color: transparent;
+  color: #5f4dee;
+}
+
+.btn-solid-reg:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.btn-outline-reg {
+  background-color: transparent;
+  color: #5f4dee;
+}
+
+.btn-outline-reg:hover {
+  background-color: #5f4dee;
+  color: #fff;
+}
+
+.form-error {
+  margin: 1rem 0 0;
+  color: #fff;
+  font: 400 0.875rem/1.5rem "Open Sans", sans-serif;
+}
+
+.account-card .form-error {
+  color: #c0392b;
+}
