@@ -1,0 +1,27 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #173f34;
+  background: #f7f3e8;
+  font-synthesis: none;
+  line-height: 1.5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid #23745d;
+  outline-offset: 3px;
+}
