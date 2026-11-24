@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sakura Tips · Stellar Testnet</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Pétalos de sakura cayendo (decorativo) -->
+  <div class="sakura" aria-hidden="true">
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span><span></span>
+    <span></span><span></span><span></span><span></span>
+  </div>
+
+  <header class="top">
+    <div class="brand">
+      <span class="logo" aria-hidden="true">
+        <svg viewBox="-50 -50 100 100" width="28" height="28">
+          <g fill="currentColor">
+            <path d="M0 -6C-16 -16 -18 -36 -7 -46L0 -39L7 -46C18 -36 16 -16 0 -6Z" />
+            <path d="M0 -6C-16 -16 -18 -36 -7 -46L0 -39L7 -46C18 -36 16 -16 0 -6Z" transform="rotate(72)" />
+            <path d="M0 -6C-16 -16 -18 -36 -7 -46L0 -39L7 -46C18 -36 16 -16 0 -6Z" transform="rotate(144)" />
+            <path d="M0 -6C-16 -16 -18 -36 -7 -46L0 -39L7 -46C18 -36 16 -16 0 -6Z" transform="rotate(216)" />
+            <path d="M0 -6C-16 -16 -18 -36 -7 -46L0 -39L7 -46C18 -36 16 -16 0 -6Z" transform="rotate(288)" />
+          </g>
+          <circle r="8" fill="#e6929c" />
+        </svg>
+      </span>
+      <div>
+        <h1>Sakura Tips</h1>
+        <p class="tagline">Propinas en XLM sobre Stellar Testnet</p>
+      </div>
+    </div>
+    <span class="pill">Testnet</span>
+  </header>
+
+  <main>
+    <!-- Requisito mínimo: sección para conectar la wallet -->
+    <section class="card" id="wallet-section" aria-labelledby="wallet-title">
+      <h2 id="wallet-title">1 · Conecta tu wallet</h2>
+      <div id="wallet-disconnected">
+        <p class="muted">Usa Varial en modo Testnet.</p>
+        <button id="connect-btn" class="btn primary">Conectar wallet</button>
+      </div>
+      <div id="wallet-connected" hidden>
+        <div class="row">
+          <span class="label">Cuenta</span>
+          <code id="address" class="address"></code>
+          <button id="copy-btn" class="btn ghost small" title="Copiar dirección">Copiar</button>
+        </div>
+        <div class="row">
+          <span class="label">Red</span>
+          <span id="network"></span>
+        </div>
+        <div class="row">
+          <span class="label">Balance</span>
+          <strong id="balance">—</strong>
+          <button id="refresh-btn" class="btn ghost small">Actualizar</button>
+        </div>
+        <div class="actions">
+          <button id="fund-btn" class="btn" hidden>Fondear con Friendbot</button>
+          <button id="disconnect-btn" class="btn ghost">Desconectar</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="send-section" aria-labelledby="send-title">
+      <h2 id="send-title">2 · Envía una propina</h2>
+      <form id="send-form" novalidate>
+        <label>Dirección destino
+          <input id="dest" type="text" placeholder="G..." autocomplete="off" spellcheck="false" required />
+        </label>
+        <div class="presets" role="group" aria-label="Montos rápidos">
+          <button type="button" class="chip" data-amount="1">1 XLM</button>
+          <button type="button" class="chip" data-amount="5">5 XLM</button>
+          <button type="button" class="chip" data-amount="10">10 XLM</button>
+        </div>
+        <label>Monto (XLM)
+          <input id="amount" type="number" min="0.0000001" step="0.0000001" placeholder="5" required />
+        </label>
+        <label>Mensaje (opcional, máx. 28 caracteres)
+          <input id="memo" type="text" maxlength="28" placeholder="¡Gracias! ♡°｡₊˚⊹" />
+        </label>
+        <button id="send-btn" type="submit" class="btn primary" disabled>Enviar propina</button>
+      </form>
+    </section>
+
+    <div id="status" class="status" role="status" aria-live="polite" hidden></div>
+  </main>
+
+  <footer class="foot">
+    Verónica Madriz Martínez · Pura Vida Bootcamp · Hecho con Stellar Raven
+  </footer>
+
+  <script type="module" src="src/app.js"></script>
+  <script>
+    // Si el JavaScript de la app no arrancó, explica por qué en pantalla.
+    setTimeout(function () {
+      if (window.__appReady) return;
+      var el = document.getElementById("status");
+      el.hidden = false;
+      el.className = "status error";
+      el.innerHTML = location.protocol === "file:"
+        ? "Abriste la app como archivo. Córrela con Live Server o <code>npx serve .</code> y entra por http://localhost."
+        : "La app no pudo arrancar. Abre la consola (F12 → Console) y mándame el error en rojo.";
+    }, 2500);
+  </script>
+</body>
+</html>
