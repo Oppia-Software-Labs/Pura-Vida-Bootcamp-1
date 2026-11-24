@@ -1,0 +1,20 @@
+{
+  "name": "stellar-portal-pura-vida",
+  "version": "1.0.0",
+  "description": "Aplicación Web sobre Stellar con conexión de Wallet Freighter, soporte Testnet, Friendbot y asistente Stellar Raven MCP",
+  "author": "Maria del Mar Diaz Ruiz <maria.diaz.ruiz@est.una.ac.cr>",
+  "license": "MIT",
+  "scripts": {
+    "start": "npx serve .",
+    "dev": "npx serve ."
+  },
+  "keywords": [
+    "stellar",
+    "freighter",
+    "blockchain",
+    "pura-vida-bootcamp",
+    "stellar-raven",
+    "horizon-api",
+    "soroban"
+  ]
+}
