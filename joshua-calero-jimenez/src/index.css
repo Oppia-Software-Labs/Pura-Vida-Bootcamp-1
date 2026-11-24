@@ -1,0 +1,162 @@
+@import url("https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap");
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Unbounded", "Plus Jakarta Sans", sans-serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+
+  --color-void: #08071a;
+  --color-ink: #ecebf5;
+  --color-muted: #8d8aa8;
+  --color-line: rgba(255, 255, 255, 0.08);
+  --color-surface: rgba(255, 255, 255, 0.025);
+  --color-accent: #b4a5ff;
+  --color-ok: #7ee2b8;
+  --color-warn: #f5c97a;
+  --color-danger: #ff8a9b;
+
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  background: var(--color-void);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Un único resplandor fijo, muy tenue: la galaxia está en las estrellas, no en el color. */
+.sky-glow {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(60% 45% at 70% -5%, rgba(124, 92, 255, 0.14), transparent 70%);
+}
+
+/* ───────── Orbe de estado: el único momento animado de la app ───────── */
+.orb-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 1px solid var(--color-line);
+}
+.orb-ring.inner {
+  inset: 22%;
+}
+.orb-track {
+  position: absolute;
+  inset: 0;
+  animation: orbit 7s linear infinite;
+}
+.orb-track.inner {
+  inset: 22%;
+  animation-duration: 4.5s;
+  animation-direction: reverse;
+}
+.orb-track::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 9999px;
+  background: var(--color-accent);
+  box-shadow: 0 0 10px var(--color-accent);
+}
+.orb-track.inner::after {
+  background: var(--color-ink);
+  box-shadow: none;
+  width: 4px;
+  height: 4px;
+  margin-left: -2px;
+  top: -2px;
+}
+.orb-core {
+  position: absolute;
+  inset: 44%;
+  border-radius: 9999px;
+  background: var(--color-accent);
+}
+@keyframes orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.orb-paid .orb-ring {
+  border-color: color-mix(in srgb, var(--color-ok) 35%, transparent);
+}
+.orb-flash {
+  position: absolute;
+  inset: 22%;
+  border-radius: 9999px;
+  border: 1px solid var(--color-ok);
+  animation: flash 1.4s var(--ease-out) both;
+}
+.orb-check {
+  animation: settle 0.7s var(--ease-out) both;
+}
+@keyframes flash {
+  from {
+    transform: scale(0.3);
+    opacity: 1;
+  }
+  to {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+@keyframes settle {
+  from {
+    transform: scale(0.6);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+
+/* ───────── Campos ───────── */
+.field {
+  width: 100%;
+  border-radius: 12px;
+  padding: 0.8rem 0.95rem;
+  background: transparent;
+  border: 1px solid var(--color-line);
+  color: var(--color-ink);
+  outline: none;
+  transition: border-color 0.3s var(--ease-out);
+}
+.field::placeholder {
+  color: color-mix(in srgb, var(--color-muted) 60%, transparent);
+}
+.field:focus {
+  border-color: var(--color-accent);
+}
+.field[aria-invalid="true"] {
+  border-color: var(--color-danger);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
