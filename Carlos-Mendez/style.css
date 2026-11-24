@@ -1,0 +1,33 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #0e1530;
+  color: #ffffff;
+  max-width: 600px;
+  margin: 60px auto;
+  padding: 0 20px;
+  text-align: center;
+}
+
+h1 {
+  margin-bottom: 30px;
+}
+
+button {
+  background: #7b61ff;
+  color: #ffffff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+button:hover {
+  background: #947fff;
+}
+
+p {
+  word-break: break-all;
+  margin-top: 20px;
+  font-size: 15px;
+}
