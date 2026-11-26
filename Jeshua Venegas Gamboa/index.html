@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stellar Aprende Lab · Testnet</title>
+  <link rel="stylesheet" href="css/styles.css" />
+  <!-- SDK oficial de Stellar (versión fija + verificación de integridad) -->
+  <script src="https://unpkg.com/@stellar/stellar-sdk@17.4.0/dist/stellar-sdk.min.js"
+    integrity="sha384-XFLlFedMV0w1RG+x1e/VrR49BGtuDQzvn5/guUY+sDYOP/+yiKIVgBn8OuTH/eye"
+    crossorigin="anonymous"></script>
+  <!-- API de la wallet Varial (antes Freighter): usa la librería oficial freighter-api -->
+  <script src="https://unpkg.com/@stellar/freighter-api@6.0.1/build/index.min.js"
+    integrity="sha384-PBwq0JVfqy16Z6jvKJPx93jpStXbwF2oWvsRTODkvE/3hOX5zmLvAuMiKgAaxe2b"
+    crossorigin="anonymous"></script>
+  <script type="module" src="js/app.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Stellar Aprende Lab</h1>
+    <p>Aprende cómo funciona Stellar haciendo: conecta una wallet, crea tu cuenta, mira saldos y envía pagos.</p>
+    <span class="insignia">Red: <strong id="red-nombre">…</strong> · dinero de prueba</span>
+  </header>
+
+  <main>
+    <!-- Paso 1: requisito mínimo de la tarea: conectar wallet -->
+    <section class="tarjeta" id="seccion-wallet">
+      <h2>1. Conecta tu wallet</h2>
+      <div id="wallet-desconectada">
+        <p>Una <em>wallet</em> guarda tu par de claves: la <strong>pública</strong> (tu dirección, empieza con G, se comparte)
+          y la <strong>secreta</strong> (empieza con S, firma transacciones, ¡nunca se comparte!).</p>
+        <div class="botones">
+          <button id="btn-freighter">Conectar Varial (antes Freighter)</button>
+          <button id="btn-practica" class="secundario">Crear wallet de práctica</button>
+        </div>
+        <p class="nota">¿No tienes wallet? Instala la extensión Varial (antes Freighter) desde <a href="https://varialwallet.com" target="_blank" rel="noopener">varialwallet.com</a>
+          y en su configuración elige la red <strong>Testnet</strong>. La wallet de práctica no requiere instalar nada y se borra al cerrar la pestaña.</p>
+      </div>
+      <div id="wallet-conectada" hidden>
+        <p>Conectada con: <strong id="wallet-tipo"></strong></p>
+        <p class="direccion"><code id="wallet-direccion"></code></p>
+        <div class="botones">
+          <a id="wallet-explorador" target="_blank" rel="noopener">Ver cuenta en Stellar Expert</a>
+          <button id="btn-desconectar" class="secundario">Desconectar</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="tarjeta">
+      <h2>2. Crea y fondea tu cuenta</h2>
+      <p>En Stellar una cuenta solo existe cuando tiene al menos 1 XLM (la <em>reserva base</em>).
+        En testnet, <strong>Friendbot</strong> te regala 10 000 XLM de prueba una vez por cuenta.</p>
+      <div class="botones">
+        <button id="btn-friendbot" data-requiere-wallet disabled>Fondear con Friendbot</button>
+        <button id="btn-saldos" class="secundario" data-requiere-wallet disabled>Actualizar saldos</button>
+      </div>
+      <h3>Saldos</h3>
+      <ul id="saldos" class="saldos"></ul>
+    </section>
+
+    <section class="tarjeta">
+      <h2>3. Envía un pago</h2>
+      <p>Una <em>transacción</em> agrupa operaciones (aquí, un pago), se <em>firma</em> con tu clave secreta
+        y se envía a la red. Cuesta 0.00001 XLM y se confirma en ~5 segundos.</p>
+      <form id="form-pago">
+        <label>Dirección de destino (G…)
+          <input id="destino" required maxlength="56" placeholder="GABC…" autocomplete="off" />
+        </label>
+        <label>Monto en XLM
+          <input id="monto" required type="number" min="0.0000001" step="0.0000001" placeholder="10" />
+        </label>
+        <label>Memo (opcional, máx. 28 caracteres)
+          <input id="memo" maxlength="28" placeholder="Pura Vida 🇨🇷" />
+        </label>
+        <button id="btn-enviar" type="submit" data-requiere-wallet disabled>Firmar y enviar</button>
+      </form>
+      <p class="nota">Tip: crea una segunda wallet de práctica en otra pestaña, copia su dirección y envíale XLM.</p>
+    </section>
+
+    <section class="tarjeta">
+      <h2>4. Historial</h2>
+      <table>
+        <thead><tr><th>Fecha</th><th>Tipo</th><th>Monto</th><th>Tx</th></tr></thead>
+        <tbody id="historial"></tbody>
+      </table>
+    </section>
+
+    <section class="tarjeta">
+      <h2>Bitácora: qué está pasando</h2>
+      <ul id="bitacora" class="bitacora"></ul>
+    </section>
+
+    <section class="tarjeta">
+      <h2>Mini glosario</h2>
+      <dl>
+        <dt>Stellar</dt><dd>Red blockchain abierta para pagos rápidos y baratos y activos digitales.</dd>
+        <dt>XLM (lumen)</dt><dd>La moneda nativa. Paga comisiones y la reserva mínima de cada cuenta.</dd>
+        <dt>Testnet vs. Mainnet</dt><dd>Testnet es la red de práctica (dinero sin valor). Mainnet es la real.</dd>
+        <dt>Horizon</dt><dd>API que permite leer la red y enviar transacciones.</dd>
+        <dt>Friendbot</dt><dd>Servicio de testnet que regala XLM de prueba.</dd>
+        <dt>Ledger</dt><dd>Cada "bloque" de Stellar; se cierra uno cada ~5 segundos.</dd>
+        <dt>XDR</dt><dd>Formato en que se codifican las transacciones para firmarlas y enviarlas.</dd>
+        <dt>Soroban</dt><dd>La plataforma de contratos inteligentes de Stellar (siguiente nivel).</dd>
+        <dt>Stellar Raven</dt><dd>El MCP oficial de Stellar: conecta tu asistente de IA a la documentación y datos del ecosistema.</dd>
+      </dl>
+    </section>
+  </main>
+
+  <footer>
+    Pura Vida Bootcamp · Tarea 1 · Hecho con Stellar SDK, Varial y la ayuda de Stellar Raven · Solo TESTNET
+  </footer>
+</body>
+</html>

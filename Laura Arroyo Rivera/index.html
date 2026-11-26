@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Conexión con wallet</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <main class="app">
+    <h1>Conexión con wallet</h1>
+    <button id="connect">Conectar wallet</button>
+    <p id="status" aria-live="polite">Wallet no conectada.</p>
+  </main>
+
+  <script type="module">
+    import varial from "https://esm.sh/@stellar/varial-sdk@7.0.0";
+
+    const button = document.querySelector("#connect");
+    const status = document.querySelector("#status");
+
+    button.addEventListener("click", async () => {
+      button.disabled = true;
+      button.textContent = "Conectando…";
+      status.textContent = "Esperando autorización de la wallet…";
+
+      try {
+        if (!window.isSecureContext) {
+          throw new Error(
+            "Abre la página con HTTPS o desde http://localhost."
+          );
+        }
+
+        const wallet = await varial.isConnected();
+        if (wallet.error) {
+          throw new Error(wallet.error.message || "No se pudo verificar la wallet.");
+        }
+        if (!wallet.isConnected) {
+          throw new Error(
+            "No se detectó Varial. Instala o activa la extensión y vuelve a cargar esta página."
+          );
+        }
+
+        const access = await varial.requestAccess();
+        if (access.error) {
+          throw new Error(access.error.message || "No se concedió el acceso.");
+        }
+        if (!access.address) {
+          throw new Error("No se recibió una dirección pública.");
+        }
+
+        const networkInfo = await varial.getNetwork();
+        if (networkInfo.error) {
+          throw new Error(networkInfo.error.message || "No se pudo obtener la red.");
+        }
+
+        status.textContent =
+          `Dirección pública: ${access.address}\nRed: ${networkInfo.network}`;
+      } catch (error) {
+        status.textContent = `No se pudo conectar: ${error.message}`;
+      } finally {
+        button.disabled = false;
+        button.textContent = "Conectar wallet";
+      }
+    });
+  </script>
+</body>
+</html>

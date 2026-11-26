@@ -1,0 +1,102 @@
+:root {
+  color-scheme: dark;
+  --bg: #151a1e;
+  --panel: #20282e;
+  --ink: #f1f5f3;
+  --muted: #b7c5c7;
+  --line: #74858c;
+  --accent: #b8ef65;
+  --on-accent: #17200d;
+  --warning: #ffcf88;
+  --well: #151a1e;
+  --pad: 1.5rem;
+  font-family: system-ui, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  line-height: 1.5;
+}
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --panel: #ffffff;
+  --ink: #18251e;
+  --muted: #4b6055;
+  --line: #718375;
+  --accent: #365d12;
+  --on-accent: #f7ffed;
+  --warning: #794400;
+  --well: #f3f5f0;
+}
+* { box-sizing: border-box; min-width: 0; }
+body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+[hidden] { display: none !important; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+
+.masthead { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: 1rem var(--pad); }
+.brand { font-weight: 750; letter-spacing: -.04em; font-size: 1.25rem; }
+.brand span { color: var(--accent); }
+.controls { display: flex; gap: .5rem; flex-wrap: wrap; }
+
+button { font: inherit; min-height: 44px; border: 1px solid var(--line); border-radius: .5rem; padding: .6rem 1rem; color: var(--ink); background: var(--panel); cursor: pointer; overflow-wrap: anywhere; }
+.controls button { display: flex; align-items: center; justify-content: center; gap: .4rem; min-width: 44px; padding: .6rem .75rem; font-weight: 600; font-size: .875rem; letter-spacing: .04em; }
+.controls .icon-only { padding: 0; width: 44px; }
+svg { width: 1.25rem; height: 1.25rem; flex-shrink: 0; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:disabled { opacity: .7; cursor: default; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 4px; }
+
+main { flex: 1; display: grid; place-items: center; padding: 2rem 1rem 3rem; }
+.stack { width: 100%; max-width: 30rem; text-align: center; }
+.mark { width: 3.5rem; height: 3.5rem; border-radius: 1rem; display: grid; place-items: center; margin: 0 auto 1.5rem; color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.mark svg { width: 1.75rem; height: 1.75rem; }
+h1 { font-size: clamp(1.75rem, 3vw, 2.25rem); line-height: 1.15; letter-spacing: -.03em; margin: 0 0 .75rem; }
+p { margin: 0 0 1rem; }
+.lead { color: var(--muted); max-width: 26rem; margin: 0 auto 2rem; }
+
+.connection { background: var(--panel); border: 1px solid color-mix(in srgb, var(--line) 45%, transparent); border-radius: 1.25rem; padding: 1.5rem; text-align: start; }
+.progress { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; list-style: none; padding: 0; margin: 0 0 1.5rem; }
+.progress li { font-size: .8125rem; color: var(--muted); padding-top: .6rem; border-top: 3px solid color-mix(in srgb, var(--line) 50%, transparent); }
+.progress li[data-done="true"] { color: var(--ink); border-top-color: var(--accent); }
+
+.account { display: flex; align-items: center; gap: 1rem; padding: 1rem; border-radius: .75rem; background: var(--well); margin-bottom: 1rem; }
+.avatar { width: 2.75rem; height: 2.75rem; border-radius: 50%; flex-shrink: 0; background: color-mix(in srgb, var(--line) 40%, transparent); }
+.account:has(#wallet-address:not([hidden])) .avatar { background: conic-gradient(from 90deg, var(--accent), #5fb3a1, #3b6f8f, var(--accent)); }
+dl { margin: 0; display: grid; gap: .5rem; flex: 1; }
+dt { font-size: .8125rem; color: var(--muted); }
+dd { margin: 0; overflow-wrap: anywhere; }
+dd:has(> span:not(.placeholder):not([hidden])) .placeholder { display: none; }
+#wallet-address { font-family: ui-monospace, monospace; font-size: .8125rem; }
+/* Reserve two lines for the account so clearing it never moves the actions. */
+.account dl > div:first-child dd { min-height: 3em; }
+.account dl > div:last-child dd { min-height: 1.75rem; display: flex; align-items: center; }
+#wallet-network { display: inline-block; font-size: .8125rem; font-weight: 700; color: var(--accent); border: 1px solid var(--accent); border-radius: 999px; padding: .1rem .6rem; max-width: 100%; overflow-wrap: anywhere; }
+
+/* Reserve two lines so status changes do not shift the actions. */
+#wallet-status { overflow-wrap: anywhere; margin-bottom: 1.25rem; min-height: 3em; }
+#wallet-status[data-warning="true"] { color: var(--warning); }
+/* A non-Testnet network must never look confirmed. */
+.connection:has(#wallet-status[data-warning="true"]) #wallet-network { color: var(--warning); border-color: var(--warning); }
+.wallet-actions { display: grid; gap: .75rem; }
+/* One action at a time: while connected, disconnect replaces the connect button. */
+.wallet-actions:has(#disconnect-wallet:not([hidden])) #connect-wallet { display: none; }
+.primary { background: var(--accent); color: var(--on-accent); border-color: var(--accent); font-weight: 700; }
+#disconnect-wallet { background: transparent; }
+
+details { text-align: start; border-top: 1px solid color-mix(in srgb, var(--line) 45%, transparent); }
+details:first-of-type { margin-top: 1.5rem; }
+summary { cursor: pointer; padding: .75rem 0; min-height: 44px; font-weight: 600; display: flex; align-items: center; gap: .5rem; }
+summary::-webkit-details-marker { display: none; }
+/* Keep the focus ring inside so it does not cross the divider above. */
+summary:focus-visible { outline-offset: -3px; border-radius: .5rem; }
+summary::before { content: "›"; color: var(--accent); font-size: 1.25rem; line-height: 1; }
+details[open] summary::before { transform: rotate(90deg); }
+details p { color: var(--muted); font-size: .9375rem; }
+
+footer { text-align: center; padding: 1.25rem 1rem; color: var(--muted); font-size: .8125rem; }
+footer p { margin: 0; }
+@media (max-width: 480px) {
+  .connection { padding: 1rem; }
+  .account { padding: .75rem; }
+  .avatar { display: none; }
+}
+@media (prefers-reduced-motion: no-preference) { button { transition: border-color .15s; } }

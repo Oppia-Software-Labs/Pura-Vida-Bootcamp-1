@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Relata — Entiende y escucha tus movimientos en Stellar</title>
+    <link rel="stylesheet" href="./styles.css">
+  </head>
+  <body>
+    <main class="container">
+      <header class="hero">
+        <div class="hero-top">
+          <p class="eyebrow">Solo lectura · Stellar Testnet</p>
+          <button
+            id="theme-toggle-btn"
+            type="button"
+            class="btn-theme"
+            aria-pressed="false"
+            aria-label="Cambiar a modo oscuro"
+          >
+            ☾ Oscuro
+          </button>
+        </div>
+        <h1>Relata</h1>
+        <p class="tagline">Entiende y escucha tus movimientos en Stellar.</p>
+        <p class="intro">
+          Consulta tus pagos compatibles más recientes en XLM, USDC o EURC verificado de Testnet y
+          escucha una explicación breve en español cuando lo solicites.
+        </p>
+      </header>
+
+      <section class="controls" aria-label="Opciones de consulta y lectura">
+        <div class="count-row">
+          <label for="movement-count-input" class="address-label">
+            Movimientos a consultar (por defecto 5, máximo 50)
+          </label>
+          <div class="count-input-row">
+            <input
+              id="movement-count-input"
+              class="count-input"
+              type="number"
+              min="1"
+              max="50"
+              step="1"
+              value="5"
+            >
+            <button id="refresh-wallet-btn" type="button" class="btn btn-secondary" disabled>
+              Nueva consulta
+            </button>
+          </div>
+        </div>
+
+        <div class="button-row">
+          <button id="connect-wallet-btn" type="button" class="btn btn-primary">
+            Conectar wallet
+          </button>
+          <button id="stop-speech-btn" type="button" class="btn btn-stop" disabled>
+            Detener lectura
+          </button>
+        </div>
+
+        <form id="custom-address-form" class="address-form" novalidate>
+          <label for="custom-address-input" class="address-label">
+            O consulta otra dirección pública en Testnet
+          </label>
+          <div class="address-input-row">
+            <input
+              id="custom-address-input"
+              class="address-input"
+              type="text"
+              name="account"
+              inputmode="text"
+              autocomplete="off"
+              autocapitalize="characters"
+              spellcheck="false"
+              placeholder="G..."
+              aria-describedby="address-hint"
+            >
+            <button id="query-address-btn" type="submit" class="btn btn-secondary">
+              Consultar dirección
+            </button>
+          </div>
+          <p id="address-hint" class="address-hint">
+            Solo dirección pública (empieza por G). Nunca ingreses una clave secreta.
+          </p>
+        </form>
+
+        <div id="account-meta" class="account-meta" hidden></div>
+
+        <div id="status-banner" class="banner" role="status" aria-live="polite" hidden></div>
+        <div id="omitted-banner" class="banner" role="status" aria-live="polite" hidden></div>
+        <div id="voice-banner" class="banner" role="status" aria-live="polite" hidden></div>
+      </section>
+
+      <section class="results" aria-label="Pagos compatibles recientes">
+        <h2>Últimos pagos compatibles</h2>
+        <ol id="payments-list" class="payments-list"></ol>
+      </section>
+
+      <footer class="footer">
+        <p class="attribution">
+          Integración multi-wallet basada en el bundle local de <code>@creit.tech/stellar-wallets-kit</code> (2.8.0) ·
+          <a href="./vendor/stellar-wallets-kit/NOTICE.md">Licencia y avisos</a>
+        </p>
+      </footer>
+    </main>
+
+    <script type="module" src="./src/app.js"></script>
+  </body>
+</html>

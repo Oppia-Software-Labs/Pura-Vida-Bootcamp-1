@@ -1,0 +1,128 @@
+.box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(15, 25, 55, 0.55);
+  border: 1px solid rgba(140, 180, 255, 0.15);
+}
+
+.lead {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: #cfdaff;
+}
+
+.lead b {
+  color: #fff;
+}
+
+.primary {
+  font: inherit;
+  font-size: 14px;
+  padding: 10px 18px;
+  border-radius: 999px;
+  color: #fff;
+  background: linear-gradient(135deg, #8b5cf6, #b07cff);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: 0 0 18px rgba(176, 124, 255, 0.45);
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+
+.primary:hover {
+  filter: brightness(1.12);
+}
+
+.primary:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.link {
+  font: inherit;
+  font-size: 12.5px;
+  padding: 0;
+  color: #b07cff;
+  background: none;
+  border: none;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+}
+
+.key {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(176, 124, 255, 0.1);
+  border: 1px solid rgba(176, 124, 255, 0.35);
+}
+
+.secret {
+  background: rgba(255, 200, 120, 0.06);
+  border-color: rgba(255, 200, 120, 0.3);
+}
+
+.keyHead {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  color: #fff;
+}
+
+.address {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 12px;
+  color: #e7dcff;
+  overflow-wrap: anywhere;
+}
+
+.key small {
+  font-size: 12px;
+  color: #a9b8e6;
+}
+
+.balance {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 300;
+  color: #ffe3a1;
+  text-shadow: 0 0 18px rgba(255, 200, 87, 0.5);
+}
+
+.balance span {
+  font-size: 15px;
+  color: #cfdaff;
+}
+
+.warn {
+  margin: 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: #ffcf8a;
+}
+
+.error {
+  margin: 0;
+  font-size: 12.5px;
+  color: #ff9aa5;
+}
+
+.error a,
+.warn a {
+  color: inherit;
+}

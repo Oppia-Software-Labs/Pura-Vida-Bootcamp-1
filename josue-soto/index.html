@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Raven DEX Assistant</title>
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="brand">
+        <span class="logo">◆</span>
+        <div>
+          <h1>Raven DEX Assistant</h1>
+          <p>AI liquidity &amp; order-book analyst for the Stellar DEX</p>
+        </div>
+      </div>
+      <div class="controls">
+        <div class="seg" role="radiogroup" aria-label="Network">
+          <button data-net="testnet" class="active">Testnet</button>
+          <button data-net="mainnet">Mainnet</button>
+        </div>
+        <button id="walletBtn" class="primary">Connect wallet</button>
+      </div>
+    </header>
+
+    <div id="mainnetWarn" class="banner warn" hidden>
+      Mainnet: real funds. Every order needs your wallet signature. Proposals are analysis, not financial advice.
+    </div>
+
+    <main class="layout">
+      <section class="panel market">
+        <div class="panel-head">
+          <h2>Market</h2>
+          <span id="updated" class="muted"></span>
+        </div>
+        <form id="pairForm" class="pair">
+          <input id="base" value="XLM" aria-label="Base asset" />
+          <span>/</span>
+          <input id="counter" value="USDC" aria-label="Counter asset" />
+          <button class="ghost" type="submit">Load</button>
+        </form>
+        <div id="stats" class="stats"></div>
+        <div class="book">
+          <div><h3>Bids</h3><table id="bids"></table></div>
+          <div><h3>Asks</h3><table id="asks"></table></div>
+        </div>
+        <div id="pool" class="pool"></div>
+
+        <div class="wallet-box" id="walletBox" hidden>
+          <h3>Wallet</h3>
+          <code id="addr"></code>
+          <button id="fundBtn" class="ghost small">Fund with Friendbot (testnet)</button>
+        </div>
+      </section>
+
+      <section class="panel chat">
+        <div id="log" class="log" aria-live="polite">
+          <div class="msg assistant">
+            <p>¡Hola! I analyse liquidity and order books on the Stellar DEX. Try:</p>
+          </div>
+        </div>
+        <div class="chips" id="chips">
+          <button>Analiza la liquidez de XLM/USDC para una orden de 500 XLM</button>
+          <button>How did XLM/USDC trade in the last 24h?</button>
+          <button>Propose a small 3-level grid around the mid for XLM/USDC</button>
+          <button>Show my balances and open offers</button>
+        </div>
+        <form id="chatForm" class="composer">
+          <textarea id="input" rows="2" placeholder="Ask about a pair, liquidity, or a strategy…"></textarea>
+          <button class="primary" type="submit" id="sendBtn">Send</button>
+        </form>
+      </section>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

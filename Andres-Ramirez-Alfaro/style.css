@@ -1,0 +1,6 @@
+body { font-family: system-ui, sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; }
+main { max-width: 520px; margin: 60px auto; padding: 0 20px; }
+#wallet { background: #1e293b; padding: 24px; border-radius: 12px; }
+button { background: #3b82f6; color: white; border: 0; padding: 10px 18px; border-radius: 8px; font-size: 16px; cursor: pointer; }
+button:hover { background: #2563eb; }
+#address { word-break: break-all; font-family: monospace; }

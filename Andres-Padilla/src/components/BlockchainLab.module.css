@@ -1,0 +1,164 @@
+.lab {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(15, 25, 55, 0.55);
+  border: 1px solid rgba(140, 180, 255, 0.15);
+}
+
+.muted {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.6;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.tab {
+  font: inherit;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  color: #cfdaff;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid currentColor;
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+.tab.ok {
+  color: #ffc857;
+}
+
+.tab.broken {
+  color: #ff5b6b;
+}
+
+.tab.rejected {
+  color: #ff9a55;
+}
+
+.tab.active {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.12);
+  font-weight: 600;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field span,
+.hashes span {
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8fa8ff;
+}
+
+.data {
+  font: inherit;
+  font-size: 14px;
+  padding: 8px 10px;
+  resize: vertical;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(140, 180, 255, 0.3);
+  border-radius: 8px;
+}
+
+.data:focus {
+  outline: 2px solid rgba(176, 124, 255, 0.6);
+  outline-offset: 1px;
+}
+
+.hashes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.hashes div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.hashes code {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+  font-size: 12px;
+  color: #ffc857;
+  overflow-wrap: anywhere;
+  transition: color 0.3s;
+}
+
+.hashes code.broken,
+.hashes code.bad {
+  color: #ff5b6b;
+}
+
+.hashes code.rejected {
+  color: #ff9a55;
+}
+
+.verdict {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border-left: 3px solid currentColor;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.verdict.ok {
+  color: #ffe3a1;
+}
+
+.verdict.broken {
+  color: #ffb3bb;
+}
+
+.verdict.rejected {
+  color: #ffcaa0;
+}
+
+.verdict b {
+  color: #fff;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.action {
+  font: inherit;
+  font-size: 13px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  color: #fff;
+  background: rgba(176, 124, 255, 0.18);
+  border: 1px solid rgba(176, 124, 255, 0.55);
+  cursor: pointer;
+}
+
+.action:hover {
+  background: rgba(176, 124, 255, 0.32);
+}
+
+@media (max-width: 640px) {
+  .hashes {
+    grid-template-columns: 1fr;
+  }
+}

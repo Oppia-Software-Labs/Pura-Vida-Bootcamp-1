@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 target/
 test_snapshots/
 .soroban/
 .stellar/
+=======
+node_modules/
+>>>>>>> d306829123c96abdc7a926b6667b48734e6ceda6
